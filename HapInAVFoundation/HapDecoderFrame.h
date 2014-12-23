@@ -6,7 +6,7 @@
 
 
 /**
-This object represents a frame, and holds all the values necessary to decode a hap frame from AVFoundation as a CMSampleBufferRef to DXT data.  Instances of this class is not intended to be reusable: this is just a simple holder, the backend wants to release it as soon as possible.		*/
+This object represents a frame, and holds all the values necessary to decode a hap frame from AVFoundation as a CMSampleBufferRef to DXT data.  Instances of this class are not intended to be reusable: this is just a simple holder, the backend wants to release it as soon as possible.		*/
 @interface HapDecoderFrame : NSObject	{
 	CMSampleBufferRef		hapSampleBuffer;	//	RETAINED
 	OSType					codecSubType;	//	kHapCodecSubType, etc.
@@ -41,7 +41,7 @@ Returns an "empty" decoder frame- all the fields except "dxtData" and "dxtDataSi
 @property (readonly) OSType codecSubType;
 /// The size of the image being returned.  Note that the dimensions of the DXT buffer may be higher (multiple-of-4)- these are the dimensions of the final decoded image.
 @property (readonly) NSSize imgSize;
-/// If you're manually allocating HapDecoderFrame instances with a HapDecoderFrameAllocBlock, you must use this property to provide a pointer to the buffer of memory into which this framework can decode the hap frame into DXT data.  If you're just retrieving HapDecoderFrame instances from an AVPlayerItemHapDXTOutput, this is a weak ptr to the memory containing the DXT data, ready for upload to a GL texture.
+/// If you're manually allocating HapDecoderFrame instances with a HapDecoderFrameAllocBlock, you must use this property to provide a pointer to the buffer of memory into which this framework can decode the hap frame into DXT data (this pointer must remain valid for the lifetime of the HapDecoderFrame instance).  If you're just retrieving HapDecoderFrame instances from an AVPlayerItemHapDXTOutput, you can use this property to get a ptr to the memory containing the DXT data, ready for upload to a GL texture.
 @property (assign,readwrite,setter=setDXTData:) void* dxtData;
 /// The minimum amount of memory required to contain a DXT-compressed image with dimensions of "imgSize".  If you're using a HapDecoderFrameAllocBlock, the blocks of memory assigned to "dxtData" must be at least this large.
 @property (readonly) size_t dxtMinDataSize;

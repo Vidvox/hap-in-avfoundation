@@ -163,6 +163,11 @@
 		if (playerItem != nil)
 			[nc removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:playerItem];
 		
+		if (hapTexture!=nil)	{
+			[hapTexture release];
+			hapTexture = nil;
+		}
+		
 		//	add the outputs to the new player item
 		[newPlayerItem addOutput:nativeAVFOutput];
 		[newPlayerItem addOutput:hapOutput];
@@ -203,11 +208,14 @@
 				}
 			}
 			if (hapTexture!=nil)	{
-				//	make a CVPixelBufferRef from the dxt frame i got from the decoder (the pixel buffer ref actually retains the dxt frame)
-				CVPixelBufferRef		cvpb = NULL;
+				//	pass the decoded frame to the hap texture
+				[hapTexture setDecodedFrame:dxtFrame];
+				//	draw the texture in the GL view
 				NSSize					imgSize = [dxtFrame imgSize];
 				NSSize					dxtImgSize = [dxtFrame dxtImgSize];
 				NSSize					dxtTexSize;
+				// On NVIDIA hardware there is a massive slowdown if DXT textures aren't POT-dimensioned, so we use POT-dimensioned backing
+				//	NOTE: NEEDS TESTING. this used to be the case- but this API is only available on 10.10+, so this may have been fixed.
 				int						tmpInt;
 				tmpInt = 1;
 				while (tmpInt < dxtImgSize.width)
@@ -217,46 +225,14 @@
 				while (tmpInt < dxtImgSize.height)
 					tmpInt = tmpInt<<1;
 				dxtTexSize.height = tmpInt;
-				size_t					dxtDataSize = [dxtFrame dxtMinDataSize];
-				NSDictionary			*pba = [NSDictionary dictionaryWithObjectsAndKeys:
-					[NSNumber numberWithInt:[dxtFrame dxtPixelFormat]], kCVPixelBufferPixelFormatTypeKey,
-					[NSNumber numberWithInt:dxtImgSize.width], kCVPixelBufferWidthKey,
-					[NSNumber numberWithInt:dxtImgSize.height], kCVPixelBufferHeightKey,
-					[NSNumber numberWithInt:dxtImgSize.width-imgSize.width], kCVPixelBufferExtendedPixelsRightKey,
-					[NSNumber numberWithInt:dxtImgSize.height-imgSize.height], kCVPixelBufferExtendedPixelsBottomKey,
-					[NSNumber numberWithBool:YES], kCVPixelBufferOpenGLCompatibilityKey,
-					nil];
-				CVReturn				cvErr = CVPixelBufferCreateWithBytes(NULL,
-					dxtImgSize.width,
-					dxtImgSize.height,
-					[dxtFrame dxtPixelFormat],
-					[dxtFrame dxtData],
-					dxtDataSize/dxtImgSize.height,
-					pixelBufferReleaseCallback,
-					dxtFrame,
-					(CFDictionaryRef)pba,
-					&cvpb);
-				if (cvErr!=kCVReturnSuccess)
-					NSLog(@"\t\terr %d at CVPixelBufferCreateWithBytes() in %s",cvErr,__func__);
-				else	{
-					//	retain the HapDecoderFrame instance an extra time (i passed it to the CVPB, which will release the frame when the pixel buffer is freed)
-					[dxtFrame retain];
-					
-					//	push the pixel buffer to the texture (this actually uploads it to the texture)
-					[hapTexture setBuffer:cvpb];
-					//	draw the texture in the GL view
-					[glView
-						drawTexture:[hapTexture textureName]
-						target:GL_TEXTURE_2D
-						imageSize:imgSize
-						textureSize:dxtTexSize
-						flipped:YES
-						usingShader:[hapTexture shaderProgramObject]];
-					
-					//	release the pixel buffer (it is retained by the hap texture- and the pixel buffer is retaining the HapDecoderFrame, which contains the actual DXT data...)
-					CVPixelBufferRelease(cvpb);
-					cvpb = NULL;
-				}
+				
+				[glView
+					drawTexture:[hapTexture textureName]
+					target:GL_TEXTURE_2D
+					imageSize:imgSize
+					textureSize:dxtTexSize
+					flipped:YES
+					usingShader:[hapTexture shaderProgramObject]];
 			}
 			[dxtFrame release];
 		}

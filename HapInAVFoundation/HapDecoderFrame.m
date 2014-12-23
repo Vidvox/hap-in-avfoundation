@@ -130,6 +130,10 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	return dxtTextureFormat;
 }
 - (void) _decode	{
+	if (dxtData==nil)	{
+		NSLog(@"\t\terr, dxtData nil, can't decode.  %s",__func__);
+		return;
+	}
 	CMBlockBufferRef		dataBlockBuffer = CMSampleBufferGetDataBuffer(hapSampleBuffer);
 	OSStatus				cmErr = kCMBlockBufferNoErr;
 	size_t					dataBlockBufferAvailableData = 0;

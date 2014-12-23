@@ -46,6 +46,7 @@
 	self = [super init];
 	if (self)
 	{
+		decodedFrame = nil;
 		cgl_ctx = CGLRetainContext(context);
 	}
 	return self;
@@ -55,42 +56,33 @@
 {
 	if (texture != 0) glDeleteTextures(1, &texture);
 	if (shader != NULL) glDeleteObjectARB(shader);
-	CVBufferRelease(buffer);
+	if (decodedFrame!=nil)	{
+		[decodedFrame release];
+		decodedFrame = nil;
+	}
 	CGLReleaseContext(cgl_ctx);
 	[super dealloc];
 }
-
-- (void)setBuffer:(CVPixelBufferRef)newBuffer
-{
-	CVBufferRetain(newBuffer);
+- (void) setDecodedFrame:(HapDecoderFrame *)newFrame	{
+	[newFrame retain];
 	
-	CVPixelBufferUnlockBaseAddress(buffer, kCVPixelBufferLock_ReadOnly);
-	CVBufferRelease(buffer);
+	[decodedFrame release];
+	decodedFrame = newFrame;
 	
-	buffer = newBuffer;
-	
-	CVPixelBufferLockBaseAddress(buffer, kCVPixelBufferLock_ReadOnly);
-	
-	width = CVPixelBufferGetWidth(buffer);
-	height = CVPixelBufferGetHeight(buffer);
-	
-	if (buffer == NULL)
+	if (decodedFrame == NULL)
 	{
-		NSLog(@"\t\terr: buffer nil, bailing. %s",__func__);
+		NSLog(@"\t\terr: decodedFrame nil, bailing. %s",__func__);
 		valid = NO;
 		return;
 	}
 	
-	// Check the buffer padding
+	NSSize		tmpSize = [decodedFrame imgSize];
+	width = tmpSize.width;
+	height = tmpSize.height;
 	
-	size_t extraRight, extraBottom;
-	
-	CVPixelBufferGetExtendedPixels(buffer, NULL, &extraRight, NULL, &extraBottom);
-	GLuint roundedWidth = width + extraRight;
-	GLuint roundedHeight = height + extraBottom;
-	
-	// Valid DXT will be a multiple of 4 wide and high
-	
+	tmpSize = [decodedFrame dxtImgSize];
+	GLuint roundedWidth = tmpSize.width;
+	GLuint roundedHeight = tmpSize.height;
 	if (roundedWidth % 4 != 0 || roundedHeight % 4 != 0)
 	{
 		NSLog(@"\t\terr: width isn't a multiple of 4, bailing. %s",__func__);
@@ -98,7 +90,7 @@
 		return;
 	}
 	
-	OSType newPixelFormat = CVPixelBufferGetPixelFormatType(buffer);
+	OSType newPixelFormat = [decodedFrame dxtPixelFormat];
 	
 	GLenum newInternalFormat;
 	unsigned int bitsPerPixel;
@@ -126,7 +118,7 @@
 	size_t bytesPerRow = (roundedWidth * bitsPerPixel) / 8;
 	GLsizei newDataLength = bytesPerRow * roundedHeight; // usually not the full length of the buffer
 	
-	size_t actualBufferSize = CVPixelBufferGetDataSize(buffer);
+	size_t actualBufferSize = [decodedFrame dxtDataSize];
 	
 	// Check the buffer is as large as we expect it to be
 	
@@ -145,7 +137,7 @@
 	glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
 	glEnable(GL_TEXTURE_2D);
 			
-	GLvoid *baseAddress = CVPixelBufferGetBaseAddress(buffer);
+	GLvoid *baseAddress = [decodedFrame dxtData];
 	
 	// Create a new texture if our current one isn't adequate
 	
@@ -161,7 +153,7 @@
 		glBindTexture(GL_TEXTURE_2D, texture);
 		
 		// On NVIDIA hardware there is a massive slowdown if DXT textures aren't POT-dimensioned, so we use POT-dimensioned backing
-		
+		//	NOTE: NEEDS TESTING. this used to be the case- but this API is only available on 10.10+, so this may have been fixed.
 		backingWidth = 1;
 		while (backingWidth < roundedWidth) backingWidth <<= 1;
 		
@@ -201,8 +193,9 @@
 	glPopClientAttrib();
 	glPopAttrib();
 }
-
-- (CVPixelBufferRef)buffer { return buffer; }
+- (HapDecoderFrame *) decodedFrame	{
+	return decodedFrame;
+}
 
 - (GLuint)textureName
 {
@@ -236,7 +229,7 @@
 
 - (GLhandleARB)shaderProgramObject
 {
-	if (valid && buffer && CVPixelBufferGetPixelFormatType(buffer) == kHapCVPixelFormat_YCoCg_DXT5)
+	if (valid && decodedFrame!=nil && [decodedFrame dxtPixelFormat] == kHapCVPixelFormat_YCoCg_DXT5)
 	{
 		if (shader == NULL)
 		{

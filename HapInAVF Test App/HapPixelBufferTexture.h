@@ -28,6 +28,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreVideo/CoreVideo.h>
 #import <OpenGL/OpenGL.h>
+#import <HapInAVFoundation/HapInAVFoundation.h>
 
 /**
  A class to maintain a DXT-compressed texture for upload of DXT frames from CoreVideo pixel-buffers.
@@ -41,7 +42,7 @@
 @private
     CGLContextObj   cgl_ctx;
     GLuint          texture;
-    CVPixelBufferRef buffer;
+    HapDecoderFrame		*decodedFrame;
     GLuint    backingHeight;
     GLuint     backingWidth;
     GLuint            width;
@@ -56,10 +57,9 @@
 - (id)initWithContext:(CGLContextObj)context;
 
 /**
- The pixel-buffer to draw. It must have a pixel-format type (as returned
- by CVPixelBufferGetPixelFormatType()) of one of the DXT formats in HapSupport.h.
- */
-@property (readwrite) CVPixelBufferRef buffer;
+The decoded frame to draw.  setting this creates a GL texture (deleting the old texture if it exists), and then uploads the DXT data in the passed frame to a GL texture.
+*/
+@property (retain,readwrite) HapDecoderFrame *decodedFrame;
 
 /**
  The name of the GL_TEXTURE_2D texture.
