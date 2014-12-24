@@ -192,6 +192,8 @@
 	
 	glPopClientAttrib();
 	glPopAttrib();
+	
+	glFlush();
 }
 - (HapDecoderFrame *) decodedFrame	{
 	return decodedFrame;
