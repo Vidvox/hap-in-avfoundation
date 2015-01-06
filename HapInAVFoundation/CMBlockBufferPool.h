@@ -24,6 +24,7 @@
 
 
 
+
 @interface MemObjectPool : NSObject	{
 	OSSpinLock				lock;	//	used to lock stuff
 	NSMutableArray			*array;	//	array, contains MemObject instances
@@ -40,6 +41,8 @@
 - (void) setMaxPoolSize:(NSUInteger)n;
 
 @end
+
+
 
 
 void CMBlockBufferPool_MemDestroy(void *refCon, void *doomedMemoryBlock, size_t sizeInBytes);

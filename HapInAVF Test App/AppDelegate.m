@@ -63,6 +63,9 @@
 		CVDisplayLinkSetOutputCallback(displayLink, displayLinkCallback, self);
 		CVDisplayLinkStart(displayLink);
 	}
+	
+	//	i want to be the tab view's delegate, so i can respond to tab view changes (and tell the output to enable/disable RGB output)
+	[tabView setDelegate:self];
 }
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
 	
@@ -156,6 +159,9 @@
 		else	{
 			hapOutput = [[AVPlayerItemHapDXTOutput alloc] init];
 			[hapOutput setSuppressesPlayerRendering:YES];
+			//	if the user's displaying the the NSImage/CPU tab, we want this output to output as RGB
+			if ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]==1)
+				[hapOutput setOutputAsRGB:YES];
 		}
 		
 		//	unregister as an observer for the "old" item's play-to-end notifications
@@ -188,6 +194,15 @@
 		[player setRate:1.0];
 	}
 }
+//	this is called when you change the tabs in the tab view
+- (void) tabView:(NSTabView *)tv didSelectTabViewItem:(NSTabViewItem *)item	{
+	NSInteger		selIndex = [tv indexOfTabViewItem:item];
+	//	if the user's displaying the the NSImage/CPU tab, we want this output to output as RGB
+	if (selIndex==1)
+		[hapOutput setOutputAsRGB:YES];
+	else
+		[hapOutput setOutputAsRGB:NO];
+}
 //	this is called by the displaylink's C callback- this drives rendering
 - (void) renderCallback	{
 	@synchronized (self)	{
@@ -207,12 +222,13 @@
 					CGLReleaseContext(newCtx);
 				}
 			}
+			
+			NSSize					imgSize = [dxtFrame imgSize];
+			NSSize					dxtImgSize = [dxtFrame dxtImgSize];
 			if (hapTexture!=nil)	{
 				//	pass the decoded frame to the hap texture
 				[hapTexture setDecodedFrame:dxtFrame];
 				//	draw the texture in the GL view
-				NSSize					imgSize = [dxtFrame imgSize];
-				NSSize					dxtImgSize = [dxtFrame dxtImgSize];
 				NSSize					dxtTexSize;
 				// On NVIDIA hardware there is a massive slowdown if DXT textures aren't POT-dimensioned, so we use POT-dimensioned backing
 				//	NOTE: NEEDS TESTING. this used to be the case- but this API is only available on 10.10+, so this may have been fixed.
@@ -234,9 +250,45 @@
 					flipped:YES
 					usingShader:[hapTexture shaderProgramObject]];
 			}
+			
+			//	if the frame has RGB data attached to it, make an NSBitmapImageRep & NSImage from the data, then draw it in the NSImageView
+			void				*rgbData = [dxtFrame rgbData];
+			size_t				rgbDataSize = [dxtFrame rgbDataSize];
+			if (rgbData==nil)	{
+				//NSLog(@"\t\terr: rgb data nil in %s",__func__);
+			}
+			else	{
+				NSBitmapImageRep	*bitmapRep = [[NSBitmapImageRep alloc]
+					initWithBitmapDataPlanes:NULL
+					pixelsWide:(NSUInteger)imgSize.width
+					pixelsHigh:(NSUInteger)imgSize.height
+					bitsPerSample:8
+					samplesPerPixel:4
+					hasAlpha:YES
+					isPlanar:NO
+					colorSpaceName:NSCalibratedRGBColorSpace
+					bitmapFormat:0
+					bytesPerRow:rgbDataSize/(NSUInteger)imgSize.height
+					bitsPerPixel:32];
+				if (bitmapRep==nil)
+					NSLog(@"\t\terr: bitmap rep nil, %s",__func__);
+				else	{
+					memcpy([bitmapRep bitmapData], rgbData, rgbDataSize);
+					NSImage				*newImg = [[NSImage alloc] initWithSize:imgSize];
+					[newImg addRepresentation:bitmapRep];
+					//	draw the NSImage in the view
+					[imgView setImage:newImg];
+					
+					[newImg release];
+					newImg = nil;
+					[bitmapRep release];
+					bitmapRep = nil;
+				}
+			}
+			
 			[dxtFrame release];
 		}
-		//	try to get a CV pixel buffer
+		//	try to get a CV pixel buffer (returns immediately if we're not using the native AVF output side of things)
 		CMTime					frameTime = [nativeAVFOutput itemTimeForMachAbsoluteTime:mach_absolute_time()];
 		if (nativeAVFOutput!=nil && [nativeAVFOutput hasNewPixelBufferForItemTime:frameTime])	{
 			CMTime					frameDisplayTime = kCMTimeZero;

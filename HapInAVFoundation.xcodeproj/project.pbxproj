@@ -40,6 +40,10 @@
 		1A3230211A3BA14000DDB2E0 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1A32301F1A3BA14000DDB2E0 /* MainMenu.xib */; };
 		1A401D6C1A41FF79003B6E0A /* AVAssetWriterHapInput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A401D681A41FF79003B6E0A /* AVAssetWriterHapInput.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A401D6D1A41FF79003B6E0A /* AVAssetWriterHapInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */; };
+		1A4A76AF1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A4A76B01A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */; };
+		1A5A4DE41A54A047005C961F /* AVAssetAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5A4DE21A54A047005C961F /* AVAssetAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A5A4DE51A54A047005C961F /* AVAssetAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5A4DE31A54A047005C961F /* AVAssetAdditions.m */; };
 		1A60606C1A38D812008E693F /* PixelFormats.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A60606B1A38D812008E693F /* PixelFormats.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A60606E1A38D8D9008E693F /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606D1A38D8D9008E693F /* OpenGL.framework */; };
 		1A6060701A38D8DE008E693F /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606F1A38D8DE008E693F /* Accelerate.framework */; };
@@ -172,6 +176,10 @@
 		1A3230201A3BA14000DDB2E0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1A401D681A41FF79003B6E0A /* AVAssetWriterHapInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetWriterHapInput.h; sourceTree = "<group>"; };
 		1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetWriterHapInput.m; sourceTree = "<group>"; };
+		1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetReaderHapTrackOutput.h; sourceTree = "<group>"; };
+		1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetReaderHapTrackOutput.m; sourceTree = "<group>"; };
+		1A5A4DE21A54A047005C961F /* AVAssetAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetAdditions.h; sourceTree = "<group>"; };
+		1A5A4DE31A54A047005C961F /* AVAssetAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetAdditions.m; sourceTree = "<group>"; };
 		1A60606B1A38D812008E693F /* PixelFormats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PixelFormats.h; path = source/PixelFormats.h; sourceTree = SOURCE_ROOT; };
 		1A60606D1A38D8D9008E693F /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		1A60606F1A38D8DE008E693F /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
@@ -328,10 +336,14 @@
 			children = (
 				1AB26EC51A3B3AA4001360D7 /* AVPlayerItemHapDXTOutput.h */,
 				1AB26EC61A3B3AA4001360D7 /* AVPlayerItemHapDXTOutput.m */,
+				1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */,
+				1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */,
 				1AB26EC91A3B3AE1001360D7 /* HapDecoderFrame.h */,
 				1AB26ECA1A3B3AE1001360D7 /* HapDecoderFrame.m */,
 				1AB26EF31A3B59D5001360D7 /* AVPlayerItemAdditions.h */,
 				1AB26EF41A3B59D5001360D7 /* AVPlayerItemAdditions.m */,
+				1A5A4DE21A54A047005C961F /* AVAssetAdditions.h */,
+				1A5A4DE31A54A047005C961F /* AVAssetAdditions.m */,
 			);
 			name = "Decode (playback)";
 			sourceTree = "<group>";
@@ -426,8 +438,10 @@
 			files = (
 				1A97F5B11A38ABBF00E0DC74 /* HapInAVFoundation.h in Headers */,
 				1AB26EC71A3B3AA4001360D7 /* AVPlayerItemHapDXTOutput.h in Headers */,
+				1A4A76AF1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h in Headers */,
 				1AB26ECB1A3B3AE1001360D7 /* HapDecoderFrame.h in Headers */,
 				1AB26EF51A3B59D5001360D7 /* AVPlayerItemAdditions.h in Headers */,
+				1A5A4DE41A54A047005C961F /* AVAssetAdditions.h in Headers */,
 				1AB1C9911A38CAFA00688AB4 /* HapCodecSubTypes.h in Headers */,
 				1A60606C1A38D812008E693F /* PixelFormats.h in Headers */,
 				1AB1C9971A38CAFA00688AB4 /* HapPlatform.h in Headers */,
@@ -601,6 +615,7 @@
 				1AB1C99F1A38CAFA00688AB4 /* Utility.c in Sources */,
 				1AB26EF61A3B59D5001360D7 /* AVPlayerItemAdditions.m in Sources */,
 				1A0536171A38CA11005B47BD /* YCoCgDXTEncoder.c in Sources */,
+				1A4A76B01A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m in Sources */,
 				1A05360B1A38CA11005B47BD /* DXTBlocks.c in Sources */,
 				1ACF5DEC1A3E4127005DDF19 /* PixelFormats.c in Sources */,
 				1AB26EC81A3B3AA4001360D7 /* AVPlayerItemHapDXTOutput.m in Sources */,
@@ -608,6 +623,7 @@
 				1A0535FA1A38C9FD005B47BD /* squish-c.cpp in Sources */,
 				1A05360F1A38CA11005B47BD /* GLDXTEncoder.c in Sources */,
 				1A0536211A38CA5D005B47BD /* ImageMath.c in Sources */,
+				1A5A4DE51A54A047005C961F /* AVAssetAdditions.m in Sources */,
 				1A97F5D21A38AC9800E0DC74 /* hap.c in Sources */,
 				1A0536111A38CA11005B47BD /* HapCodecGL.c in Sources */,
 				1A0536231A38CA5D005B47BD /* YCoCg.c in Sources */,

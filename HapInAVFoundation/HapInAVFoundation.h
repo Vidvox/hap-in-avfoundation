@@ -13,9 +13,13 @@
 #include "PixelFormats.h"
 #include "HapCodecSubTypes.h"
 
+#import "CMBlockBufferPool.h"
+
 #import "AVPlayerItemHapDXTOutput.h"
+#import "AVAssetReaderHapTrackOutput.h"
 #import "HapDecoderFrame.h"
 #import "AVPlayerItemAdditions.h"
+#import "AVAssetAdditions.h"
 
 #import "AVAssetWriterHapInput.h"
 

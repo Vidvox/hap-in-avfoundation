@@ -8,11 +8,13 @@
 
 
 
-@interface AppDelegate : NSObject <NSApplicationDelegate>	{
+@interface AppDelegate : NSObject <NSApplicationDelegate,NSTabViewDelegate>	{
 	CVDisplayLinkRef			displayLink;	//	this "drives" rendering
 	NSOpenGLContext				*sharedContext;	//	all GL contexts share this, so textures from one contact can be used in others
 	IBOutlet NSWindow			*window;
+	IBOutlet NSTabView			*tabView;
 	IBOutlet GLView				*glView;
+	IBOutlet NSImageView		*imgView;
 	IBOutlet NSTextField		*statusField;
 	
 	AVPlayer					*player;

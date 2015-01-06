@@ -56,6 +56,8 @@ typedef struct HapCodecGL *HapCodecGLRef;
 HapCodecGLRef HapCodecGLCreateEncoder(unsigned int width, unsigned int height, unsigned int compressed_format);
 HapCodecGLRef HapCodecGLCreateDecoder(unsigned int width, unsigned int height, unsigned int compressed_format);
 unsigned int HapCodecGLGetCompressedFormat(HapCodecGLRef coder);
+unsigned int HapCodecGLGetWidth(HapCodecGLRef coder);
+unsigned int HapCodecGLGetHeight(HapCodecGLRef coder);
 void HapCodecGLDestroy(HapCodecGLRef coder);
 /*
  encode/decode funtions return 0 on success

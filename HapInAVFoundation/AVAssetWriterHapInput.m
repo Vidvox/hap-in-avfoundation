@@ -35,9 +35,10 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 
 
 
-//	this isn't in the header file because the user-facing API doesn't need to call it
+//	these aren't in the header file because the user-facing API doesn't need to call them
 @interface AVAssetWriterHapInput ()
 @property (assign,readwrite) CMTime lastEncodedDuration;
+- (void) appendEncodedFrames;
 @end
 
 
@@ -66,8 +67,9 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		formatConvertPool = NULL;
 		dxtBufferPool = NULL;
 		hapBufferPool = NULL;
+		encoderLock = OS_SPINLOCK_INIT;
 		dxtEncoder = NULL;
-		encodeLock = OS_SPINLOCK_INIT;
+		encoderProgressLock = OS_SPINLOCK_INIT;
 		encoderProgressFrames = [[NSMutableArray arrayWithCapacity:0] retain];
 		encoderWaitingToRunOut = NO;
 		lastEncodedDuration = kCMTimeZero;
@@ -173,10 +175,12 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		dispatch_release(encodeQueue);
 		encodeQueue = NULL;
 	}
+	OSSpinLockLock(&encoderLock);
 	if (dxtEncoder!=NULL)	{
 		HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)dxtEncoder);
 		dxtEncoder = NULL;
 	}
+	OSSpinLockUnlock(&encoderLock);
 	if (formatConvertPool!=nil)	{
 		[formatConvertPool release];
 		formatConvertPool = nil;
@@ -189,16 +193,20 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		[hapBufferPool release];
 		hapBufferPool = nil;
 	}
-	OSSpinLockLock(&encodeLock);
+	OSSpinLockLock(&encoderProgressLock);
 	if (encoderProgressFrames!=nil)	{
 		[encoderProgressFrames release];
 		encoderProgressFrames = nil;
 	}
-	OSSpinLockUnlock(&encodeLock);
+	OSSpinLockUnlock(&encoderProgressLock);
 	[super dealloc];
 }
-- (void) appendPixelBuffer:(CVPixelBufferRef)pb withPresentationTime:(CMTime)t	{
+- (BOOL) appendPixelBuffer:(CVPixelBufferRef)pb withPresentationTime:(CMTime)t	{
+	return [self appendPixelBuffer:pb withPresentationTime:t asynchronously:YES];
+}
+- (BOOL) appendPixelBuffer:(CVPixelBufferRef)pb withPresentationTime:(CMTime)t asynchronously:(BOOL)a	{
 	//NSLog(@"%s at time %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault,t) autorelease]);
+	BOOL			returnMe = YES;
 	//	get the pixel format of the passed buffer- if it's not BGRA or RGBA, log the problem (only log the problem if there's a non-null pixel buffer)
 	OSType			sourceFormat = CVPixelBufferGetPixelFormatType(pb);
 	if (pb!=NULL)	{
@@ -208,16 +216,19 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			break;
 		default:
 			FourCCLog(@"\t\tERR: can't append pixel buffer- required RGBA or BGRA pixel format, but supplied",sourceFormat);
+			returnMe = NO;
 			break;
 		}
 	}
 	
 	//	if i'm done accepting samples (because something marked me as finished), i won't be encoding a frame- but i'll still want to execute the block
 	HapEncoderFrame		*encoderFrame = nil;
-	OSSpinLockLock(&encodeLock);
+	OSSpinLockLock(&encoderProgressLock);
 	if (encoderWaitingToRunOut)	{
-		if (pb!=NULL)
+		if (pb!=NULL)	{
 			NSLog(@"\t\tERR: can't append pixel buffer, marked as finished and waiting for in-flight tasks to complete");
+			returnMe = NO;
+		}
 	}
 	//	else i'm not done accepting samples...
 	else	{
@@ -228,15 +239,15 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			[encoderFrame release];
 		}
 	}
-	OSSpinLockUnlock(&encodeLock);
+	OSSpinLockUnlock(&encoderProgressLock);
 	
 	//	retain the pixel buffer i was passed- i'll release it in the block (on the GCD-controlled thread)
 	if (pb!=NULL)
 		CVPixelBufferRetain(pb);
 	
 	
-	//	dispatch a block to do all the encoding (pixel buffer -> DXT -> hap) on the encode queue
-	dispatch_async(encodeQueue, ^()	{
+	//	assemble a block that will encode the passed pixel buffer- i'll either be dispatching this block (via GCD) or executing it immediately...
+	void			(^encodeBlock)() = ^(){
 		//NSLog(@"%s",__func__);
 		//	if there's a pixel buffer to encode, let's take care of that first
 		if (pb!=NULL)	{
@@ -304,25 +315,33 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			size_t			dxtBufferLength = [dxtBufferPool bufferLength];
 			int				intErr = 0;
 			//	slightly different path depending on whether i'm converting the passed pixel buffer...
-			if (formatConvertBuffer==nil)	{
-				intErr = ((HapCodecDXTEncoderRef)dxtEncoder)->encode_function(dxtEncoder,
-					sourceBuffer,
-					CVPixelBufferGetBytesPerRow(pb),
-					encoderInputPxlFmt,
-					dxtBuffer,
-					(NSUInteger)exportImgSize.width,
-					(NSUInteger)exportImgSize.height);
+			OSSpinLockLock(&encoderLock);
+			if (dxtEncoder==nil)	{
+				NSLog(@"\t\terr: encoder nil in %s",__func__);
+				intErr = -1;
 			}
-			//	...or if i'm converting the format conversion buffer 
 			else	{
-				intErr = ((HapCodecDXTEncoderRef)dxtEncoder)->encode_function(dxtEncoder,
-					formatConvertBuffer,
-					formatConvertLength/(NSUInteger)exportImgSize.height,
-					encoderInputPxlFmt,
-					dxtBuffer,
-					(NSUInteger)exportImgSize.width,
-					(NSUInteger)exportImgSize.height);
+				if (formatConvertBuffer==nil)	{
+					intErr = ((HapCodecDXTEncoderRef)dxtEncoder)->encode_function(dxtEncoder,
+						sourceBuffer,
+						(unsigned int)CVPixelBufferGetBytesPerRow(pb),
+						encoderInputPxlFmt,
+						dxtBuffer,
+						(unsigned int)exportImgSize.width,
+						(unsigned int)exportImgSize.height);
+				}
+				//	...or if i'm converting the format conversion buffer 
+				else	{
+					intErr = ((HapCodecDXTEncoderRef)dxtEncoder)->encode_function(dxtEncoder,
+						formatConvertBuffer,
+						(unsigned int)(formatConvertLength/(NSUInteger)exportImgSize.height),
+						encoderInputPxlFmt,
+						dxtBuffer,
+						(unsigned int)exportImgSize.width,
+						(unsigned int)exportImgSize.height);
+				}
 			}
+			OSSpinLockUnlock(&encoderLock);
 			//	unlock the pixel buffer immediately
 			CVPixelBufferUnlockBaseAddress(pb,kHapCodecCVPixelBufferLockFlags);
 			//	if there was an error with the DXT encode, don't proceed
@@ -423,87 +442,71 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		from them, and then append those CMSampleBufferRefs to me.  note that i do this even if i 
 		didn't just create/encode/append a hap buffer...		*/
 		
-		//	run through the encoderProgressFrames, getting as many sample buffers as possible and appending them
-		OSSpinLockLock(&encodeLock);
-		//	first of all, if there's only one sample and i'm waiting to finish- append the last sample and then i'm done (yay!)
-		if (encoderWaitingToRunOut && [encoderProgressFrames count]==1)	{
-			HapEncoderFrame			*lastFrame = [encoderProgressFrames objectAtIndex:0];
-			if ([lastFrame encoded])	{
-				//	make a hap sample buffer, append it
-				CMSampleBufferRef	hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:[self lastEncodedDuration].value];
-				if (hapSampleBuffer==NULL)
-					NSLog(@"\t\terr: couldn't make sample buffer from frame duration, %s",__func__);
-				else	{
-					[self appendSampleBuffer:hapSampleBuffer];
-					CFRelease(hapSampleBuffer);
-				}
-				[encoderProgressFrames removeObjectAtIndex:0];
-				//	mark myself as finished either way
-				[super markAsFinished];
-			}
+		[self appendEncodedFrames];
+		
+	};
+	
+	
+	//	if i'm to be executing asynchronously, dispatch the encode block on the queue- else just execute the encode block
+	if (a)
+		dispatch_async(encodeQueue, encodeBlock);
+	else
+		encodeBlock();
+	
+	return returnMe;
+}
+- (BOOL) appendSampleBuffer:(CMSampleBufferRef)n	{
+	BOOL						returnMe = NO;
+	CMFormatDescriptionRef		sampleFmt = CMSampleBufferGetFormatDescription(n);
+	//	try to get the format description of the sample
+	if (sampleFmt!=NULL)	{
+		//FourCCLog(@"\t\tmedia subtype of sample buffer is",CMFormatDescriptionGetMediaSubType(sampleFmt));
+		OSType			sampleFourCC = CMFormatDescriptionGetMediaSubType(sampleFmt);
+		//	if the format description is a match for the export type, just append it immediately
+		if (sampleFourCC==exportCodecType)	{
+			returnMe = [super appendSampleBuffer:n];
 		}
-		//	else i'm either not waiting to run out, or there's more than one frame in the array...
+		//	else the format description isn't a match for the export type- try to get the image buffer and then append it
 		else	{
-			//	i'm going to run through all the encoderProgressFrames, trying to append as many encoded frames as i can
-			HapEncoderFrame		*lastFramePtr = nil;
-			int					numberOfSamplesAppended = 0;
-			for (HapEncoderFrame *framePtr in encoderProgressFrames)	{
-				//	if there's at least one other encoded frame...
-				if (lastFramePtr!=nil)	{
-					//	if the last frame isn't encoded or i'm not ready for more media data, bail- i can't do anything
-					if (![lastFramePtr encoded] || ![super isReadyForMoreMediaData])
-						break;
-					
-					//	tell the last frame to create a sample buffer derived from this frame's presentation time
-					CMSampleBufferRef	hapSampleBuffer = [lastFramePtr allocCMSampleBufferWithNextFramePresentationTime:[framePtr presentationTime]];
-					if (hapSampleBuffer==NULL)
-						NSLog(@"\t\terr: couldn't make sample buffer from frame, %s, not appending buffer",__func__);
-					else	{
-						//	save the duration- i need to save the duration because i have to apply a duration to the final frame
-						CMSampleTimingInfo		sampleTimingInfo;
-						CMSampleBufferGetSampleTimingInfo(hapSampleBuffer, 0, &sampleTimingInfo);
-						//NSLog(@"\t\tappending sample at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.presentationTimeStamp) autorelease]);
-						[self setLastEncodedDuration:sampleTimingInfo.duration];
-						
-						[self appendSampleBuffer:hapSampleBuffer];
-						CFRelease(hapSampleBuffer);
-					}
-					//	increment the # of samples appended regardless- if i couldn't make a sample buffer i want to free the frame
-					++numberOfSamplesAppended;
-				}
-				lastFramePtr = framePtr;
-			}
-			//	if i appended samples, i can free those frames now...
-			if (numberOfSamplesAppended>0)	{
-				for (int i=0; i<numberOfSamplesAppended; ++i)
-					[encoderProgressFrames removeObjectAtIndex:0];
-			}
+			CVImageBufferRef		sampleImageRef = CMSampleBufferGetImageBuffer(n);
+			if (sampleImageRef!=NULL)
+				returnMe = [self appendPixelBuffer:sampleImageRef withPresentationTime:CMSampleBufferGetPresentationTimeStamp(n) asynchronously:NO];
+			else
+				NSLog(@"\t\terr: sample missing image buffer in %s",__func__);
 		}
-		OSSpinLockUnlock(&encodeLock);
-		
-		
-		
-	});
+	}
+	//	else i couldn't get the sample's format description
+	else	{
+		NSLog(@"\t\terr: sample didn't have format description in %s",__func__);
+		//	try to get the image buffer from the sample, then try appending it
+		CVImageBufferRef		sampleImageRef = CMSampleBufferGetImageBuffer(n);
+		if (sampleImageRef!=NULL)
+			returnMe = [self appendPixelBuffer:sampleImageRef withPresentationTime:CMSampleBufferGetPresentationTimeStamp(n) asynchronously:NO];
+		else
+			NSLog(@"\t\terr: sample missing a format description didn't have an image buffer either in %s",__func__);
+	}
+	return returnMe;
 }
 - (BOOL) finishedEncoding	{
 	BOOL		returnMe = NO;
-	OSSpinLockLock(&encodeLock);
-	if (encoderWaitingToRunOut && [encoderProgressFrames count]==0)
+	OSSpinLockLock(&encoderProgressLock);
+	if ([encoderProgressFrames count]==0)
 		returnMe = YES;
-	OSSpinLockUnlock(&encodeLock);
+	OSSpinLockUnlock(&encoderProgressLock);
 	return returnMe;
 }
 - (void)markAsFinished	{
-	OSSpinLockLock(&encodeLock);
+	//NSLog(@"%s",__func__);
+	OSSpinLockLock(&encoderProgressLock);
 	encoderWaitingToRunOut = YES;
-	OSSpinLockUnlock(&encodeLock);
-	//	append a nil pixel buffer- this dispatches another task, and while there's no frame to encode, the task will push the last encoded frame through
-	[self appendPixelBuffer:NULL withPresentationTime:kCMTimeInvalid];
+	OSSpinLockUnlock(&encoderProgressLock);
+	//	append any encoded frames- if there are frames left over that aren't done encoding yet, this does nothing.  if there aren't any frames left over, it marks the input as finished.
+	[self appendEncodedFrames];
 }
 - (BOOL) isReadyForMoreMediaData	{
 	BOOL		returnMe = [super isReadyForMoreMediaData];
 	if (returnMe)	{
-		OSSpinLockLock(&encodeLock);
+		OSSpinLockLock(&encoderProgressLock);
 		if (encoderWaitingToRunOut)	{
 			//NSLog(@"\t\tpretending i'm not ready for more data, waiting to run out- %s",__func__);
 			returnMe = NO;
@@ -512,12 +515,118 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			//NSLog(@"\t\ttoo many frames waiting to be appended, not ready- %s",__func__);
 			returnMe = NO;
 		}
-		OSSpinLockUnlock(&encodeLock);
+		OSSpinLockUnlock(&encoderProgressLock);
 	}
 	return returnMe;
 }
 //	synthesized so we get automatic atomicity
 @synthesize lastEncodedDuration;
+
+//	runs through the encoder progress frames, getting as many sample buffers as possible and appending them (in order)
+- (void) appendEncodedFrames	{
+	//NSLog(@"%s",__func__);
+	/*
+	//	this bit just appends every encoded frame with a duration of 1- i don't know if it produces an accurate file or not.
+	OSSpinLockLock(&encoderProgressLock);
+	//	run through all the frames that are encoded, stop as soon as i hit a frame that isn't encoded
+	NSUInteger			countOfFramesToRemove = 0;
+	for (HapEncoderFrame *framePtr in encoderProgressFrames)	{
+		if (![framePtr encoded])
+			break;
+		CMSampleBufferRef		hapSampleBuffer = [framePtr allocCMSampleBufferWithDurationTimeValue:1];
+		if (hapSampleBuffer==NULL)
+			NSLog(@"\t\terr: couldn't make hap sample buffer, %s",__func__);
+		else	{
+			[super appendSampleBuffer:hapSampleBuffer];
+			CFRelease(hapSampleBuffer);
+			hapSampleBuffer = NULL;
+		}
+		++countOfFramesToRemove;
+	}
+	for (int i=0; i<countOfFramesToRemove; ++i)
+		[encoderProgressFrames removeObjectAtIndex:0];
+	if (encoderWaitingToRunOut && [encoderProgressFrames count]==0)	{
+		NSLog(@"\t\twaiting to run out & no more frames, marking super as finished");
+		[super markAsFinished];
+	}
+	OSSpinLockUnlock(&encoderProgressLock);
+	*/
+	
+	
+	
+	
+	OSSpinLockLock(&encoderProgressLock);
+	//	first of all, if there's only one sample and i'm waiting to finish- append the last sample and then i'm done (yay!)
+	if (encoderWaitingToRunOut && [encoderProgressFrames count]<=1)	{
+		HapEncoderFrame			*lastFrame = ([encoderProgressFrames count]<1) ? nil : [encoderProgressFrames objectAtIndex:0];
+		if (lastFrame!=nil && [lastFrame encoded])	{
+			//NSLog(@"\t\tone frame left and it's encoded, making a sample buffer and then appending it");
+			//	make a hap sample buffer, append it
+			CMSampleBufferRef	hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:[self lastEncodedDuration].value];
+			if (hapSampleBuffer==NULL)
+				NSLog(@"\t\terr: couldn't make sample buffer from frame duration, %s",__func__);
+			else	{
+				[super appendSampleBuffer:hapSampleBuffer];
+				CFRelease(hapSampleBuffer);
+			}
+			[encoderProgressFrames removeObjectAtIndex:0];
+			//	mark myself as finished either way
+			//NSLog(@"\t\tmarking super as finished in %s",__func__);
+			[super markAsFinished];
+		}
+		else if (lastFrame==nil)	{
+			//NSLog(@"\t\tno last frame, marking super as finished in %s",__func__);
+			[super markAsFinished];
+		}
+	}
+	//	else i'm either not waiting to run out, or there's more than one frame in the array...
+	else	{
+		//	i'm going to run through all the encoderProgressFrames, trying to append as many encoded frames as i can
+		HapEncoderFrame		*lastFramePtr = nil;
+		int					numberOfSamplesAppended = 0;
+		for (HapEncoderFrame *framePtr in encoderProgressFrames)	{
+			//	if there's at least one other encoded frame...
+			if (lastFramePtr!=nil)	{
+				//	if the last frame isn't encoded or i'm not ready for more media data, bail- i can't do anything
+				if (![lastFramePtr encoded] || ![super isReadyForMoreMediaData])
+					break;
+				
+				//	tell the last frame to create a sample buffer derived from this frame's presentation time
+				CMSampleBufferRef	hapSampleBuffer = [lastFramePtr allocCMSampleBufferWithNextFramePresentationTime:[framePtr presentationTime]];
+				if (hapSampleBuffer==NULL)
+					NSLog(@"\t\terr: couldn't make sample buffer from frame, %s, not appending buffer",__func__);
+				else	{
+					//	save the duration- i need to save the duration because i have to apply a duration to the final frame
+					CMSampleTimingInfo		sampleTimingInfo;
+					CMSampleBufferGetSampleTimingInfo(hapSampleBuffer, 0, &sampleTimingInfo);
+					//NSLog(@"\t\tappending sample at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.presentationTimeStamp) autorelease]);
+					[self setLastEncodedDuration:sampleTimingInfo.duration];
+					
+					[super appendSampleBuffer:hapSampleBuffer];
+					CFRelease(hapSampleBuffer);
+				}
+				//	increment the # of samples appended regardless- if i couldn't make a sample buffer i want to free the frame
+				++numberOfSamplesAppended;
+			}
+			lastFramePtr = framePtr;
+		}
+		//	if i appended samples, i can free those frames now...
+		if (numberOfSamplesAppended>0)	{
+			for (int i=0; i<numberOfSamplesAppended; ++i)
+				[encoderProgressFrames removeObjectAtIndex:0];
+		}
+	}
+	OSSpinLockUnlock(&encoderProgressLock);
+	
+}
+
+
+- (BOOL) canPerformMultiplePasses	{
+	return NO;
+}
+- (void) setPerformsMultiPassEncodingIfSupported:(BOOL)n	{
+	[super setPerformsMultiPassEncodingIfSupported:NO];
+}
 
 
 @end

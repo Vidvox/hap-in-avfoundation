@@ -70,6 +70,9 @@ BAIL:
 	id		returnMe = [[MemObject alloc] initWithPtr:mem sized:size pool:pool];
 	return returnMe;
 }
+- (NSString *) description	{
+	return [NSString stringWithFormat:@"<MemObject %p sized %ld>",mem,size];
+}
 - (void) setMem:(void *)n	{
 	mem = n;
 }
@@ -131,7 +134,7 @@ BAIL:
 	}
 	//	else there's nothing for me in the array- just allocate memory
 	else	{
-		NSLog(@"\t\tactually allocating mem, %s",__func__);
+		//NSLog(@"\t\tactually allocating mem sized %ld, %s",bufferLength,__func__);
 		returnMe = malloc(bufferLength);
 	}
 	OSSpinLockUnlock(&lock);
@@ -149,7 +152,7 @@ BAIL:
 		[array removeObjectIdenticalTo:foundObj];
 	}
 	else	{
-		NSLog(@"\t\tactually allocating mem, %s",__func__);
+		//NSLog(@"\t\tactually allocating mem, %s",__func__);
 		returnMe = [[MemObject alloc] initWithPtr:malloc(bufferLength) sized:bufferLength pool:self];
 	}
 	OSSpinLockUnlock(&lock);
@@ -256,7 +259,7 @@ void CMBlockBufferPool_MemDestroy(void *refCon, void *doomedMemoryBlock, size_t 
 		[array removeObjectIdenticalTo:foundObj];
 	}
 	else	{
-		NSLog(@"\t\tactually allocating mem, %s",__func__);
+		//NSLog(@"\t\tactually allocating mem, %s",__func__);
 		mem = malloc(localBufferLength);
 	}
 	//	make the block buffer

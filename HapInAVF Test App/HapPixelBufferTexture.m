@@ -116,7 +116,7 @@
 	// Ignore the value for CVPixelBufferGetBytesPerRow()
 	
 	size_t bytesPerRow = (roundedWidth * bitsPerPixel) / 8;
-	GLsizei newDataLength = bytesPerRow * roundedHeight; // usually not the full length of the buffer
+	GLsizei newDataLength = (int)(bytesPerRow * roundedHeight); // usually not the full length of the buffer
 	
 	size_t actualBufferSize = [decodedFrame dxtDataSize];
 	

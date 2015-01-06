@@ -8,12 +8,18 @@
 
 
 
-/*			Callback for multithreaded Hap decoding			*/
-void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, void *info HAP_ATTR_UNUSED)	{
-	dispatch_apply(count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t index) {
-		function(p, (unsigned int)index);
-	});
+/*
+void CMBlockBuffer_FreeHapDecoderFrame(void *refCon, void *doomedMemoryBlock, size_t sizeInBytes)	{
+	//	'refCon' is the HapDecoderFrame instance which contains the data that is backing this block buffer...
+	[(id)refCon release];
 }
+*/
+void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddress)	{
+	//	'releaseRefCon' is the HapDecoderFrame instance which contains the data that is backing this pixel buffer...
+	[(id)releaseRefCon release];
+}
+
+#define FourCCLog(n,f) NSLog(@"%@, %c%c%c%c",n,(int)((f>>24)&0xFF),(int)((f>>16)&0xFF),(int)((f>>8)&0xFF),(int)((f>>0)&0xFF))
 
 
 
@@ -40,22 +46,37 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		dxtPixelFormat = 0;
 		dxtImgSize = NSMakeSize(0,0);
 		dxtTextureFormat = 0;
+		rgbData = nil;
+		rgbMinDataSize = 0;
+		rgbDataSize = 0;
+		rgbPixelFormat = kCVPixelFormatType_32BGRA;
+		rgbImgSize = NSMakeSize(0,0);
+		atomicLock = OS_SPINLOCK_INIT;
 		userInfo = nil;
+		blockSrc = NULL;
 		decoded = NO;
 		
 		hapSampleBuffer = sb;
-		if (hapSampleBuffer==NULL)
+		if (hapSampleBuffer==NULL)	{
+			NSLog(@"\t\terr, bailing- hapSampleBuffer nil in %s",__func__);
 			goto BAIL;
+		}
 		CFRetain(hapSampleBuffer);
 		
 		//NSLog(@"\t\tthis frame's time is %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault, CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer)) autorelease]);
 		CMFormatDescriptionRef	desc = (sb==NULL) ? NULL : CMSampleBufferGetFormatDescription(sb);
-		if (desc==NULL)
+		if (desc==NULL)	{
+			NSLog(@"\t\terr, bailing- desc nil in %s",__func__);
+			if (!CMSampleBufferIsValid(sb))
+				NSLog(@"\t\terr: as a note, the sample buffer wasn't valid in %s",__func__);
 			goto BAIL;
+		}
 		//NSLog(@"\t\textensions are %@",CMFormatDescriptionGetExtensions(desc));
 		CGSize			tmpSize = CMVideoFormatDescriptionGetPresentationDimensions(desc, true, false);
 		imgSize = NSMakeSize(tmpSize.width, tmpSize.height);
 		dxtImgSize = NSMakeSize(roundUpToMultipleOf4(imgSize.width), roundUpToMultipleOf4(imgSize.height));
+		rgbDataSize = 32 * tmpSize.width * tmpSize.height / 8;
+		rgbImgSize = imgSize;
 		//NSLog(@"\t\timgSize is %f x %f",imgSize.width,imgSize.height);
 		//NSLog(@"\t\tdxtImgSize is %f x %f",dxtImgSize.width,dxtImgSize.height);
 		codecSubType = CMFormatDescriptionGetMediaSubType(desc);
@@ -71,6 +92,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			break;
 		}
 		dxtMinDataSize = dxtBytesForDimensions(dxtImgSize.width, dxtImgSize.height, codecSubType);
+		rgbMinDataSize = 32 * tmpSize.width * tmpSize.height / 8;
 	}
 	return self;
 	BAIL:
@@ -78,15 +100,19 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	return nil;
 }
 - (void) dealloc	{
-	//NSLog(@"%s",__func__);
 	if (hapSampleBuffer != nil)	{
 		CFRelease(hapSampleBuffer);
 		hapSampleBuffer = NULL;
 	}
 	dxtData = NULL;
+	rgbData = NULL;
 	if (userInfo != nil)	{
 		[userInfo release];
 		userInfo = nil;
+	}
+	if (blockSrc!=nil)	{
+		free(blockSrc);
+		blockSrc = NULL;
 	}
 	[super dealloc];
 }
@@ -126,51 +152,166 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 - (NSSize) dxtImgSize	{
 	return dxtImgSize;
 }
+- (void) setDXTTextureFormat:(enum HapTextureFormat)n	{
+	dxtTextureFormat = n;
+}
 - (enum HapTextureFormat) dxtTextureFormat	{
 	return dxtTextureFormat;
 }
-- (void) _decode	{
-	if (dxtData==nil)	{
-		NSLog(@"\t\terr, dxtData nil, can't decode.  %s",__func__);
+- (void) setRGBData:(void *)n	{
+	rgbData = n;
+}
+- (void *) rgbData	{
+	return rgbData;
+}
+- (size_t) rgbMinDataSize	{
+	return rgbDataSize;
+}
+- (void) setRGBDataSize:(size_t)n	{
+	rgbDataSize = n;
+}
+- (size_t) rgbDataSize	{
+	return rgbDataSize;
+}
+- (void) setRGBPixelFormat:(OSType)n	{
+	if (n!=kCVPixelFormatType_32BGRA && n!=kCVPixelFormatType_32RGBA)	{
+		NSString		*errFmtString = [NSString stringWithFormat:@"\t\tERR in %s, can't use new format:",__func__];
+		FourCCLog(errFmtString,n);
 		return;
 	}
-	CMBlockBufferRef		dataBlockBuffer = CMSampleBufferGetDataBuffer(hapSampleBuffer);
-	OSStatus				cmErr = kCMBlockBufferNoErr;
-	size_t					dataBlockBufferAvailableData = 0;
-	size_t					dataBlockBufferTotalDataSize = 0;
-	char					*dataBuffer = nil;
-	cmErr = CMBlockBufferGetDataPointer(dataBlockBuffer,
-		0,
-		&dataBlockBufferAvailableData,
-		&dataBlockBufferTotalDataSize,
-		&dataBuffer);
-	if (cmErr != kCMBlockBufferNoErr)
-		NSLog(@"\t\terr %d at CMBlockBufferGetDataPointer() in %s",(int)cmErr,__func__);
-	else	{
-		if (dataBlockBufferAvailableData > dxtDataSize)
-			NSLog(@"\t\terr: block buffer larger than allocated dxt data, %ld vs. %ld, %s",dataBlockBufferAvailableData,dxtDataSize,__func__);
-		else	{
-			//unsigned long			outputBufferBytesUsed = 0;
-			unsigned int			hapErr = HapResult_No_Error;
-			hapErr = HapDecode(dataBuffer,
-				dataBlockBufferAvailableData,
-				(HapDecodeCallback)HapMTDecode,
-				NULL,
-				dxtData,
-				dxtDataSize,
-				NULL,
-				&dxtTextureFormat);
-			if (hapErr != HapResult_No_Error)
-				NSLog(@"\t\terr %d at HapDecode() in %s",hapErr,__func__);
-			else	{
-				//NSLog(@"\t\thap decode successful, output texture format is %d",dxtTextureFormat);
-				[self setDecoded:YES];
-			}
-		}
-	}
+	rgbPixelFormat = n;
 }
-@synthesize userInfo;
-@synthesize decoded;
+- (OSType) rgbPixelFormat	{
+	return rgbPixelFormat;
+}
+- (void) setRGBImgSize:(NSSize)n	{
+	rgbImgSize = n;
+}
+- (NSSize) rgbImgSize	{
+	return rgbImgSize;
+}
+- (CMTime) presentationTime	{
+	return ((hapSampleBuffer==NULL) ? kCMTimeInvalid : CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer));
+}
+
+
+- (CMSampleBufferRef) allocCMSampleBufferFromRGBData	{
+	//NSLog(@"%s ... %@",__func__,self);
+	//	if there's no RGB data, bail immediately
+	if (rgbData==nil)	{
+		NSLog(@"\t\terr: no RGB data, can't alloc a CMSampleBufferRef, %s",__func__);
+		return NULL;
+	}
+	CMSampleBufferRef		returnMe = NULL;
+	//	make a CVPixelBufferRef from my RGB data
+	CVReturn				cvErr = kCVReturnSuccess;
+	NSDictionary			*pixelBufferAttribs = [NSDictionary dictionaryWithObjectsAndKeys:
+		[NSNumber numberWithInteger:kCVPixelFormatType_32BGRA], kCVPixelBufferPixelFormatTypeKey,
+		[NSNumber numberWithInteger:(NSUInteger)rgbImgSize.width], kCVPixelBufferWidthKey,
+		[NSNumber numberWithInteger:(NSUInteger)rgbImgSize.height], kCVPixelBufferHeightKey,
+		[NSNumber numberWithInteger:rgbDataSize/(NSUInteger)rgbImgSize.height], kCVPixelBufferBytesPerRowAlignmentKey,
+		nil];
+	CVPixelBufferRef		cvPixRef = NULL;
+	cvErr = CVPixelBufferCreateWithBytes(NULL,
+		(size_t)rgbImgSize.width,
+		(size_t)rgbImgSize.height,
+		rgbPixelFormat,
+		rgbData,
+		rgbDataSize/(size_t)rgbImgSize.height,
+		CVPixelBuffer_FreeHapDecoderFrame,
+		self,
+		(CFDictionaryRef)pixelBufferAttribs,
+		&cvPixRef);
+	if (cvErr!=kCVReturnSuccess || cvPixRef==NULL)	{
+		NSLog(@"\t\terr %d at CVPixelBufferCreateWithBytes() in %s",cvErr,__func__);
+		NSLog(@"\t\tattribs were %@",pixelBufferAttribs);
+		NSLog(@"\t\tsize was %ld x %ld",(size_t)rgbImgSize.width,(size_t)rgbImgSize.height);
+		NSLog(@"\t\trgbPixelFormat passed to method is %u",(unsigned int)rgbPixelFormat);
+	}
+	else	{
+		//	retain self, to ensure that this HapDecoderFrame instance will persist at least until the CVPixelBufferRef frees it!
+		[self retain];
+		
+		//	make a CMFormatDescriptionRef that describes the RGB data
+		CMFormatDescriptionRef		desc = NULL;
+		//NSDictionary				*bufferExtensions = [NSDictionary dictionaryWithObjectsAndKeys:
+		//	[NSNumber numberWithUnsignedLong:rgbDataSize/(size_t)rgbImgSize.height], @"CVBytesPerRow",
+			//@"SMPTE_C", @"CVImageBufferColorPrimaries",
+			//[NSNumber numberWithDouble:2.199996948242188], kCMFormatDescriptionExtension_GammaLevel,
+			//kCVImageBufferTransferFunction_UseGamma, kCVImageBufferTransferFunctionKey,
+			//kCVImageBufferYCbCrMatrix_ITU_R_601_4, kCVImageBufferYCbCrMatrixKey,
+			//[NSNumber numberWithInt:2], kCMFormatDescriptionExtension_Version,
+		//	nil];
+		OSStatus					osErr = CMVideoFormatDescriptionCreateForImageBuffer(NULL,
+			cvPixRef,
+			&desc);
+		if (osErr!=noErr || desc==NULL)
+			NSLog(@"\t\terr %d at CMVideoFormatDescriptionCreate() in %s",(int)osErr,__func__);
+		else	{
+			//NSLog(@"\t\textensions of created fmt desc are %@",CMFormatDescriptionGetExtensions(desc));
+			//FourCCLog(@"\t\tmedia sub-type of fmt desc is",CMFormatDescriptionGetMediaSubType(desc));
+			//	get the timing info from the hap sample buffer
+			CMSampleTimingInfo		timing;
+			CMSampleBufferGetSampleTimingInfo(hapSampleBuffer, 0, &timing);
+			timing.duration = kCMTimeInvalid;
+			//timing.presentationTimeStamp = kCMTimeInvalid;
+			timing.decodeTimeStamp = kCMTimeInvalid;
+			//	make a CMSampleBufferRef from the CVPixelBufferRef
+			osErr = CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault,
+				cvPixRef,
+				desc,
+				&timing,
+				&returnMe);
+			if (osErr!=noErr || returnMe==NULL)
+				NSLog(@"\t\terr %d at CMSampleBufferCreateForImageBuffer() in %s",osErr,__func__);
+			else	{
+				//NSLog(@"\t\tsuccessfully allocated a CMSampleBuffer from the RGB data in me! %@/%s",self,__func__);
+			}
+			
+			
+			CFRelease(desc);
+			desc = NULL;
+		}
+		
+		
+		CVPixelBufferRelease(cvPixRef);
+		cvPixRef = NULL;
+	}
+	
+	return returnMe;
+}
+
+
+- (void) setUserInfo:(id)n	{
+	OSSpinLockLock(&atomicLock);
+	if (n!=userInfo)	{
+		if (userInfo!=nil)
+			[userInfo release];
+		userInfo = n;
+		if (userInfo!=nil)
+			[userInfo retain];
+	}
+	OSSpinLockUnlock(&atomicLock);
+}
+- (id) userInfo	{
+	id		returnMe = nil;
+	OSSpinLockLock(&atomicLock);
+	returnMe = userInfo;
+	OSSpinLockUnlock(&atomicLock);
+	return returnMe;
+}
+- (void) setDecoded:(BOOL)n	{
+	OSSpinLockLock(&atomicLock);
+	decoded = n;
+	OSSpinLockUnlock(&atomicLock);
+}
+- (BOOL) decoded	{
+	BOOL		returnMe = NO;
+	OSSpinLockLock(&atomicLock);
+	returnMe = decoded;
+	OSSpinLockUnlock(&atomicLock);
+	return returnMe;
+}
 
 
 @end

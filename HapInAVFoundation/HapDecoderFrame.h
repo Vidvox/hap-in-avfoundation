@@ -5,6 +5,12 @@
 
 
 
+//void CMBlockBuffer_FreeHapDecoderFrame(void *refCon, void *doomedMemoryBlock, size_t sizeInBytes);
+void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddress);
+
+
+
+
 /**
 This object represents a frame, and holds all the values necessary to decode a hap frame from AVFoundation as a CMSampleBufferRef to DXT data.  Instances of this class are not intended to be reusable: this is just a simple holder, the backend wants to release it as soon as possible.		*/
 @interface HapDecoderFrame : NSObject	{
@@ -19,13 +25,22 @@ This object represents a frame, and holds all the values necessary to decode a h
 	NSSize					dxtImgSize;	//	the size of the dxt image (the image size is this or smaller, dxt's have to be a multiple of 4)
 	enum HapTextureFormat	dxtTextureFormat;	//	this value is 0 until the frame has been decoded
 	
+	void					*rgbData;	//	NOT RETAINED.  when you decode the contents of 'hapSampleBuffer', if this is non-nil the DXT data will be decoded into this as an RGBA/BGRA image
+	size_t					rgbMinDataSize;
+	size_t					rgbDataSize;	//	the size in bytes of the memory available at rgbData
+	OSType					rgbPixelFormat;	//	set to 'kCVPixelFormatType_32BGRA' or 'kCVPixelFormatType_32RGBA'
+	NSSize					rgbImgSize;
+	
+	OSSpinLock				atomicLock;
 	id						userInfo;	//	RETAINED, arbitrary ptr used to keep a piece of user-specified data with the frame
+	
+	CMBlockBufferCustomBlockSource		*blockSrc;	//	CMBlockBufferRefs used to back CMSampleBufferRefs will use this to retain this HapDecoderFrame instance
 	
 	BOOL					decoded;	//	when decoding is complete, this is set to YES.
 }
 
 /**
-Calls "initEmptyWithHapSampleBuffer:", then allocates a CFDataRef and sets that as the empty frame's "dxtData".  If you don't specify a HapDecoderFrameAllocBlock in your AVPlayerItemHapDXTOutput, this is how the frames are created.
+Calls "initEmptyWithHapSampleBuffer:", then allocates a CFDataRef and sets that as the empty frame's "dxtData".
 @param sb A CMSampleBufferRef containing video data compressed using the hap codec.
 */
 - (id) initWithHapSampleBuffer:(CMSampleBufferRef)sb;
@@ -52,13 +67,21 @@ Returns an "empty" decoder frame- all the fields except "dxtData" and "dxtDataSi
 /// The size of the DXT frame, in pixels.  This may be larger tha the "imgSize".
 @property (readonly) NSSize dxtImgSize;
 /// The format of the GL texture, suitable for passing on to GL commands (
-@property (readonly) enum HapTextureFormat dxtTextureFormat;
+@property (assign,readwrite,setter=setDXTTextureFormat:) enum HapTextureFormat dxtTextureFormat;
+
+@property (assign,readwrite,setter=setRGBData:) void* rgbData;
+@property (readonly) size_t rgbMinDataSize;
+@property (assign,readwrite,setter=setRGBDataSize:) size_t rgbDataSize;
+@property (assign,readwrite,setter=setRGBPixelFormat:) OSType rgbPixelFormat;
+@property (assign,readwrite,setter=setRGBImgSize:) NSSize rgbImgSize;
+
+@property (readonly) CMTime presentationTime;
+
+- (CMSampleBufferRef) allocCMSampleBufferFromRGBData;
+
 /// A nondescript, retained, (id) that you can use to retain an arbitrary object with this frame (it will be freed when the frame is deallocated).  If you're using a HapDecoderFrameAllocBlock to allocate memory for frames created by an AVPlayerItemHapDXTOutput and you want to retain a resource with the decoded frame, this is a good way to do it.
 @property (retain,readwrite) id userInfo;
 //	Returns YES when the frame has been decoded
 @property (assign,readwrite) BOOL decoded;
-
-//	The AVPlayerItemHapDXTOutput calls this method, you don't have to and probably shouldn't.  It just decodes the hap frame in the sample buffer into the dxtData memory buffer.
-- (void) _decode;
 
 @end

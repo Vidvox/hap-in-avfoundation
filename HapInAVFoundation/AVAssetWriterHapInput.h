@@ -35,9 +35,10 @@ This class is the main interface for using AVFoundation to encode and output vid
 	CMBlockBufferPool	*dxtBufferPool;	//	used to generate buffers that will contain DXT texture data
 	CMBlockBufferPool	*hapBufferPool;	//	used to generate buffers that will contain hap frame data
 	
+	OSSpinLock			encoderLock;
 	void				*dxtEncoder;	//	actually a 'HapCodecDXTEncoderRef'
 	
-	OSSpinLock			encodeLock;	//	locks 'encoderProgressFrames' and 'encoderWaitingToRunOut'
+	OSSpinLock			encoderProgressLock;	//	locks 'encoderProgressFrames' and 'encoderWaitingToRunOut'
 	NSMutableArray		*encoderProgressFrames;	//	array of HapEncoderFrame instances.  the frames are made when you append a pixel buffer, and are flagged as encoded and appended (as an encoded sample buffer) in the GCD-driven block that did the encoding
 	BOOL				encoderWaitingToRunOut;	//	set to YES when the user marks this input as finished (the frames that are "in flight" via GCD need to finish up)
 	
@@ -52,11 +53,19 @@ Functionally similar to the same method in its superclass- initializes the retur
 - (id) initWithOutputSettings:(NSDictionary *)vidOutSettings;
 
 /**
-Begins encoding the passed pixel buffer and appends the encoded frame to this input.
+Begins encoding the passed pixel buffer asynchronously and appends the encoded frame to this input when complete.  This method is equivalent to calling appendPixelBuffer:withPresentationTime:asynchronously: with an asynch value of YES, and is generally appropriate for realtime encoding of video data.
 @param pb The passed pixel buffer must be either 8-bit BGRA or RGBA, and will be retained for as long as necessary
 @param t The time at which this pixel buffer should appear as a frame
 */
-- (void) appendPixelBuffer:(CVPixelBufferRef)pb withPresentationTime:(CMTime)t;
+- (BOOL) appendPixelBuffer:(CVPixelBufferRef)pb withPresentationTime:(CMTime)t;
+
+/**
+Begins encoding the passed pixel buffer and appends the encoded frame to this input when complete.
+@param pb The passed pixel buffer must be either 8-bit BGRA or RGBA, and will be retained for as long as necessary
+@param t The time at which this pixel buffer should appear as a frame
+@param a If YES, the pixel buffer will be encoded and appended asynchronously (the method will return immediately, and encoding will happen on another thread).  If NO, the pixel buffer will be encoded and appended before this method returns.
+*/
+- (BOOL) appendPixelBuffer:(CVPixelBufferRef)pb withPresentationTime:(CMTime)t asynchronously:(BOOL)a;
 
 /**
 It's not necessary to check this- but for best results, you should mark the AVAssetWriterHapInput as finished, wait until "finishedEncoding" returns a YES, and then tell your AVAssetWriter to finish writing.  If you don't wait for this method to return YES, the last X pixel buffers may get dropped (depends how long it takes to wrap up, could be no dropped frames, could be a couple).

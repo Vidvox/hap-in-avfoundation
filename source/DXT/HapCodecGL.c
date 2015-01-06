@@ -238,6 +238,14 @@ unsigned int HapCodecGLGetCompressedFormat(HapCodecGLRef coder)
 {
     return coder->format;
 }
+unsigned int HapCodecGLGetWidth(HapCodecGLRef coder)
+{
+	return coder->width;
+}
+unsigned int HapCodecGLGetHeight(HapCodecGLRef coder)
+{
+	return coder->height;
+}
 
 int HapCodecGLEncode(HapCodecGLRef coder, unsigned int source_bytes_per_row, HapCodecGLPixelFormat pixel_format, const void *source, void *destination)
 {
