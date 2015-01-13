@@ -38,6 +38,21 @@
 		1A32301C1A3BA14000DDB2E0 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A32301B1A3BA14000DDB2E0 /* main.m */; };
 		1A32301E1A3BA14000DDB2E0 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A32301D1A3BA14000DDB2E0 /* Images.xcassets */; };
 		1A3230211A3BA14000DDB2E0 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1A32301F1A3BA14000DDB2E0 /* MainMenu.xib */; };
+		1A3BAC031A65239D0065403A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC021A65239D0065403A /* AppDelegate.m */; };
+		1A3BAC051A65239D0065403A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC041A65239D0065403A /* main.m */; };
+		1A3BAC071A65239D0065403A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A3BAC061A65239D0065403A /* Images.xcassets */; };
+		1A3BAC0A1A65239D0065403A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1A3BAC081A65239D0065403A /* MainMenu.xib */; };
+		1A3BAC321A6524100065403A /* ActiveDeleteTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC1E1A6524100065403A /* ActiveDeleteTableView.m */; };
+		1A3BAC331A6524100065403A /* DestinationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC201A6524100065403A /* DestinationController.m */; };
+		1A3BAC341A6524100065403A /* ExportController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC221A6524100065403A /* ExportController.m */; };
+		1A3BAC351A6524100065403A /* FileHolder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC241A6524100065403A /* FileHolder.m */; };
+		1A3BAC361A6524100065403A /* FileListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC261A6524100065403A /* FileListController.m */; };
+		1A3BAC371A6524100065403A /* FileNameController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC281A6524100065403A /* FileNameController.m */; };
+		1A3BAC381A6524100065403A /* FileSettingsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2A1A6524100065403A /* FileSettingsController.m */; };
+		1A3BAC391A6524100065403A /* VVAVFExportBasicSettingsCtrlr.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2C1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.m */; };
+		1A3BAC3A1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2D1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.xib */; };
+		1A3BAC3B1A6524100065403A /* VVAVFTranscoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2F1A6524100065403A /* VVAVFTranscoder.m */; };
+		1A3BAC3C1A6524100065403A /* VVKQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC311A6524100065403A /* VVKQueue.m */; };
 		1A401D6C1A41FF79003B6E0A /* AVAssetWriterHapInput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A401D681A41FF79003B6E0A /* AVAssetWriterHapInput.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A401D6D1A41FF79003B6E0A /* AVAssetWriterHapInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */; };
 		1A4A76AF1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -51,6 +66,10 @@
 		1A6060751A38D929008E693F /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A6060741A38D929008E693F /* Carbon.framework */; };
 		1A628E781A422EAD003736AC /* CMBlockBufferPool.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A628E761A422EAD003736AC /* CMBlockBufferPool.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A628E791A422EAD003736AC /* CMBlockBufferPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A628E771A422EAD003736AC /* CMBlockBufferPool.m */; };
+		1A642D171A65245600E2152D /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E291A39F67E007678E5 /* CoreMedia.framework */; };
+		1A642D181A65245900E2152D /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E231A39CFFF007678E5 /* AVFoundation.framework */; };
+		1A642D1C1A652CE900E2152D /* HapInAVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */; };
+		1A642D1D1A652CF000E2152D /* HapInAVFoundation.framework in copy frameworks */ = {isa = PBXBuildFile; fileRef = 1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1A680E241A39CFFF007678E5 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E231A39CFFF007678E5 /* AVFoundation.framework */; };
 		1A680E2A1A39F67E007678E5 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E291A39F67E007678E5 /* CoreMedia.framework */; };
 		1A8904FD1A38D25400A6CE71 /* libsquish.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0535F11A38C9C4005B47BD /* libsquish.dylib */; };
@@ -91,6 +110,13 @@
 			remoteGlobalIDString = E25D562517E0E02B008DD459;
 			remoteInfo = squish;
 		};
+		1A642D1A1A652CE400E2152D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A97F5A21A38ABBF00E0DC74 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A97F5AA1A38ABBF00E0DC74;
+			remoteInfo = HapInAVFoundation;
+		};
 		1A8904FA1A38D25000A6CE71 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1A0535EC1A38C9C4005B47BD /* squish.xcodeproj */;
@@ -123,6 +149,17 @@
 			files = (
 				1A0518641A3E17F000FC80D2 /* HapInAVFoundation.framework in CopyFiles */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A642D191A652CD900E2152D /* copy frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				1A642D1D1A652CF000E2152D /* HapInAVFoundation.framework in copy frameworks */,
+			);
+			name = "copy frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		1A97F5DA1A38AD2900E0DC74 /* CopyFiles */ = {
@@ -174,6 +211,34 @@
 		1A32301B1A3BA14000DDB2E0 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		1A32301D1A3BA14000DDB2E0 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1A3230201A3BA14000DDB2E0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		1A3BABFD1A65239C0065403A /* AVF Batch Converter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AVF Batch Converter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A3BAC001A65239D0065403A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A3BAC011A65239D0065403A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		1A3BAC021A65239D0065403A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		1A3BAC041A65239D0065403A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		1A3BAC061A65239D0065403A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		1A3BAC091A65239D0065403A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		1A3BAC1D1A6524100065403A /* ActiveDeleteTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActiveDeleteTableView.h; sourceTree = "<group>"; };
+		1A3BAC1E1A6524100065403A /* ActiveDeleteTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ActiveDeleteTableView.m; sourceTree = "<group>"; };
+		1A3BAC1F1A6524100065403A /* DestinationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DestinationController.h; sourceTree = "<group>"; };
+		1A3BAC201A6524100065403A /* DestinationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DestinationController.m; sourceTree = "<group>"; };
+		1A3BAC211A6524100065403A /* ExportController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExportController.h; sourceTree = "<group>"; };
+		1A3BAC221A6524100065403A /* ExportController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExportController.m; sourceTree = "<group>"; };
+		1A3BAC231A6524100065403A /* FileHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileHolder.h; sourceTree = "<group>"; };
+		1A3BAC241A6524100065403A /* FileHolder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileHolder.m; sourceTree = "<group>"; };
+		1A3BAC251A6524100065403A /* FileListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileListController.h; sourceTree = "<group>"; };
+		1A3BAC261A6524100065403A /* FileListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileListController.m; sourceTree = "<group>"; };
+		1A3BAC271A6524100065403A /* FileNameController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileNameController.h; sourceTree = "<group>"; };
+		1A3BAC281A6524100065403A /* FileNameController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileNameController.m; sourceTree = "<group>"; };
+		1A3BAC291A6524100065403A /* FileSettingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSettingsController.h; sourceTree = "<group>"; };
+		1A3BAC2A1A6524100065403A /* FileSettingsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileSettingsController.m; sourceTree = "<group>"; };
+		1A3BAC2B1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VVAVFExportBasicSettingsCtrlr.h; sourceTree = "<group>"; };
+		1A3BAC2C1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VVAVFExportBasicSettingsCtrlr.m; sourceTree = "<group>"; };
+		1A3BAC2D1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = VVAVFExportBasicSettingsCtrlr.xib; sourceTree = "<group>"; };
+		1A3BAC2E1A6524100065403A /* VVAVFTranscoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VVAVFTranscoder.h; sourceTree = "<group>"; };
+		1A3BAC2F1A6524100065403A /* VVAVFTranscoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VVAVFTranscoder.m; sourceTree = "<group>"; };
+		1A3BAC301A6524100065403A /* VVKQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VVKQueue.h; sourceTree = "<group>"; };
+		1A3BAC311A6524100065403A /* VVKQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VVKQueue.m; sourceTree = "<group>"; };
 		1A401D681A41FF79003B6E0A /* AVAssetWriterHapInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetWriterHapInput.h; sourceTree = "<group>"; };
 		1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetWriterHapInput.m; sourceTree = "<group>"; };
 		1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetReaderHapTrackOutput.h; sourceTree = "<group>"; };
@@ -217,6 +282,16 @@
 			files = (
 				1A0518681A3E1DAB00FC80D2 /* CoreVideo.framework in Frameworks */,
 				1A0518621A3E17DC00FC80D2 /* HapInAVFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A3BABFA1A65239C0065403A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A642D1C1A652CE900E2152D /* HapInAVFoundation.framework in Frameworks */,
+				1A642D181A65245900E2152D /* AVFoundation.framework in Frameworks */,
+				1A642D171A65245600E2152D /* CoreMedia.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,6 +393,48 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		1A3BABFE1A65239D0065403A /* AVF Batch Converter */ = {
+			isa = PBXGroup;
+			children = (
+				1A3BAC011A65239D0065403A /* AppDelegate.h */,
+				1A3BAC021A65239D0065403A /* AppDelegate.m */,
+				1A3BAC061A65239D0065403A /* Images.xcassets */,
+				1A3BAC081A65239D0065403A /* MainMenu.xib */,
+				1A3BAC1F1A6524100065403A /* DestinationController.h */,
+				1A3BAC201A6524100065403A /* DestinationController.m */,
+				1A3BAC211A6524100065403A /* ExportController.h */,
+				1A3BAC221A6524100065403A /* ExportController.m */,
+				1A3BAC251A6524100065403A /* FileListController.h */,
+				1A3BAC261A6524100065403A /* FileListController.m */,
+				1A3BAC271A6524100065403A /* FileNameController.h */,
+				1A3BAC281A6524100065403A /* FileNameController.m */,
+				1A3BAC291A6524100065403A /* FileSettingsController.h */,
+				1A3BAC2A1A6524100065403A /* FileSettingsController.m */,
+				1A3BAC2B1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.h */,
+				1A3BAC2C1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.m */,
+				1A3BAC2D1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.xib */,
+				1A3BAC2E1A6524100065403A /* VVAVFTranscoder.h */,
+				1A3BAC2F1A6524100065403A /* VVAVFTranscoder.m */,
+				1A3BAC1D1A6524100065403A /* ActiveDeleteTableView.h */,
+				1A3BAC1E1A6524100065403A /* ActiveDeleteTableView.m */,
+				1A3BAC231A6524100065403A /* FileHolder.h */,
+				1A3BAC241A6524100065403A /* FileHolder.m */,
+				1A3BAC301A6524100065403A /* VVKQueue.h */,
+				1A3BAC311A6524100065403A /* VVKQueue.m */,
+				1A3BABFF1A65239D0065403A /* Supporting Files */,
+			);
+			path = "AVF Batch Converter";
+			sourceTree = "<group>";
+		};
+		1A3BABFF1A65239D0065403A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				1A3BAC001A65239D0065403A /* Info.plist */,
+				1A3BAC041A65239D0065403A /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		1A6060711A38D8F5008E693F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -362,6 +479,7 @@
 			children = (
 				1A97F5AD1A38ABBF00E0DC74 /* HapInAVFoundation framework */,
 				1A3230151A3BA14000DDB2E0 /* HapInAVF Test App */,
+				1A3BABFE1A65239D0065403A /* AVF Batch Converter */,
 				1A6060711A38D8F5008E693F /* Frameworks */,
 				1A97F5AC1A38ABBF00E0DC74 /* Products */,
 			);
@@ -372,6 +490,7 @@
 			children = (
 				1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */,
 				1A3230141A3BA14000DDB2E0 /* HapInAVF Test App.app */,
+				1A3BABFD1A65239C0065403A /* AVF Batch Converter.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -486,6 +605,25 @@
 			productReference = 1A3230141A3BA14000DDB2E0 /* HapInAVF Test App.app */;
 			productType = "com.apple.product-type.application";
 		};
+		1A3BABFC1A65239C0065403A /* AVF Batch Converter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A3BAC1B1A65239D0065403A /* Build configuration list for PBXNativeTarget "AVF Batch Converter" */;
+			buildPhases = (
+				1A3BABF91A65239C0065403A /* Sources */,
+				1A3BABFA1A65239C0065403A /* Frameworks */,
+				1A3BABFB1A65239C0065403A /* Resources */,
+				1A642D191A652CD900E2152D /* copy frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1A642D1B1A652CE400E2152D /* PBXTargetDependency */,
+			);
+			name = "AVF Batch Converter";
+			productName = "AVF Batch Converter";
+			productReference = 1A3BABFD1A65239C0065403A /* AVF Batch Converter.app */;
+			productType = "com.apple.product-type.application";
+		};
 		1A97F5AA1A38ABBF00E0DC74 /* HapInAVFoundation */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1A97F5C11A38ABBF00E0DC74 /* Build configuration list for PBXNativeTarget "HapInAVFoundation" */;
@@ -519,6 +657,9 @@
 					1A3230131A3BA14000DDB2E0 = {
 						CreatedOnToolsVersion = 6.1;
 					};
+					1A3BABFC1A65239C0065403A = {
+						CreatedOnToolsVersion = 6.1;
+					};
 					1A97F5AA1A38ABBF00E0DC74 = {
 						CreatedOnToolsVersion = 6.1;
 					};
@@ -549,6 +690,7 @@
 			targets = (
 				1A97F5AA1A38ABBF00E0DC74 /* HapInAVFoundation */,
 				1A3230131A3BA14000DDB2E0 /* HapInAVF Test App */,
+				1A3BABFC1A65239C0065403A /* AVF Batch Converter */,
 			);
 		};
 /* End PBXProject section */
@@ -582,6 +724,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A3BABFB1A65239C0065403A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A3BAC3A1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.xib in Resources */,
+				1A3BAC071A65239D0065403A /* Images.xcassets in Resources */,
+				1A3BAC0A1A65239D0065403A /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1A97F5A91A38ABBF00E0DC74 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -600,6 +752,25 @@
 				1A32301C1A3BA14000DDB2E0 /* main.m in Sources */,
 				1A32301A1A3BA14000DDB2E0 /* AppDelegate.m in Sources */,
 				1A05185E1A3E17CF00FC80D2 /* GLView.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A3BABF91A65239C0065403A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A3BAC331A6524100065403A /* DestinationController.m in Sources */,
+				1A3BAC3C1A6524100065403A /* VVKQueue.m in Sources */,
+				1A3BAC361A6524100065403A /* FileListController.m in Sources */,
+				1A3BAC051A65239D0065403A /* main.m in Sources */,
+				1A3BAC391A6524100065403A /* VVAVFExportBasicSettingsCtrlr.m in Sources */,
+				1A3BAC3B1A6524100065403A /* VVAVFTranscoder.m in Sources */,
+				1A3BAC031A65239D0065403A /* AppDelegate.m in Sources */,
+				1A3BAC381A6524100065403A /* FileSettingsController.m in Sources */,
+				1A3BAC371A6524100065403A /* FileNameController.m in Sources */,
+				1A3BAC341A6524100065403A /* ExportController.m in Sources */,
+				1A3BAC321A6524100065403A /* ActiveDeleteTableView.m in Sources */,
+				1A3BAC351A6524100065403A /* FileHolder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -639,6 +810,11 @@
 			target = 1A97F5AA1A38ABBF00E0DC74 /* HapInAVFoundation */;
 			targetProxy = 1A0518601A3E17D700FC80D2 /* PBXContainerItemProxy */;
 		};
+		1A642D1B1A652CE400E2152D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A97F5AA1A38ABBF00E0DC74 /* HapInAVFoundation */;
+			targetProxy = 1A642D1A1A652CE400E2152D /* PBXContainerItemProxy */;
+		};
 		1A8904FB1A38D25000A6CE71 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = squish;
@@ -656,6 +832,14 @@
 			isa = PBXVariantGroup;
 			children = (
 				1A3230201A3BA14000DDB2E0 /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		1A3BAC081A65239D0065403A /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1A3BAC091A65239D0065403A /* Base */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
@@ -724,6 +908,72 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "HapInAVF Test App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		1A3BAC171A65239D0065403A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = "AVF Batch Converter/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		1A3BAC181A65239D0065403A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = "AVF Batch Converter/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -833,6 +1083,15 @@
 			buildConfigurations = (
 				1A32302F1A3BA14000DDB2E0 /* Debug */,
 				1A3230301A3BA14000DDB2E0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A3BAC1B1A65239D0065403A /* Build configuration list for PBXNativeTarget "AVF Batch Converter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A3BAC171A65239D0065403A /* Debug */,
+				1A3BAC181A65239D0065403A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -1,0 +1,872 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6250" systemVersion="14B25" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6250"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="VVAVFExportBasicSettingsCtrlr">
+            <connections>
+                <outlet property="aacBitratePUB" destination="oai-89-kL5" id="Jah-Xy-DZE"/>
+                <outlet property="aacBitrateStrategyPUB" destination="bw0-M4-525" id="3Sd-h6-Sn5"/>
+                <outlet property="audioCategoryTabView" destination="9HF-Ov-l2s" id="0oN-cP-G2k"/>
+                <outlet property="audioCodecPUB" destination="Td7-1N-gMV" id="590-lN-zfQ"/>
+                <outlet property="audioCodecTabView" destination="4k5-At-Yeg" id="QXq-AE-tQf"/>
+                <outlet property="audioNoTranscodeMatrix" destination="O6a-GY-tHT" id="1Me-OQ-794"/>
+                <outlet property="audioResampleField" destination="bN6-rh-DCt" id="CWa-3t-ho1"/>
+                <outlet property="audioResamplePUB" destination="Ys6-Kb-gXX" id="E2W-c4-ngP"/>
+                <outlet property="audioResampleTabView" destination="LpI-MJ-IFG" id="LIH-OO-Cny"/>
+                <outlet property="h264BitrateField" destination="cWq-F6-gJh" id="KWf-GW-38D"/>
+                <outlet property="h264BitrateMatrix" destination="81T-U7-kyp" id="t8x-ar-1kz"/>
+                <outlet property="h264KeyframesField" destination="RiO-Ax-ca2" id="17t-Ws-7gR"/>
+                <outlet property="h264KeyframesMatrix" destination="Tcu-ar-0Rh" id="UxZ-uR-KG4"/>
+                <outlet property="h264MultiPassButton" destination="fdh-q5-B42" id="EM3-8Q-Yl2"/>
+                <outlet property="h264ProfilesPUB" destination="FzX-Ew-zf5" id="TRC-zj-Epi"/>
+                <outlet property="losslessBitDepthPUB" destination="aOl-cR-yft" id="L7u-hn-PMh"/>
+                <outlet property="pcmBitsPUB" destination="Jbu-y0-psL" id="rbM-ew-AAW"/>
+                <outlet property="pcmFloatingPointButton" destination="Krx-5c-Z39" id="aRp-hb-XKM"/>
+                <outlet property="pcmLittleEndianButton" destination="BMt-fQ-F2Z" id="S2C-UJ-DNd"/>
+                <outlet property="pjpegQualitySlider" destination="4f4-Xx-Lx1" id="ZhY-2c-krn"/>
+                <outlet property="settingsView" destination="c22-O7-iKe" id="i2W-Gl-2FG"/>
+                <outlet property="vidCategoryTabView" destination="EyF-XM-v93" id="5kQ-Oe-P7P"/>
+                <outlet property="vidCodecPUB" destination="qSO-Nl-W8W" id="87q-6p-k2Q"/>
+                <outlet property="vidCodecTabView" destination="K3O-dq-0RP" id="kHy-04-Qba"/>
+                <outlet property="vidDimsTabView" destination="dv7-Hc-9wP" id="sVN-RZ-GLb"/>
+                <outlet property="vidHeightField" destination="XeP-Hw-xCN" id="6Fl-EP-VGK"/>
+                <outlet property="vidNoTranscodeMatrix" destination="Zxx-V1-pWT" id="pER-y7-lFu"/>
+                <outlet property="vidWidthField" destination="CUo-QZ-8Re" id="jXJ-UY-2xv"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <customView id="c22-O7-iKe">
+            <rect key="frame" x="0.0" y="4" width="597" height="430"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <box horizontalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="dXX-Q4-ihM">
+                    <rect key="frame" x="296" y="20" width="5" height="390"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    <font key="titleFont" metaFont="system"/>
+                </box>
+                <tabView drawsBackground="NO" type="noTabsNoBorder" id="9HF-Ov-l2s">
+                    <rect key="frame" x="307" y="129" width="290" height="301"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <font key="font" metaFont="system"/>
+                    <tabViewItems>
+                        <tabViewItem label="NoTranscodeTab" identifier="1" id="miE-h7-p5b">
+                            <view key="view" id="ORt-Ms-baC">
+                                <rect key="frame" x="0.0" y="0.0" width="290" height="301"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" id="SC4-bc-5vV">
+                                        <rect key="frame" x="1" y="232" width="284" height="17"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="No audio will be transcoded." id="LZw-Va-2cC">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <button verticalHuggingPriority="750" id="u0o-BE-1o4">
+                                        <rect key="frame" x="109" y="39" width="182" height="32"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="push" title="Transcode my audio..." bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ZDV-du-ch2">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="transcodeAudioClicked:" target="-2" id="6ox-tf-sOm"/>
+                                        </connections>
+                                    </button>
+                                    <matrix verticalHuggingPriority="750" allowsEmptySelection="NO" autorecalculatesCellSize="YES" id="O6a-GY-tHT">
+                                        <rect key="frame" x="41" y="137" width="204" height="38"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        <size key="cellSize" width="195" height="18"/>
+                                        <size key="intercellSpacing" width="4" height="2"/>
+                                        <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="Qcl-fD-zNd">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <cells>
+                                            <column>
+                                                <buttonCell type="radio" title="Strip audio tracks from files" imagePosition="left" alignment="left" state="on" tag="1" inset="2" id="bdq-ik-45B">
+                                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                    <font key="font" metaFont="system"/>
+                                                </buttonCell>
+                                                <buttonCell type="radio" title="Copy audio tracks from files" imagePosition="left" alignment="left" inset="2" id="6La-Sg-t4v">
+                                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                    <font key="font" metaFont="system"/>
+                                                </buttonCell>
+                                            </column>
+                                        </cells>
+                                    </matrix>
+                                </subviews>
+                            </view>
+                        </tabViewItem>
+                        <tabViewItem label="TranscodeTab" identifier="2" id="Pyk-UE-2gr">
+                            <view key="view" id="HEP-Vz-zpv">
+                                <rect key="frame" x="0.0" y="0.0" width="290" height="301"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <button verticalHuggingPriority="750" id="PUq-tk-uva">
+                                        <rect key="frame" x="102" y="219" width="194" height="32"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="push" title="Don't Recompress Audio" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="hNG-5D-bVO">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="noTranscodeAudioClicked:" target="-2" id="ak6-oi-82X"/>
+                                        </connections>
+                                    </button>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Oir-Kp-IUj">
+                                        <rect key="frame" x="-2" y="284" width="240" height="17"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Audio will be recompressed as:" id="dG7-m2-oOi">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <popUpButton verticalHuggingPriority="750" id="Td7-1N-gMV">
+                                        <rect key="frame" x="18" y="252" width="154" height="26"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="sXm-Dp-eKc" id="TAc-3i-2tD">
+                                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="menu"/>
+                                            <menu key="menu" title="OtherViews" id="ghb-0f-KmR">
+                                                <items>
+                                                    <menuItem title="Item 1" state="on" id="sXm-Dp-eKc"/>
+                                                    <menuItem title="Item 2" id="YCm-OO-Uzy"/>
+                                                    <menuItem title="Item 3" id="TXX-IF-yof"/>
+                                                </items>
+                                            </menu>
+                                        </popUpButtonCell>
+                                        <connections>
+                                            <action selector="audioCodecPUBUsed:" target="-2" id="iV3-Oe-9TJ"/>
+                                        </connections>
+                                    </popUpButton>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="rwG-Az-QOr">
+                                        <rect key="frame" x="18" y="201" width="106" height="17"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Settings:" id="R7y-hz-jud">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <tabView drawsBackground="NO" type="noTabsNoBorder" id="4k5-At-Yeg">
+                                        <rect key="frame" x="20" y="93" width="270" height="100"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                        <tabViewItems>
+                                            <tabViewItem label="NoOpts" identifier="" id="dEV-9N-IHf">
+                                                <view key="view" id="4Do-dG-Al9">
+                                                    <rect key="frame" x="0.0" y="0.0" width="270" height="100"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Lem-Zu-NQS">
+                                                            <rect key="frame" x="-2" y="63" width="274" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="(No settings)" id="gUQ-ZL-nUN">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="PCM" identifier="1" id="ycI-TV-HBX">
+                                                <view key="view" id="Lip-wh-f2M">
+                                                    <rect key="frame" x="0.0" y="0.0" width="270" height="100"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <popUpButton verticalHuggingPriority="750" id="Jbu-y0-psL">
+                                                            <rect key="frame" x="142" y="58" width="63" height="26"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <popUpButtonCell key="cell" type="push" title="f" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" autoenablesItems="NO" selectedItem="CHr-FA-8pg" id="pzC-MY-bvw">
+                                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="menu"/>
+                                                                <menu key="menu" autoenablesItems="NO" id="aiG-il-SKj">
+                                                                    <items>
+                                                                        <menuItem title="a" id="cFP-1t-Jv2"/>
+                                                                        <menuItem title="s" id="ZfB-hF-vgW"/>
+                                                                        <menuItem title="d" id="MPZ-CZ-c0p"/>
+                                                                        <menuItem title="f" state="on" id="CHr-FA-8pg"/>
+                                                                    </items>
+                                                                </menu>
+                                                            </popUpButtonCell>
+                                                            <connections>
+                                                                <action selector="pcmBitsPUBUsed:" target="-2" id="hQy-Ng-mfT"/>
+                                                            </connections>
+                                                        </popUpButton>
+                                                        <button id="BMt-fQ-F2Z">
+                                                            <rect key="frame" x="54" y="36" width="99" height="18"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <buttonCell key="cell" type="check" title="Little Endian" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="fBO-hs-lpm">
+                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                        </button>
+                                                        <button id="Krx-5c-Z39">
+                                                            <rect key="frame" x="54" y="16" width="108" height="18"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <buttonCell key="cell" type="check" title="Floating Point" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rWH-hD-b7M">
+                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                        </button>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="wfC-7f-jB1">
+                                                            <rect key="frame" x="18" y="64" width="120" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Sample Size (bits)" id="f4C-kA-gQ7">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="AAC" identifier="2" id="mOD-q8-LZ4">
+                                                <view key="view" id="SGt-Qf-fVJ">
+                                                    <rect key="frame" x="0.0" y="0.0" width="270" height="100"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <popUpButton verticalHuggingPriority="750" id="oai-89-kL5">
+                                                            <rect key="frame" x="112" y="24" width="88" height="26"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" autoenablesItems="NO" id="Wo2-Wh-BAT">
+                                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="menu"/>
+                                                                <menu key="menu" autoenablesItems="NO" id="0ME-uA-yJQ">
+                                                                    <items>
+                                                                        <menuItem title="a" id="XEn-eh-xbR"/>
+                                                                        <menuItem title="s" id="hK6-Ml-NVx"/>
+                                                                        <menuItem title="d" id="UKc-lF-P0S"/>
+                                                                        <menuItem title="f" id="k2a-r7-ONH"/>
+                                                                    </items>
+                                                                </menu>
+                                                            </popUpButtonCell>
+                                                        </popUpButton>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="SfZ-Cv-AS2">
+                                                            <rect key="frame" x="-2" y="29" width="102" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Target bitrate:" id="z2g-G2-pqZ">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="nm9-Qe-d3b">
+                                                            <rect key="frame" x="-2" y="83" width="105" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Bitrate Strategy:" id="dFg-pL-h0W">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <popUpButton verticalHuggingPriority="750" id="bw0-M4-525">
+                                                            <rect key="frame" x="39" y="51" width="188" height="26"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <popUpButtonCell key="cell" type="push" title="f" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" autoenablesItems="NO" selectedItem="KAz-6K-U6a" id="zGe-hV-IkL">
+                                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="menu"/>
+                                                                <menu key="menu" autoenablesItems="NO" id="PMF-UT-hFT">
+                                                                    <items>
+                                                                        <menuItem title="a" id="V17-Ym-6hf"/>
+                                                                        <menuItem title="s" id="8cN-rE-zol"/>
+                                                                        <menuItem title="d" id="sW4-OU-ggA"/>
+                                                                        <menuItem title="f" state="on" id="KAz-6K-U6a"/>
+                                                                    </items>
+                                                                </menu>
+                                                            </popUpButtonCell>
+                                                            <connections>
+                                                                <action selector="aacBitrateStrategyPUBUsed:" target="-2" id="Kzn-3n-gep"/>
+                                                            </connections>
+                                                        </popUpButton>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="uVa-8R-4rV">
+                                                            <rect key="frame" x="206" y="29" width="46" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="kbps" id="eu2-ZG-rI6">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="Lossless" identifier="" id="Bsx-k4-7nh">
+                                                <view key="view" id="stf-fX-cZd">
+                                                    <rect key="frame" x="0.0" y="0.0" width="270" height="100"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="gI2-NE-BqL">
+                                                            <rect key="frame" x="18" y="61" width="110" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Bit depth hint:" id="byJ-4b-3aY">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <popUpButton verticalHuggingPriority="750" id="aOl-cR-yft">
+                                                            <rect key="frame" x="132" y="55" width="88" height="26"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <popUpButtonCell key="cell" type="push" title="f" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" autoenablesItems="NO" selectedItem="Bhs-pu-jmi" id="4y1-WU-7Xn">
+                                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="menu"/>
+                                                                <menu key="menu" autoenablesItems="NO" id="w6G-ed-0zT">
+                                                                    <items>
+                                                                        <menuItem title="a" id="HXL-Tl-bg1"/>
+                                                                        <menuItem title="s" id="mb9-eZ-bO5"/>
+                                                                        <menuItem title="d" id="xYh-Mx-NcG"/>
+                                                                        <menuItem title="f" state="on" id="Bhs-pu-jmi"/>
+                                                                    </items>
+                                                                </menu>
+                                                            </popUpButtonCell>
+                                                        </popUpButton>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                        </tabViewItems>
+                                    </tabView>
+                                    <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="xHw-G7-HTr">
+                                        <rect key="frame" x="20" y="82" width="250" height="5"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        <font key="titleFont" metaFont="system"/>
+                                    </box>
+                                    <tabView drawsBackground="NO" type="noTabsNoBorder" id="LpI-MJ-IFG">
+                                        <rect key="frame" x="0.0" y="0.0" width="290" height="76"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                        <tabViewItems>
+                                            <tabViewItem label="NoResampleTab" identifier="1" id="IdK-WC-e1E">
+                                                <view key="view" id="MeP-ms-lnU">
+                                                    <rect key="frame" x="0.0" y="0.0" width="290" height="76"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="eAI-KH-IM7">
+                                                            <rect key="frame" x="0.0" y="59" width="196" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="The Audio won't be resampled." id="5zI-Pd-93V">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <button verticalHuggingPriority="750" id="ir5-uj-Lp9">
+                                                            <rect key="frame" x="132" y="-7" width="164" height="32"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <buttonCell key="cell" type="push" title="Resample the Audio" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="SCm-Th-LWY">
+                                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                            <connections>
+                                                                <action selector="resampleAudioClicked:" target="-2" id="LS2-jS-5TS"/>
+                                                            </connections>
+                                                        </button>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="ResampleTab" identifier="2" id="Xju-2X-uoC">
+                                                <view key="view" id="vLd-3k-5kM">
+                                                    <rect key="frame" x="0.0" y="0.0" width="290" height="76"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="eUY-r5-SNH">
+                                                            <rect key="frame" x="0.0" y="59" width="171" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Audio will be resampled at:" id="9tR-gU-cQx">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <button verticalHuggingPriority="750" id="swz-4Y-8Jf">
+                                                            <rect key="frame" x="118" y="-7" width="178" height="32"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <buttonCell key="cell" type="push" title="Don't Resample Audio" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5tV-wj-FFN">
+                                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                            <connections>
+                                                                <action selector="noResampleAudioClicked:" target="-2" id="btd-P0-gYp"/>
+                                                            </connections>
+                                                        </button>
+                                                        <popUpButton verticalHuggingPriority="750" id="Ys6-Kb-gXX">
+                                                            <rect key="frame" x="54" y="26" width="28" height="26"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" autoenablesItems="NO" altersStateOfSelectedItem="NO" id="HbJ-wB-jwN">
+                                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="menu"/>
+                                                                <menu key="menu" autoenablesItems="NO" id="5Wg-WX-lxW">
+                                                                    <items>
+                                                                        <menuItem title="a" id="usS-ed-ON4"/>
+                                                                        <menuItem title="s" id="y9b-76-ShJ"/>
+                                                                        <menuItem title="d" id="bYc-Dq-Qg9"/>
+                                                                        <menuItem title="f" id="DFD-Gw-iV3"/>
+                                                                    </items>
+                                                                </menu>
+                                                            </popUpButtonCell>
+                                                            <connections>
+                                                                <action selector="audioResamplePUBUsed:" target="-2" id="w0m-7w-t68"/>
+                                                            </connections>
+                                                        </popUpButton>
+                                                        <textField verticalHuggingPriority="750" id="bN6-rh-DCt">
+                                                            <rect key="frame" x="87" y="29" width="120" height="22"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="6cn-UP-uiB">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <action selector="resampleAudioTextFieldUsed:" target="-2" id="twi-MU-RMn"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Mvp-Kc-ef9">
+                                                            <rect key="frame" x="213" y="31" width="59" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="khz" id="YgL-Wk-4IJ">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                        </tabViewItems>
+                                    </tabView>
+                                </subviews>
+                            </view>
+                        </tabViewItem>
+                    </tabViewItems>
+                </tabView>
+                <tabView drawsBackground="NO" type="noTabsNoBorder" id="EyF-XM-v93">
+                    <rect key="frame" x="0.0" y="0.0" width="290" height="430"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <font key="font" metaFont="system"/>
+                    <tabViewItems>
+                        <tabViewItem label="NoTranscodeTab" identifier="1" id="zcK-A6-pqA">
+                            <view key="view" id="9mq-bJ-y1s">
+                                <rect key="frame" x="0.0" y="0.0" width="290" height="430"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" id="IEl-UR-6LO">
+                                        <rect key="frame" x="3" y="364" width="284" height="17"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="No video will be transcoded." id="5j2-dK-gqM">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <button verticalHuggingPriority="750" id="rvB-NB-a7c">
+                                        <rect key="frame" x="109" y="168" width="182" height="32"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="push" title="Transcode my video..." bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="HrQ-Ev-5dv">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="transcodeVideoClicked:" target="-2" id="Ykz-qF-Upn"/>
+                                        </connections>
+                                    </button>
+                                    <matrix verticalHuggingPriority="750" allowsEmptySelection="NO" autorecalculatesCellSize="YES" id="Zxx-V1-pWT">
+                                        <rect key="frame" x="43" y="266" width="204" height="38"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        <size key="cellSize" width="204" height="18"/>
+                                        <size key="intercellSpacing" width="4" height="2"/>
+                                        <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="9pm-Hj-rNn">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <cells>
+                                            <column>
+                                                <buttonCell type="radio" title="Strip video tracks from files" imagePosition="left" alignment="left" state="on" tag="1" inset="2" id="5p0-ED-m5P">
+                                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                    <font key="font" metaFont="system"/>
+                                                </buttonCell>
+                                                <buttonCell type="radio" title="Copy video tracks from files" imagePosition="left" alignment="left" inset="2" id="qBA-ZE-O8M">
+                                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                    <font key="font" metaFont="system"/>
+                                                </buttonCell>
+                                            </column>
+                                        </cells>
+                                    </matrix>
+                                </subviews>
+                            </view>
+                        </tabViewItem>
+                        <tabViewItem label="TranscodeTab" identifier="2" id="yQr-i6-Qgz">
+                            <view key="view" id="4Ck-jv-LZw">
+                                <rect key="frame" x="0.0" y="0.0" width="290" height="430"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <tabView drawsBackground="NO" type="noTabsNoBorder" id="K3O-dq-0RP">
+                                        <rect key="frame" x="46" y="98" width="244" height="212"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                        <tabViewItems>
+                                            <tabViewItem label="No Opts" identifier="1" id="IaP-Fq-CiY">
+                                                <view key="view" id="aKi-Hs-g8O">
+                                                    <rect key="frame" x="0.0" y="0.0" width="244" height="212"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField verticalHuggingPriority="750" id="ExS-em-d8O">
+                                                            <rect key="frame" x="17" y="195" width="210" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="(No settings)" id="DVS-V2-zIc">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="JPG" identifier="2" id="vKC-zH-gdI">
+                                                <view key="view" id="Xfm-Pr-I2J">
+                                                    <rect key="frame" x="0.0" y="0.0" width="244" height="212"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField verticalHuggingPriority="750" id="E8T-2b-9XG">
+                                                            <rect key="frame" x="0.0" y="195" width="49" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Quality" id="Ak1-xf-Fgl">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <slider verticalHuggingPriority="750" id="4f4-Xx-Lx1">
+                                                            <rect key="frame" x="18" y="163" width="208" height="26"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <sliderCell key="cell" continuous="YES" state="on" alignment="left" maxValue="1" doubleValue="0.76000000000000001" tickMarkPosition="below" numberOfTickMarks="5" sliderType="linear" id="qaK-By-lZ1"/>
+                                                        </slider>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="H264" identifier="" id="r3A-0o-rcs">
+                                                <view key="view" id="M3J-Lx-tCa">
+                                                    <rect key="frame" x="0.0" y="0.0" width="244" height="212"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField verticalHuggingPriority="750" id="fn9-bC-S2J">
+                                                            <rect key="frame" x="0.0" y="195" width="48" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Profile:" id="qrI-3i-e3Q">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <popUpButton verticalHuggingPriority="750" id="FzX-Ew-zf5">
+                                                            <rect key="frame" x="18" y="163" width="209" height="26"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="5gr-mf-6AB">
+                                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="menu"/>
+                                                                <menu key="menu" title="OtherViews" id="eWG-2w-R5a">
+                                                                    <items>
+                                                                        <menuItem title="Item 1" id="QOG-Jh-kyB"/>
+                                                                        <menuItem title="Item 2" id="w4c-5b-eYC"/>
+                                                                        <menuItem title="Item 3" id="JRR-uT-bNY"/>
+                                                                    </items>
+                                                                </menu>
+                                                            </popUpButtonCell>
+                                                        </popUpButton>
+                                                        <matrix verticalHuggingPriority="750" allowsEmptySelection="NO" autorecalculatesCellSize="YES" id="Tcu-ar-0Rh">
+                                                            <rect key="frame" x="20" y="95" width="94" height="38"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            <size key="cellSize" width="92" height="18"/>
+                                                            <size key="intercellSpacing" width="4" height="2"/>
+                                                            <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="fib-s8-UWY">
+                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                            <cells>
+                                                                <column>
+                                                                    <buttonCell type="radio" title="Automatic" imagePosition="left" alignment="left" state="on" tag="1" inset="2" id="gwh-6W-nXy">
+                                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                        <font key="font" metaFont="system"/>
+                                                                    </buttonCell>
+                                                                    <buttonCell type="radio" title="Once every" imagePosition="left" alignment="left" inset="2" id="XfW-Qt-qH1">
+                                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                        <font key="font" metaFont="system"/>
+                                                                    </buttonCell>
+                                                                </column>
+                                                            </cells>
+                                                            <connections>
+                                                                <action selector="h264KeyframesMatrixUsed:" target="-2" id="xbf-Un-gZ3"/>
+                                                            </connections>
+                                                        </matrix>
+                                                        <textField verticalHuggingPriority="750" id="RiO-Ax-ca2">
+                                                            <rect key="frame" x="120" y="93" width="58" height="22"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="zzD-6J-eCl">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <action selector="h264KeyframesFieldUsed:" target="-2" id="5Bb-7A-rbn"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ISf-qc-bIt">
+                                                            <rect key="frame" x="0.0" y="141" width="81" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Key Frames:" id="mr5-zF-P7q">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ay0-Jj-Edn">
+                                                            <rect key="frame" x="184" y="96" width="46" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="frames" id="4Uw-aV-MHI">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <matrix verticalHuggingPriority="750" allowsEmptySelection="NO" autorecalculatesCellSize="YES" id="81T-U7-kyp">
+                                                            <rect key="frame" x="20" y="24" width="94" height="38"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            <size key="cellSize" width="85" height="18"/>
+                                                            <size key="intercellSpacing" width="4" height="2"/>
+                                                            <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="lAU-de-tbF">
+                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                            <cells>
+                                                                <column>
+                                                                    <buttonCell type="radio" title="Automatic" imagePosition="left" alignment="left" state="on" tag="1" inset="2" id="sH3-U2-nNB">
+                                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                        <font key="font" metaFont="system"/>
+                                                                    </buttonCell>
+                                                                    <buttonCell type="radio" title="Limit to" imagePosition="left" alignment="left" inset="2" id="8xb-Tx-BAe">
+                                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                        <font key="font" metaFont="system"/>
+                                                                    </buttonCell>
+                                                                </column>
+                                                            </cells>
+                                                            <connections>
+                                                                <action selector="h264BitrateMatrixUsed:" target="-2" id="yZs-kp-srM"/>
+                                                            </connections>
+                                                        </matrix>
+                                                        <textField verticalHuggingPriority="750" id="cWq-F6-gJh">
+                                                            <rect key="frame" x="120" y="22" width="77" height="22"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="bgN-8q-F18">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <action selector="h264BitrateFieldUsed:" target="-2" id="Yr7-4P-gRM"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="cUK-SI-PrA">
+                                                            <rect key="frame" x="0.0" y="70" width="70" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Data Rate:" id="e3P-FK-cLh">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="qCa-6r-Drw">
+                                                            <rect key="frame" x="203" y="25" width="35" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="kbps" id="Xky-do-Hqu">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <button id="fdh-q5-B42">
+                                                            <rect key="frame" x="0.0" y="0.0" width="157" height="18"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <buttonCell key="cell" type="check" title="Multi-Pass Encoding?" bezelStyle="regularSquare" imagePosition="left" inset="2" id="hiK-0v-cOH">
+                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                        </button>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                        </tabViewItems>
+                                    </tabView>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="D2G-x3-b7T">
+                                        <rect key="frame" x="0.0" y="413" width="292" height="17"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Video will be recompressed using this codec:" id="aAa-gu-Zed">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <popUpButton verticalHuggingPriority="750" id="qSO-Nl-W8W">
+                                        <rect key="frame" x="44" y="381" width="206" height="26"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="447-vx-Eab" id="xHK-dF-V1Z">
+                                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="menu"/>
+                                            <menu key="menu" title="OtherViews" id="zbA-w9-dQh">
+                                                <items>
+                                                    <menuItem title="Item 1" state="on" id="447-vx-Eab"/>
+                                                    <menuItem title="Item 2" id="ypC-gC-eLl"/>
+                                                    <menuItem title="Item 3" id="5n5-rH-DP9"/>
+                                                </items>
+                                            </menu>
+                                        </popUpButtonCell>
+                                        <connections>
+                                            <action selector="vidCodecPUBUsed:" target="-2" id="Pfd-2I-Xy9"/>
+                                        </connections>
+                                    </popUpButton>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="RhU-jX-V2O">
+                                        <rect key="frame" x="18" y="318" width="205" height="17"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Codec Settings:" id="Btd-2Z-65F">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <button verticalHuggingPriority="750" id="yIp-TL-kaT">
+                                        <rect key="frame" x="103" y="348" width="193" height="32"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="push" title="Don't Recompress Video" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="VeL-th-LWB">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="noTranscodeVideoClicked:" target="-2" id="Qyr-2b-igc"/>
+                                        </connections>
+                                    </button>
+                                    <tabView drawsBackground="NO" type="noTabsNoBorder" id="dv7-Hc-9wP">
+                                        <rect key="frame" x="0.0" y="0.0" width="290" height="81"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                        <tabViewItems>
+                                            <tabViewItem label="NoResizeVideoTab" identifier="1" id="mTm-EY-bsf">
+                                                <view key="view" id="NOi-CV-nev">
+                                                    <rect key="frame" x="0.0" y="0.0" width="290" height="81"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="yUZ-ha-g36">
+                                                            <rect key="frame" x="0.0" y="66" width="174" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="The video won't be resized." id="KQz-5Z-Gnu">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <button verticalHuggingPriority="750" id="v5s-YH-kad">
+                                                            <rect key="frame" x="150" y="-6" width="143" height="32"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <buttonCell key="cell" type="push" title="Resize the Video" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="RBg-BH-qKx">
+                                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                            <connections>
+                                                                <action selector="resizeVideoClicked:" target="-2" id="rjC-3L-LeR"/>
+                                                            </connections>
+                                                        </button>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="ResizeVideoTab" identifier="2" id="zg1-iS-mKQ">
+                                                <view key="view" id="LNC-pd-50n">
+                                                    <rect key="frame" x="0.0" y="0.0" width="290" height="81"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField verticalHuggingPriority="750" id="CUo-QZ-8Re">
+                                                            <rect key="frame" x="29.5" y="34" width="96" height="22"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="2xv-p8-wIi">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <action selector="resizeVideoTextFieldUsed:" target="-2" id="ZVa-mo-GcR"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="4xm-Av-qYX">
+                                                            <rect key="frame" x="0.0" y="65" width="150" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Video will be resized to:" id="CMd-Hm-xcJ">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="d94-74-aph">
+                                                            <rect key="frame" x="141" y="36" width="28" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="x" id="x5D-lo-WAg">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" id="XeP-Hw-xCN">
+                                                            <rect key="frame" x="170" y="34" width="96" height="22"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="3ff-XW-8i6">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <action selector="resizeVideoTextFieldUsed:" target="-2" id="8t5-Pw-4ez"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <button verticalHuggingPriority="750" id="1iL-w3-h1G">
+                                                            <rect key="frame" x="116" y="-6" width="180" height="32"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <buttonCell key="cell" type="push" title="Don't Resize the Video" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="kIE-M2-VzW">
+                                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                            <connections>
+                                                                <action selector="noResizeVideoClicked:" target="-2" id="wqV-DB-suh"/>
+                                                            </connections>
+                                                        </button>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                        </tabViewItems>
+                                    </tabView>
+                                    <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="FDU-H1-BVy">
+                                        <rect key="frame" x="19" y="87" width="250" height="5"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        <font key="titleFont" metaFont="system"/>
+                                    </box>
+                                </subviews>
+                            </view>
+                        </tabViewItem>
+                    </tabViewItems>
+                </tabView>
+            </subviews>
+            <point key="canvasLocation" x="-46.5" y="-249"/>
+        </customView>
+    </objects>
+</document>
