@@ -322,10 +322,14 @@
 						if (transcodeThisTrack)
 							newOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:trackPtr outputSettings:audioReadNormalizedOutputSettings];
 					}
+					else if ([trackMediaType isEqualToString:AVMediaTypeText] || [trackMediaType isEqualToString:AVMediaTypeClosedCaption] || [trackMediaType isEqualToString:AVMediaTypeSubtitle] || [trackMediaType isEqualToString:AVMediaTypeTimecode] || [trackMediaType isEqualToString:AVMediaTypeMetadata] || [trackMediaType isEqualToString:AVMediaTypeMuxed])	{
+						transcodeThisTrack = NO;
+					}
 					//	else it's an unknown track type- i need to skip the transcode
 					else	{
-						NSLog(@"\t\terr: track %@ isn't used by this software, skipping transcode regardless in %s",trackPtr,__func__);
+						NSLog(@"\t\terr: track %@ isn't used by this software, skipping transcode and stripping in %s",trackPtr,__func__);
 						transcodeThisTrack = NO;
+						newOutput = nsnull;
 					}
 				}
 				
