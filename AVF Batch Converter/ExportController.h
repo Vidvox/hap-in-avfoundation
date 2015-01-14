@@ -27,6 +27,9 @@
 	
 	VVAVFTranscoder			*transcoder;
 	BOOL					exporting;
+	
+	BOOL					appIsActive;
+	BOOL					waitingToCloseProgressWindow;
 }
 
 - (IBAction) exportButtonClicked:(id)sender;
@@ -36,5 +39,8 @@
 
 - (IBAction) pauseToggleUsed:(id)sender;
 - (IBAction) cancelClicked:(id)sender;
+
+@property (assign,readwrite) BOOL appIsActive;
+@property (assign,readwrite) BOOL waitingToCloseProgressWindow;
 
 @end

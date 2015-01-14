@@ -26,8 +26,30 @@
 		transcoder = [[VVAVFTranscoder alloc] init];
 		[transcoder setDelegate:self];
 		exporting = NO;
+		appIsActive = YES;
+		waitingToCloseProgressWindow = NO;
+		[[NSNotificationCenter defaultCenter]
+			addObserver:self
+			selector:@selector(applicationWillBecomeActive:)
+			name:NSApplicationWillBecomeActiveNotification
+			object:nil];
+		[[NSNotificationCenter defaultCenter]
+			addObserver:self
+			selector:@selector(applicationWillResignActive:)
+			name:NSApplicationWillResignActiveNotification
+			object:nil];
 	}
 	return self;
+}
+- (void) applicationWillBecomeActive:(NSNotification *)note	{
+	[self setAppIsActive:YES];
+	if ([self waitingToCloseProgressWindow])	{
+		[mainWindow endSheet:progressWindow returnCode:NSModalResponseContinue];
+		[self setWaitingToCloseProgressWindow:NO];
+	}
+}
+- (void) applicationWillResignActive:(NSNotification *)note	{
+	[self setAppIsActive:NO];
 }
 /*------------------------------------*/
 - (void) startExporting	{
@@ -51,7 +73,10 @@
 }
 - (void) stopExporting	{
 	[self setExporting:NO];
-	[mainWindow endSheet:progressWindow returnCode:NSModalResponseContinue];
+	if ([self appIsActive])
+		[mainWindow endSheet:progressWindow returnCode:NSModalResponseContinue];
+	else
+		[self setWaitingToCloseProgressWindow:YES];
 	//	update the list of filenames...
 	[fileListController updateDstFileNames];
 	//	update the table view
@@ -126,9 +151,12 @@
 	//NSLog(@"%s",__func__);
 	NSArray		*fileArray = [fileListController fileArray];
 	for (FileHolder *filePtr in fileArray)	{
+		//	if this is the file i just finished transcoding
 		if ([filePtr srcFileExists] && [[finished srcPath] isEqualToString:[filePtr fullSrcPath]] && ![filePtr conversionDone])	{
+			//	flag it as being done converting
 			[filePtr setConversionDone:YES];
-			[filePtr setConvertedFilePath:[destinationController fullDstPathForFile:filePtr]];
+			[filePtr setConvertedFilePath:[finished dstPath]];
+			//	start transcoding the next file!
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[self transcodeNextFile];
 			});
@@ -136,6 +164,10 @@
 		}
 	}
 }
+
+
+@synthesize appIsActive;
+@synthesize waitingToCloseProgressWindow;
 
 
 @end
