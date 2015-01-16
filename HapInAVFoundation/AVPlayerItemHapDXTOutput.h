@@ -28,9 +28,9 @@ This class is the main interface for decoding hap video from AVFoundation.  You 
 	
 	BOOL						outputAsRGB;	//	NO by default.  if YES, outputs frames as RGB data
 	OSType						destRGBPixelFormat;	//	if 'outputAsRGB' is YES, this is the pixel format that will be output.  kCVPixelFormatType_32BGRA or kCVPixelFormatType_32RGBA.
-	MemObjectPool				*dxtPool;	//	used to pool blocks of memory into which DXT data will be decoded (if not provied by the user)
-	MemObjectPool				*convPool;	//	used to pool blocks of memory used as a disposable resource during the process of converting HapQ's YCoCg data to RGB data (on the CPU)
-	MemObjectPool				*rgbPool;	//	used to pool blocks of memory into which RGB pixel data will be decoded (if not provided by the user)
+	NSUInteger					dxtPoolLength;
+	NSUInteger					convPoolLength;
+	NSUInteger					rgbPoolLength;
 	void						*glDecoder;	//	actually a 'HapCodecGLRef'.  used to convert DXT to RGBA
 	
 	HapDecoderFrameAllocBlock		allocFrameBlock;	//	retained, nil by default.  this block is optional, but it must be threadsafe- it will be called (on a thread spawned by GCD) to create HapDecoderFrame instances.  if you want to provide your own memory into which the hap frames will be decoded into DXT, this is a good place to do it.
@@ -83,9 +83,6 @@ NO by default.  If you set this to YES, the output will provide RGB pixel data i
 If outputAsRGB is YES, this is the RGB pixel format that the data should be decoded into.  Accepted values are kCVPixelFormatType_32RGBA and kCVPixelFormatType_32BGRA (default is kCVPixelFormatType_32RGBA)
 */
 @property (assign,readwrite) OSType destRGBPixelFormat;
-
-@property (readonly) MemObjectPool *dxtPool;
-@property (readonly) MemObjectPool *rgbPool;
 
 
 @end

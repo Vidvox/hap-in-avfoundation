@@ -54,6 +54,13 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			_AVFinHapCVInit = YES;
 		}
 	}
+	//	make sure the CMMemoryPool used by this framework exists
+	OSSpinLockLock(&_HIAVFMemPoolLock);
+	if (_HIAVFMemPool==NULL)
+		_HIAVFMemPool = CMMemoryPoolCreate(NULL);
+	if (_HIAVFMemPoolAllocator==NULL)
+		_HIAVFMemPoolAllocator = CMMemoryPoolGetAllocator(_HIAVFMemPool);
+	OSSpinLockUnlock(&_HIAVFMemPoolLock);
 }
 - (id) initWithOutputSettings:(NSDictionary *)n	{
 	self = [super initWithMediaType:AVMediaTypeVideo outputSettings:nil];
@@ -64,9 +71,9 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		exportTextureType = HapTextureFormat_RGB_DXT1;
 		exportImgSize = NSMakeSize(1,1);
 		exportDXTImgSize = NSMakeSize(4,4);
-		formatConvertPool = NULL;
-		dxtBufferPool = NULL;
-		hapBufferPool = NULL;
+		formatConvertPoolLength = 0;
+		dxtBufferPoolLength = 0;
+		hapBufferPoolLength = 0;
 		encoderLock = OS_SPINLOCK_INIT;
 		dxtEncoder = NULL;
 		encoderProgressLock = OS_SPINLOCK_INIT;
@@ -123,13 +130,10 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		//	figure out the max dxt frame size in bytes, make the dxt buffer pool
 		NSUInteger		dxtFrameSizeInBytes = dxtBytesForDimensions(exportDXTImgSize.width, exportDXTImgSize.height, exportCodecType);
 		//NSLog(@"\t\tdxtFrameSizeInBytes is %d",dxtFrameSizeInBytes);
-		dxtBufferPool = [[CMBlockBufferPool alloc] init];
-		[dxtBufferPool setBufferLength:dxtFrameSizeInBytes];
+		dxtBufferPoolLength = dxtFrameSizeInBytes;
 		//	figure out the max hap frame size in bytes, make the hap buffer pool
-		NSUInteger		hapFrameSizeInBytes = HapMaxEncodedLength(dxtFrameSizeInBytes);
-		//NSLog(@"\t\thapFrameSizeInBytes is %d",hapFrameSizeInBytes);
-		hapBufferPool = [[CMBlockBufferPool alloc] init];
-		[hapBufferPool setBufferLength:hapFrameSizeInBytes];
+		hapBufferPoolLength = HapMaxEncodedLength(dxtFrameSizeInBytes);
+		//NSLog(@"\t\thapBufferPoolLength is %d",hapBufferPoolLength);
 		
 		//	make the dxt encoder
 		switch (exportCodecType)	{
@@ -139,7 +143,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			if (highQualityExport)
 				dxtEncoder = HapCodecSquishEncoderCreate(HapCodecSquishEncoderMediumQuality, exportPixelFormat);
 			else
-				dxtEncoder = HapCodecGLEncoderCreate(exportDXTImgSize.width, exportDXTImgSize.height, exportPixelFormat);
+				dxtEncoder = HapCodecGLEncoderCreate((unsigned int)exportImgSize.width, (unsigned int)exportImgSize.height, exportPixelFormat);
 			break;
 		}
 		case kHapYCoCgCodecSubType:
@@ -158,8 +162,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		encoderInputPxlFmt = ((HapCodecDXTEncoderRef)dxtEncoder)->pixelformat_function(dxtEncoder, exportPixelFormat);
 		//FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmt);
 		encoderInputPxlFmtBytesPerRow = roundUpToMultipleOf16(((uint32_t)exportImgSize.width * 4));
-		formatConvertPool = [[CMBlockBufferPool alloc] init];
-		[formatConvertPool setBufferLength:encoderInputPxlFmtBytesPerRow*(NSUInteger)(exportImgSize.height)];
+		formatConvertPoolLength = encoderInputPxlFmtBytesPerRow*(NSUInteger)(exportImgSize.height);
 		
 		//encodeQueue = dispatch_queue_create("HapEncode", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, DISPATCH_QUEUE_PRIORITY_HIGH, -1));
 		encodeQueue = dispatch_queue_create("HapEncode", DISPATCH_QUEUE_CONCURRENT);
@@ -181,18 +184,6 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		dxtEncoder = NULL;
 	}
 	OSSpinLockUnlock(&encoderLock);
-	if (formatConvertPool!=nil)	{
-		[formatConvertPool release];
-		formatConvertPool = nil;
-	}
-	if (dxtBufferPool!=nil)	{
-		[dxtBufferPool release];
-		dxtBufferPool = nil;
-	}
-	if (hapBufferPool!=nil)	{
-		[hapBufferPool release];
-		hapBufferPool = nil;
-	}
 	OSSpinLockLock(&encoderProgressLock);
 	if (encoderProgressFrames!=nil)	{
 		[encoderProgressFrames release];
@@ -255,13 +246,11 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			CVPixelBufferLockBaseAddress(pb,kHapCodecCVPixelBufferLockFlags);
 			void			*sourceBuffer = CVPixelBufferGetBaseAddress(pb);
 			void			*formatConvertBuffer = nil;
-			size_t			formatConvertLength = 0;
 			
 			//	if the passed buffer's pixel format doesn't match 'encoderInputPxlFmt', convert the pixels
 			if (sourceFormat!=encoderInputPxlFmt)	{
 				//FourCCLog(@"\t\tsource doesn't match encoder input, which is",encoderInputPxlFmt);
-				formatConvertBuffer = [formatConvertPool allocMemory];
-				formatConvertLength = [formatConvertPool bufferLength];
+				formatConvertBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, formatConvertPoolLength, 0);
 				switch (encoderInputPxlFmt)	{
 				case kHapCVPixelFormat_CoCgXY:
 					if (sourceFormat==k32BGRAPixelFormat)	{
@@ -311,8 +300,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			
 			//	encode the DXT frame...
 			
-			void			*dxtBuffer = [dxtBufferPool allocMemory];
-			size_t			dxtBufferLength = [dxtBufferPool bufferLength];
+			void			*dxtBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtBufferPoolLength, 0);
 			int				intErr = 0;
 			//	slightly different path depending on whether i'm converting the passed pixel buffer...
 			OSSpinLockLock(&encoderLock);
@@ -334,7 +322,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 				else	{
 					intErr = ((HapCodecDXTEncoderRef)dxtEncoder)->encode_function(dxtEncoder,
 						formatConvertBuffer,
-						(unsigned int)(formatConvertLength/(NSUInteger)exportImgSize.height),
+						(unsigned int)(formatConvertPoolLength/(NSUInteger)exportImgSize.height),
 						encoderInputPxlFmt,
 						dxtBuffer,
 						(unsigned int)exportImgSize.width,
@@ -350,85 +338,95 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			}
 			else	{
 				//	make a buffer to encode into (needs enough memory for a max-size hap frame), then do the dxt->hap encode into this buffer
-				CMBlockBufferRef		maxSizeHapBlockBuffer = [hapBufferPool allocBlockBuffer];
-				void					*hapBuffer = nil;
-				size_t					hapBufferLength = 0;
-				unsigned long			bytesWrittenToHapBuffer = 0;
 				OSStatus				osErr = noErr;
-				osErr = CMBlockBufferGetDataPointer(maxSizeHapBlockBuffer, 0, NULL, &hapBufferLength, (char **)&hapBuffer);
+				CMBlockBufferRef		maxSizeHapBlockBuffer = NULL;
+				osErr = CMBlockBufferCreateWithMemoryBlock(NULL, NULL, hapBufferPoolLength, _HIAVFMemPoolAllocator, NULL, 0, hapBufferPoolLength, kCMBlockBufferAssureMemoryNowFlag, &maxSizeHapBlockBuffer);
 				if (osErr!=noErr)
-					NSLog(@"\t\terr %d at CMBlockBufferGetDataPointer() in %s, not appending buffer",(int)osErr,__func__);
+					NSLog(@"\t\terr %d at CMBlockBufferCreateWithMemoryBlock() in %s, not appending buffer",(int)osErr,__func__);
 				else	{
-					enum HapResult		hapErr = HapResult_No_Error;
-					hapErr = HapEncode(dxtBuffer,
-						dxtBufferLength,
-						exportTextureType,
-						HapCompressorSnappy,
-						hapBuffer,
-						hapBufferLength,
-						&bytesWrittenToHapBuffer);
-					if (hapErr!=HapResult_No_Error)
-						NSLog(@"\t\terr %d at HapEncode() in %s, not appending buffer",hapErr,__func__);
+					void					*hapBuffer = nil;
+					size_t					hapBufferLength = 0;
+					unsigned long			bytesWrittenToHapBuffer = 0;
+					osErr = CMBlockBufferGetDataPointer(maxSizeHapBlockBuffer, 0, NULL, &hapBufferLength, (char **)&hapBuffer);
+					if (osErr!=noErr)
+						NSLog(@"\t\terr %d at CMBlockBufferGetDataPointer() in %s, not appending buffer",(int)osErr,__func__);
 					else	{
-						//	make a new block buffer that refers to a subset of the previous block- only the subset that was populated with data.  this is necessary- if the sample buffer's length doesn't match the block buffer's length, the frame can't be added.
-						CMBlockBufferRef			hapBlockBuffer = NULL;
-						osErr = CMBlockBufferCreateWithBufferReference(NULL,
-							maxSizeHapBlockBuffer,
-							0,
-							bytesWrittenToHapBuffer,
-							0,
-							&hapBlockBuffer);
-						if (osErr!=noErr || hapBlockBuffer==NULL)
-							NSLog(@"\t\terr %d creating block buffer from reference in %s, not appending buffer",(int)osErr,__func__);
+						enum HapResult		hapErr = HapResult_No_Error;
+						hapErr = HapEncode(dxtBuffer,
+							dxtBufferPoolLength,
+							exportTextureType,
+							HapCompressorSnappy,
+							hapBuffer,
+							hapBufferLength,
+							&bytesWrittenToHapBuffer);
+						if (hapErr!=HapResult_No_Error)
+							NSLog(@"\t\terr %d at HapEncode() in %s, not appending buffer",hapErr,__func__);
 						else	{
-							//	make a CMFormatDescriptionRef that will describe the frame i'm supplying
-							CMFormatDescriptionRef		desc = NULL;
-							NSDictionary				*bufferExtensions = [NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithDouble:2.199996948242188], kCMFormatDescriptionExtension_GammaLevel,
-								[NSNumber numberWithInt:((exportCodecType==kHapAlphaCodecSubType)?32:24)],kCMFormatDescriptionExtension_Depth,
-								@"Hap",kCMFormatDescriptionExtension_FormatName,
-								[NSNumber numberWithInt:2], kCMFormatDescriptionExtension_RevisionLevel,
-								[NSNumber numberWithInt:512], kCMFormatDescriptionExtension_SpatialQuality,
-								[NSNumber numberWithInt:0], kCMFormatDescriptionExtension_TemporalQuality,
-								@"VDVX", kCMFormatDescriptionExtension_Vendor,
-								[NSNumber numberWithInt:2], kCMFormatDescriptionExtension_Version,
-								nil];
-							osErr = CMVideoFormatDescriptionCreate(NULL,
-								exportCodecType,
-								(uint32_t)exportImgSize.width,
-								(uint32_t)exportImgSize.height,
-								(CFDictionaryRef)bufferExtensions,
-								&desc);
-							if (osErr!=noErr)
-								NSLog(@"\t\terr %d at CMVideoFormatDescriptionCreate() in %s, not appending buffer",(int)osErr,__func__);
+							//	make a new block buffer that refers to a subset of the previous block- only the subset that was populated with data.  this is necessary- if the sample buffer's length doesn't match the block buffer's length, the frame can't be added.
+							CMBlockBufferRef			hapBlockBuffer = NULL;
+							osErr = CMBlockBufferCreateWithBufferReference(NULL,
+								maxSizeHapBlockBuffer,
+								0,
+								bytesWrittenToHapBuffer,
+								0,
+								&hapBlockBuffer);
+							if (osErr!=noErr || hapBlockBuffer==NULL)
+								NSLog(@"\t\terr %d creating block buffer from reference in %s, not appending buffer",(int)osErr,__func__);
 							else	{
-								//	finish populating the 'encoderFrame' i created when i dispatched this block (which also updates its encoded var)
-								[encoderFrame
-									addEncodedBlockBuffer:hapBlockBuffer
-									withLength:bytesWrittenToHapBuffer
-									formatDescription:desc];
-								//	release the format description i allocated
-								CFRelease(desc);
-								desc = NULL;
+								//	make a CMFormatDescriptionRef that will describe the frame i'm supplying
+								CMFormatDescriptionRef		desc = NULL;
+								NSDictionary				*bufferExtensions = [NSDictionary dictionaryWithObjectsAndKeys:
+									[NSNumber numberWithDouble:2.199996948242188], kCMFormatDescriptionExtension_GammaLevel,
+									[NSNumber numberWithInt:((exportCodecType==kHapAlphaCodecSubType)?32:24)],kCMFormatDescriptionExtension_Depth,
+									@"Hap",kCMFormatDescriptionExtension_FormatName,
+									[NSNumber numberWithInt:2], kCMFormatDescriptionExtension_RevisionLevel,
+									[NSNumber numberWithInt:512], kCMFormatDescriptionExtension_SpatialQuality,
+									[NSNumber numberWithInt:0], kCMFormatDescriptionExtension_TemporalQuality,
+									@"VDVX", kCMFormatDescriptionExtension_Vendor,
+									[NSNumber numberWithInt:2], kCMFormatDescriptionExtension_Version,
+									nil];
+								osErr = CMVideoFormatDescriptionCreate(NULL,
+									exportCodecType,
+									(uint32_t)exportImgSize.width,
+									(uint32_t)exportImgSize.height,
+									(CFDictionaryRef)bufferExtensions,
+									&desc);
+								if (osErr!=noErr)
+									NSLog(@"\t\terr %d at CMVideoFormatDescriptionCreate() in %s, not appending buffer",(int)osErr,__func__);
+								else	{
+									//	finish populating the 'encoderFrame' i created when i dispatched this block (which also updates its encoded var)
+									[encoderFrame
+										addEncodedBlockBuffer:hapBlockBuffer
+										withLength:bytesWrittenToHapBuffer
+										formatDescription:desc];
+									//	release the format description i allocated
+									CFRelease(desc);
+									desc = NULL;
+								}
+								//	release the block buffer i allocated
+								CFRelease(hapBlockBuffer);
+								hapBlockBuffer = NULL;
 							}
-							//	release the block buffer i allocated
-							CFRelease(hapBlockBuffer);
-							hapBlockBuffer = NULL;
 						}
 					}
-				}
-				//	release the block buffer i allocated
-				if (maxSizeHapBlockBuffer!=NULL)	{
-					CFRelease(maxSizeHapBlockBuffer);
-					maxSizeHapBlockBuffer = NULL;
+					
+					//	release the block buffer i allocated
+					if (maxSizeHapBlockBuffer!=NULL)	{
+						CFRelease(maxSizeHapBlockBuffer);
+						maxSizeHapBlockBuffer = NULL;
+					}
 				}
 			}
 			
 			//	release the dxt and format conversion buffers, if they exist
-			if (dxtBuffer!=nil)
-				[dxtBufferPool returnToPoolMemory:dxtBuffer sized:dxtBufferLength];
-			if (formatConvertBuffer!=nil)
-				[formatConvertPool returnToPoolMemory:formatConvertBuffer sized:formatConvertLength];
+			if (dxtBuffer!=nil)	{
+				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, dxtBuffer);
+				dxtBuffer = nil;
+			}
+			if (formatConvertBuffer!=nil)	{
+				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, formatConvertBuffer);
+				formatConvertBuffer = nil;
+			}
 			
 			//	release the pixel buffer i retained before i dispatched this block!
 			CVPixelBufferRelease(pb);

@@ -31,9 +31,9 @@ This class is the main interface for using AVFoundation to encode and output vid
 	OSType			encoderInputPxlFmt;	//	the encoder wants pixels of a particular format.  this is the format they want.
 	uint32_t		encoderInputPxlFmtBytesPerRow;	//	the number of bytes per row in the buffers created to convert to 'encoderInputPxlFmt'
 	
-	CMBlockBufferPool	*formatConvertPool;	//	if the wanted pixel format for the DXT encoder doesn't match the supplied pixel format of the passed CVPixelBufferRef, this creates buffers used to do the conversion
-	CMBlockBufferPool	*dxtBufferPool;	//	used to generate buffers that will contain DXT texture data
-	CMBlockBufferPool	*hapBufferPool;	//	used to generate buffers that will contain hap frame data
+	size_t			formatConvertPoolLength;	//	the size of the buffers that i need to create if i need to convert pixel formats
+	size_t			dxtBufferPoolLength;	//	the size of the buffers that i need to create to hold dxt frames
+	size_t			hapBufferPoolLength;	//	the size of the buffers i need to create to hold hap frames
 	
 	OSSpinLock			encoderLock;
 	void				*dxtEncoder;	//	actually a 'HapCodecDXTEncoderRef'

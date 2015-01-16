@@ -329,7 +329,7 @@
 					else	{
 						NSLog(@"\t\terr: track %@ isn't used by this software, skipping transcode and stripping in %s",trackPtr,__func__);
 						transcodeThisTrack = NO;
-						newOutput = nsnull;
+						newOutput = (AVAssetReaderOutput *)nsnull;
 					}
 				}
 				
@@ -508,7 +508,8 @@
 						//pthread_mutex_unlock(&theLock);
 						//if (localPaused)
 						//	return;
-						while ([input isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting)	{
+						NSUInteger				runCount = 0;	//	if we don't limit the # of frames we write, this loop will actually write every frame, which prevents cancel or pause from working
+						while ([input isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting && runCount<5)	{
 							CMSampleBufferRef		newRef = [output copyNextSampleBuffer];
 							if (newRef!=NULL)	{
 								//NSLog(@"\t\tcopied buffer at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault,CMSampleBufferGetPresentationTimeStamp(newRef)) autorelease]);
@@ -543,6 +544,7 @@
 								}
 								break;
 							}
+							++runCount;
 						}
 					}];
 				}
@@ -586,7 +588,8 @@
 								//pthread_mutex_unlock(&theLock);
 								//if (localPaused)
 								//	return;
-								while ([input isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting)	{
+								NSUInteger				runCount = 0;	//	if we don't limit the # of frames we write, this loop will actually write every frame, which prevents cancel or pause from working
+								while ([input isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting && runCount<5)	{
 									CMSampleBufferRef		newRef = [output copyNextSampleBuffer];
 									if (newRef!=NULL)	{
 										//NSLog(@"\t\tcopied buffer at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault,CMSampleBufferGetPresentationTimeStamp(newRef)) autorelease]);
@@ -609,6 +612,7 @@
 											[input markCurrentPassAsFinished];
 										break;
 									}
+									++runCount;
 								}
 							}];
 						}

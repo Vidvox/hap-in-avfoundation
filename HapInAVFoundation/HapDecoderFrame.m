@@ -4,7 +4,7 @@
 #import "HapPlatform.h"
 #import "Utility.h"
 #import "hap.h"
-
+#import "CMBlockBufferPool.h"
 
 
 
@@ -27,11 +27,20 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 @implementation HapDecoderFrame
 
 
++ (void) initialize	{
+	//	make sure the CMMemoryPool used by this framework exists
+	OSSpinLockLock(&_HIAVFMemPoolLock);
+	if (_HIAVFMemPool==NULL)
+		_HIAVFMemPool = CMMemoryPoolCreate(NULL);
+	if (_HIAVFMemPoolAllocator==NULL)
+		_HIAVFMemPoolAllocator = CMMemoryPoolGetAllocator(_HIAVFMemPool);
+	OSSpinLockUnlock(&_HIAVFMemPoolLock);
+}
 - (id) initWithHapSampleBuffer:(CMSampleBufferRef)sb	{
 	self = [self initEmptyWithHapSampleBuffer:sb];
-	dxtData = malloc(dxtMinDataSize);
+	dxtData = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtMinDataSize, 0);
 	dxtDataSize = dxtMinDataSize;
-	userInfo = (id)CFDataCreateWithBytesNoCopy(NULL, dxtData, dxtMinDataSize, NULL);
+	userInfo = (id)CFDataCreateWithBytesNoCopy(NULL, dxtData, dxtMinDataSize, _HIAVFMemPoolAllocator);
 	return self;
 }
 - (id) initEmptyWithHapSampleBuffer:(CMSampleBufferRef)sb	{
@@ -53,7 +62,6 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		rgbImgSize = NSMakeSize(0,0);
 		atomicLock = OS_SPINLOCK_INIT;
 		userInfo = nil;
-		blockSrc = NULL;
 		decoded = NO;
 		
 		hapSampleBuffer = sb;
@@ -109,10 +117,6 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	if (userInfo != nil)	{
 		[userInfo release];
 		userInfo = nil;
-	}
-	if (blockSrc!=nil)	{
-		free(blockSrc);
-		blockSrc = NULL;
 	}
 	[super dealloc];
 }
