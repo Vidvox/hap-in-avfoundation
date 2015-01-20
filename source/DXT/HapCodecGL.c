@@ -51,6 +51,8 @@ struct HapCodecGL {
     GLuint          width;
     GLuint          height;
     GLenum          format;
+    GLuint			imgWidth;
+    GLuint			imgHeight;
 };
 
 static bool openGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension)
@@ -157,6 +159,8 @@ static HapCodecGLRef HapCodecGLCreate(unsigned int mode, unsigned int width, uns
         GLint maxTexSize = 0;
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
         
+        coder->imgWidth = width;
+        coder->imgHeight = height;
         coder->texWidth = roundUpToMultipleOf4(width);
         coder->texHeight = roundUpToMultipleOf4(height);
         
@@ -278,7 +282,7 @@ int HapCodecGLEncode(HapCodecGLRef coder, unsigned int source_bytes_per_row, Hap
         
     for (int y = 0; y < coder->height; y += coder->texHeight) {
         
-        GLuint remaining_height = coder->height - y;
+        GLuint remaining_height = coder->imgHeight - y;
         GLuint tile_height = MIN(remaining_height, coder->texHeight);
         
         for (int x = 0; x < coder->width; x += coder->texWidth) {
