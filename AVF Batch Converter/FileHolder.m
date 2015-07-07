@@ -19,6 +19,7 @@
 		parentDirectoryPath = nil;
 		srcFileName = nil;
 		dstFileName = nil;
+		statusString = nil;
 		errorString = nil;
 		conversionDone = NO;
 		convertedFilePath = nil;
@@ -64,6 +65,10 @@
 		[dstFileName release];
 		dstFileName = nil;
 	}
+	if (statusString != nil)	{
+		[statusString release];
+		statusString = nil;
+	}
 	if (errorString != nil)	{
 		[errorString release];
 		errorString = nil;
@@ -81,10 +86,14 @@
 @synthesize parentDirectoryPath;
 @synthesize srcFileName;
 @synthesize dstFileName;
+@synthesize statusString;
 @synthesize errorString;
 @synthesize conversionDone;
 @synthesize convertedFilePath;
 @synthesize srcFileExists;
+- (NSString *) description	{
+	return [NSString stringWithFormat:@"<FileHolder %@, %d>",[srcFileName lastPathComponent],conversionDone];
+}
 
 
 @end

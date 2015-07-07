@@ -11,6 +11,7 @@
 	NSString		*parentDirectoryPath;
 	NSString		*srcFileName;
 	NSString		*dstFileName;
+	NSString		*statusString;
 	NSString		*errorString;
 	BOOL			conversionDone;
 	NSString		*convertedFilePath;
@@ -24,6 +25,7 @@
 @property (readonly) NSString *parentDirectoryPath;
 @property (readonly) NSString *srcFileName;
 @property (retain,readwrite) NSString *dstFileName;
+@property (retain,readwrite) NSString *statusString;
 @property (retain,readwrite) NSString *errorString;
 @property (assign,readwrite) BOOL conversionDone;
 @property (retain,readwrite) NSString *convertedFilePath;

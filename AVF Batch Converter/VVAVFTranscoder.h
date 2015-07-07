@@ -33,6 +33,7 @@
 	
 	NSString				*srcPath;
 	NSString				*dstPath;
+	NSString				*errorString;
 }
 
 - (void) transcodeFileAtPath:(NSString *)src toPath:(NSString *)dst;
@@ -48,6 +49,7 @@
 @property (assign,readwrite) id<VVAVFTranscoderDelegate> delegate;
 @property (readonly) NSString *srcPath;
 @property (readonly) NSString *dstPath;
+@property (readonly) NSString *errorString;
 
 @end
 

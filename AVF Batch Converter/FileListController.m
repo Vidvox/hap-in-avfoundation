@@ -119,15 +119,15 @@
 		}
 		
 		if (![filePtr srcFileExists])	{
-			[filePtr setErrorString:@"Src Missing"];
+			[filePtr setStatusString:@"Src Missing"];
 		}
 		else if ([fileManager fileExistsAtPath:fullDstPath])	{
-			[filePtr setErrorString:@"Already Exists"];
+			[filePtr setStatusString:@"Already Exists"];
 		}
 		else	{
-			[filePtr setErrorString:@"Ready"];
-			[filePtr setConversionDone:NO];
-			[filePtr setConvertedFilePath:nil];
+			[filePtr setStatusString:@"Ready"];
+			//[filePtr setConversionDone:NO];
+			//[filePtr setConvertedFilePath:nil];
 		}
 	}
 }
@@ -192,8 +192,14 @@
 	NSEnumerator		*fileIt = [fileArray objectEnumerator];
 	FileHolder			*filePtr;
 	while (filePtr = [fileIt nextObject])	{
-		if (![[filePtr errorString] isEqualToString:@"Ready"])
+		if (![[filePtr statusString] isEqualToString:@"Ready"])	{
+			NSLog(@"\t\terr: status of file %@ preventing export in %s",filePtr,__func__);
 			return NO;
+		}
+		else if ([filePtr errorString]!=nil)	{
+			NSLog(@"\t\terr: error of file %@ preventing export in %s",filePtr,__func__);
+			return NO;
+		}
 	}
 	return YES;
 }
@@ -232,7 +238,13 @@
 			return [filePtr dstFileName];
 		}
 		else if (tc == statusCol)	{
-			return [filePtr errorString];
+			NSString		*errorString = [filePtr errorString];
+			if (errorString!=nil)	{
+				//return errorString;
+				return @"Error!";
+			}
+			else
+				return [filePtr statusString];
 		}
 	}
 	/*
@@ -471,12 +483,14 @@
 			}
 			//	if i'm not done converting the file, return the standard text field cell
 			else	{
-				if ([[filePtr errorString] isEqualToString:@"Ready"])
-					[statusColTxtFieldCell setTextColor:[NSColor greenColor]];
-				else if ([[filePtr errorString] isEqualToString:@"Src Missing"])
+				if ([filePtr errorString]!=nil)
 					[statusColTxtFieldCell setTextColor:[NSColor redColor]];
-				else
-					[statusColTxtFieldCell setTextColor:[NSColor redColor]];
+				else	{
+					if ([[filePtr statusString] isEqualToString:@"Ready"])
+						[statusColTxtFieldCell setTextColor:[NSColor greenColor]];
+					else
+						[statusColTxtFieldCell setTextColor:[NSColor redColor]];
+				}
 				return statusColTxtFieldCell;
 			}
 		}

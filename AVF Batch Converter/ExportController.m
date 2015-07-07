@@ -100,7 +100,7 @@
 	NSArray				*fileArray = [fileListController fileArray];
 	for (FileHolder *filePtr in fileArray)	{
 		//	if this file needs to be converted
-		if (![filePtr conversionDone] && [filePtr srcFileExists])	{
+		if (![filePtr conversionDone] && [filePtr errorString]==nil && [filePtr srcFileExists])	{
 			foundAFile = YES;
 			dispatch_async(dispatch_get_main_queue(), ^{
 				//	update the progress text fields and progress indicators
@@ -153,8 +153,17 @@
 	for (FileHolder *filePtr in fileArray)	{
 		//	if this is the file i just finished transcoding
 		if ([filePtr srcFileExists] && [[finished srcPath] isEqualToString:[filePtr fullSrcPath]] && ![filePtr conversionDone])	{
-			//	flag it as being done converting
-			[filePtr setConversionDone:YES];
+			NSString		*errorString = [finished errorString];
+			[filePtr setErrorString:errorString];
+			if (errorString!=nil)	{
+				[filePtr setStatusString:@"Error"];
+			}
+			else	{
+				[filePtr setStatusString:@"Ready"];
+				//	flag it as being done converting
+				[filePtr setConversionDone:YES];
+			}
+			//	if there isn't a finished path, there was an error transcoding the file
 			[filePtr setConvertedFilePath:[finished dstPath]];
 			//	start transcoding the next file!
 			dispatch_async(dispatch_get_main_queue(), ^{

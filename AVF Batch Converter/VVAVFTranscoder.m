@@ -42,6 +42,7 @@
 		delegate = nil;
 		srcPath = nil;
 		dstPath = nil;
+		errorString = nil;
 	}
 	return self;
 }
@@ -71,6 +72,10 @@
 		[dstPath release];
 		dstPath = nil;
 	}
+	if (errorString!=nil)	{
+		[errorString release];
+		errorString = nil;
+	}
 	pthread_mutex_unlock(&theLock);
 	
 	pthread_mutex_destroy(&theLock);
@@ -84,38 +89,34 @@
 	//	clear everything out first
 	[self clear];
 	
-	BOOL			bailAndClear = NO;
 	NSNull			*nsnull = [NSNull null];
 	//	figure out where i'll be exporting to, make sure the directory exists, bail if i can't write to the destination
 	NSFileManager	*fm = [NSFileManager defaultManager];
 	NSError			*err = nil;
 	//NSString		*baseFolder = [[NSString stringWithFormat:@"~/Documents/VVAVFTranscodeTest/%@",[[src lastPathComponent] stringByDeletingPathExtension]] stringByExpandingTildeInPath];
 	NSString		*baseFolder = [dst stringByDeletingLastPathComponent];
-	//BOOL			baseFolderExists = YES;
 	BOOL			baseFolderIsDir = NO;
 	if (![fm fileExistsAtPath:baseFolder isDirectory:&baseFolderIsDir] || !baseFolderIsDir)	{
 		if (![fm createDirectoryAtPath:baseFolder withIntermediateDirectories:YES attributes:nil error:&err])	{
 			NSLog(@"\t\terr, couldn't create directory in %s. err is %@",__func__,err);
-			//baseFolderExists = NO;
-			bailAndClear = YES;
+			[self _cancelAndCleanUpShop];
+			return;
 		}
 	}
-	if (bailAndClear)
-		goto BAIL;
 	//	if i can't make a source asset from the passed file, bail and clear
 	AVAsset			*newSrcAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:src]];
 	if (newSrcAsset==nil)	{
 		NSLog(@"\t\terr, couldn't make asset in %s for path %@",__func__,src);
-		bailAndClear = YES;
-		goto BAIL;
+		[self _cancelAndCleanUpShop];
+		return;
 	}
 	//	if i can't make an asset reader from the new source asset, bail and clear
 	NSError			*nsErr = nil;
 	AVAssetReader	*newReader = [AVAssetReader assetReaderWithAsset:newSrcAsset error:&nsErr];
 	if (newReader==nil || nsErr!=nil)	{
 		NSLog(@"\t\terr: couldn't make asset reader in %s: %@",__func__,nsErr);
-		bailAndClear = YES;
-		goto BAIL;
+		[self _cancelAndCleanUpShop];
+		return;
 	}
 	//	if there's already a file at the destination, move it to the trash
 	//NSString		*dstName = [[NSString stringWithFormat:@"%@/%@.mov",baseFolder,[src lastPathComponent]] stringByExpandingTildeInPath];
@@ -132,8 +133,8 @@
 		error:&nsErr];
 	if (newWriter==nil || nsErr!=nil)	{
 		NSLog(@"\t\terr: couldn't make asset writer in %s: %@",__func__,nsErr);
-		bailAndClear = YES;
-		goto BAIL;
+		[self _cancelAndCleanUpShop];
+		return;
 	}
 	
 	//	get the audio & video export settings from the export settings controller, bail if they're nil or empty
@@ -143,14 +144,15 @@
 	pthread_mutex_unlock(&theLock);
 	if (baseVideoExportSettings==nil)	{
 		NSLog(@"\t\terr: base video settings nil in %s",__func__);
-		bailAndClear = YES;
-		goto BAIL;
+		[self _cancelAndCleanUpShop];
+		return;
 	}
 	if (baseAudioExportSettings==nil)	{
 		NSLog(@"\t\terr: base audio settings nil in %s",__func__);
-		bailAndClear = YES;
-		goto BAIL;
+		[self _cancelAndCleanUpShop];
+		return;
 	}
+	
 	//	i need to remove the multi-pass stuff from the base video export settings dict
 	NSNumber				*baseVideoMultiPassExportNum = [baseVideoExportSettings objectForKey:VVAVVideoMultiPassEncodeKey];
 	BOOL					baseVideoMultiPassExport = NO;
@@ -490,27 +492,36 @@
 		
 		//	run through the writer inputs, configuring each input to request data on a queue
 		localIndex = 0;
-		//__block id					bss = self;
-		NSEnumerator				*outputIt = [readerOutputs objectEnumerator];
-		AVAssetReaderTrackOutput	*output = [outputIt nextObject];
-		NSEnumerator				*inputIt = [writerInputs objectEnumerator];
-		AVAssetWriterInput			*input = [inputIt nextObject];
+		__block id					bss = self;
+		NSEnumerator				*outputIt = nil;
+		AVAssetReaderTrackOutput	*output = nil;
+		NSEnumerator				*inputIt = nil;
+		AVAssetWriterInput			*input = nil;
+		
+		//	now run through the inputs/outputs again, beginning the conversion process for everything
+		outputIt = [readerOutputs objectEnumerator];
+		output = [outputIt nextObject];
+		inputIt = [writerInputs objectEnumerator];
+		input = [inputIt nextObject];
 		while (output!=nil && input!=nil)	{
-			//NSLog(@"\t\trunning through, output is %@, input is %@",output,input);
-			if ((id)output!=(id)nsnull && (id)input!=(id)nsnull)	{
+			__block AVAssetReaderTrackOutput	*localOutput = output;
+			__block AVAssetWriterInput			*localInput = input;
+			//NSLog(@"\t\trunning through, output is %@, input is %@",localOutput,localInput);
+			if ((id)localOutput!=(id)nsnull && (id)localInput!=(id)nsnull)	{
 				//	if i'm not doing a multi-pass export, just tell the input to start requesting media.
 				//	THIS IS ONLY NECESSARY BECAUSE OF HapInAVFoundation, WHICH DOESN'T PLAY NICE WITH respondToEachPassDescriptionOnQueue:usingBlock:
 				if (!baseVideoMultiPassExport)	{
 					__block NSUInteger		skippedBufferCount = 0;
-					[input requestMediaDataWhenReadyOnQueue:writerQueue usingBlock:^{
+					[localInput requestMediaDataWhenReadyOnQueue:writerQueue usingBlock:^{
+						//NSLog(@"%s-requestMediaDataWhenReadyOnQueue:",__func__);
 						//pthread_mutex_lock(&theLock);
 						//BOOL		localPaused = paused;
 						//pthread_mutex_unlock(&theLock);
 						//if (localPaused)
 						//	return;
 						NSUInteger				runCount = 0;	//	if we don't limit the # of frames we write, this loop will actually write every frame, which prevents cancel or pause from working
-						while ([input isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting && runCount<5)	{
-							CMSampleBufferRef		newRef = [output copyNextSampleBuffer];
+						while ([localInput isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting && runCount<5)	{
+							CMSampleBufferRef		newRef = [localOutput copyNextSampleBuffer];
 							if (newRef!=NULL)	{
 								//NSLog(@"\t\tcopied buffer at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault,CMSampleBufferGetPresentationTimeStamp(newRef)) autorelease]);
 								pthread_mutex_lock(&theLock);
@@ -520,7 +531,7 @@
 								//NSLog(@"\t\tnormalizedProgress now %0.3f",normalizedProgress);
 								pthread_mutex_unlock(&theLock);
 								skippedBufferCount = 0;
-								[input appendSampleBuffer:newRef];
+								[localInput appendSampleBuffer:newRef];
 								CFRelease(newRef);
 								newRef = NULL;
 							}
@@ -529,14 +540,14 @@
 								//NSLog(@"\t\tunable to copy the buffer, skippedBufferCount is now %ld",skippedBufferCount);
 								if (skippedBufferCount>4)	{
 									//NSLog(@"\t\tmarking input as finished in single-pass export");
-									[input markAsFinished];
+									[localInput markAsFinished];
 									pthread_mutex_lock(&theLock);
 									{
-										[readerOutputs removeObjectAtIndex:[readerOutputs indexOfObjectIdenticalTo:output]];
-										[writerInputs removeObjectAtIndex:[writerInputs indexOfObjectIdenticalTo:input]];
+										[readerOutputs removeObjectAtIndex:[readerOutputs indexOfObjectIdenticalTo:localOutput]];
+										[writerInputs removeObjectAtIndex:[writerInputs indexOfObjectIdenticalTo:localInput]];
 										if ([readerOutputs count]==0 || [writerInputs count]==0)	{
 											[writer finishWritingWithCompletionHandler:^{
-												[self _finishWritingAndCleanUpShop];
+												[bss _finishWritingAndCleanUpShop];
 											}];
 										}
 									}
@@ -551,24 +562,25 @@
 				//	else i'm doing multi-pass export- i need to configure the input to respond to changes in the pass description...
 				else	{
 					__block NSUInteger		inputPassIndex = 0;	//	start at -1 because this will get incremented before the request block that references it will be called for the first time
-					[input respondToEachPassDescriptionOnQueue:writerQueue usingBlock:^{
-						//NSLog(@"%s respondToEachPassDescriptionOnQueue for input at index %d, pass is %ld",__func__,localIndex,inputPassIndex);
+					[localInput respondToEachPassDescriptionOnQueue:writerQueue usingBlock:^{
+						//NSLog(@"%s-respondToEachPassDescriptionOnQueue:usingBlock:, input type is %@",__func__,[localInput mediaType]);
 						__block NSUInteger						skippedBufferCount = 0;
-						AVAssetWriterInputPassDescription		*tmpDesc = [input currentPassDescription];
+						AVAssetWriterInputPassDescription		*tmpDesc = [localInput currentPassDescription];
 						//NSLog(@"\t\tcurrent pass description is %@",tmpDesc);
 						if ([writer status]!=AVAssetWriterStatusWriting)
 							return;
 						//	if there's no pass description, mark the input as being finished and remove them
 						if (tmpDesc==nil)	{
 							//NSLog(@"\t\tno pass description, marking input as finished");
-							[input markAsFinished];
+							[localInput markAsFinished];
 							pthread_mutex_lock(&theLock);
 							{
-								[readerOutputs removeObjectAtIndex:[readerOutputs indexOfObjectIdenticalTo:output]];
-								[writerInputs removeObjectAtIndex:[writerInputs indexOfObjectIdenticalTo:input]];
+								[readerOutputs removeObjectAtIndex:[readerOutputs indexOfObjectIdenticalTo:localOutput]];
+								[writerInputs removeObjectAtIndex:[writerInputs indexOfObjectIdenticalTo:localInput]];
+								//	if there aren't any more inputs or outputs, we're done- clean up and finish
 								if ([readerOutputs count]==0 || [writerInputs count]==0)	{
 									[writer finishWritingWithCompletionHandler:^{
-										[self _finishWritingAndCleanUpShop];
+										[bss _finishWritingAndCleanUpShop];
 									}];
 								}
 							}
@@ -576,45 +588,78 @@
 						}
 						//	else there's a pass description, which means i need to do reading/writing/probably encoding
 						else	{
-							//	if this isn't the first pass, configure the reader output
-							if (inputPassIndex>0)
-								[output resetForReadingTimeRanges:[tmpDesc sourceTimeRanges]];
+							//NSLog(@"\t\tthere's a pass description, inputPassIndex is %lu",(unsigned long)inputPassIndex);
+							//NSLog(@"\t\ttracksLeftToConvert are %ld, tracksThatNeedConverting are %ld",tracksLeftToConvert,tracksThatNeedConverting);
 							
-							
-							//	tell the writer input to begin requesting media data...
-							[input requestMediaDataWhenReadyOnQueue:writerQueue usingBlock:^{
-								//pthread_mutex_lock(&theLock);
-								//BOOL		localPaused = paused;
-								//pthread_mutex_unlock(&theLock);
-								//if (localPaused)
-								//	return;
-								NSUInteger				runCount = 0;	//	if we don't limit the # of frames we write, this loop will actually write every frame, which prevents cancel or pause from working
-								while ([input isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting && runCount<5)	{
-									CMSampleBufferRef		newRef = [output copyNextSampleBuffer];
-									if (newRef!=NULL)	{
-										//NSLog(@"\t\tcopied buffer at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault,CMSampleBufferGetPresentationTimeStamp(newRef)) autorelease]);
-										pthread_mutex_lock(&theLock);
-										double		tmpProgress = (CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(newRef))/durationInSeconds)/2.0;
-										normalizedProgress = (inputPassIndex==1) ? tmpProgress : 0.5+tmpProgress;
-										if (normalizedProgress>=1.0)
-											normalizedProgress = 0.99;
-										//NSLog(@"\t\ttmpProgress for input %p is %0.3f, passIndex is %ld, normalizedProgress now %0.3f",input,tmpProgress,inputPassIndex,normalizedProgress);
-										pthread_mutex_unlock(&theLock);
-										skippedBufferCount = 0;
-										[input appendSampleBuffer:newRef];
-										CFRelease(newRef);
-										newRef = NULL;
+							//	if this isn't the first pass, before proceeding we need to reset the reader output to the time range of the pass description
+							if (inputPassIndex>0)	{
+								//	you can't resetForReadingTimeRanges until all the samples have been read from the output (until copyNextSampleBuffer returns NULL), so make sure this has happened...
+								CMSampleBufferRef		junkBuffer = NULL;
+								do	{
+									if (junkBuffer!=NULL)	{
+										CFRelease(junkBuffer);
+										junkBuffer = NULL;
 									}
-									else	{
-										++skippedBufferCount;
-										//NSLog(@"\t\tunable to copy the buffer, skippedBufferCount is now %ld",skippedBufferCount);
-										if (skippedBufferCount>4)
-											[input markCurrentPassAsFinished];
-										break;
+									junkBuffer = [localOutput copyNextSampleBuffer];
+								} while (junkBuffer!=NULL);
+								
+								//	sometimes, AVF gives conflicting time ranges, so we need to wrap this with an exception handler...
+								@try	{
+									if (errorString!=nil)	{
+										[errorString release];
+										errorString = nil;
 									}
-									++runCount;
+									[localOutput resetForReadingTimeRanges:[tmpDesc sourceTimeRanges]];
 								}
-							}];
+								//	if i caught an exception, store an error string, then cancel
+								@catch (NSException *err)	{
+									NSLog(@"\t\terr: caught exception resetting time range, %@",err);
+									errorString = [[err description] retain];
+									dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+										[bss _cancelAndCleanUpShop];
+									});
+								}
+							}
+							
+							
+							//	if there's no error string, tell the writer input to begin requesting media data...
+							if (errorString==nil)	{
+								[localInput requestMediaDataWhenReadyOnQueue:writerQueue usingBlock:^{
+									//NSLog(@"%s-requestMediaDataWhenReadyOnQueue:usingBlock:, input is %@",__func__,localInput);
+									//pthread_mutex_lock(&theLock);
+									//BOOL		localPaused = paused;
+									//pthread_mutex_unlock(&theLock);
+									//if (localPaused)
+									//	return;
+									NSUInteger				runCount = 0;	//	if we don't limit the # of frames we write, this loop will actually write every frame, which prevents cancel or pause from working
+									while ([localInput isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting && runCount<5)	{
+										CMSampleBufferRef		newRef = [localOutput copyNextSampleBuffer];
+										if (newRef!=NULL)	{
+											//NSLog(@"\t\tcopied buffer at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault,CMSampleBufferGetPresentationTimeStamp(newRef)) autorelease]);
+											pthread_mutex_lock(&theLock);
+											double		tmpProgress = (CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(newRef))/durationInSeconds)/2.0;
+											normalizedProgress = (inputPassIndex==1) ? tmpProgress : 0.5+tmpProgress;
+											if (normalizedProgress>=1.0)
+												normalizedProgress = 0.99;
+											//NSLog(@"\t\ttmpProgress for input %p is %0.3f, passIndex is %ld, normalizedProgress now %0.3f",localInput,tmpProgress,inputPassIndex,normalizedProgress);
+											pthread_mutex_unlock(&theLock);
+											skippedBufferCount = 0;
+											[localInput appendSampleBuffer:newRef];
+											CFRelease(newRef);
+											newRef = NULL;
+										}
+										else	{
+											++skippedBufferCount;
+											//NSLog(@"\t\tunable to copy the buffer, skippedBufferCount is now %ld",skippedBufferCount);
+											if (skippedBufferCount>4)	{
+												[localInput markCurrentPassAsFinished];
+											}
+											break;
+										}
+										++runCount;
+									}
+								}];
+							}
 						}
 						
 						//	increment the input pass index (tracked so i know when to reset the reading time ranges on the reader)
@@ -628,13 +673,6 @@
 		}
 	}
 	pthread_mutex_unlock(&theLock);
-	
-	
-	BAIL:
-	if (bailAndClear)	{
-		NSLog(@"\t\tbailing/clearing as a result of previous err, %s",__func__);
-		[self clear];
-	}
 }
 - (void) setPaused:(BOOL)p	{
 	pthread_mutex_lock(&theLock);
@@ -666,6 +704,10 @@
 	}
 	[readerOutputs removeAllObjects];
 	
+	for (AVAssetReaderOutput *output in readerOutputs)	{
+		[output markConfigurationAsFinal];
+	}
+	
 	if (writer != nil)	{
 		//if (![writer finishWriting])
 		//	NSLog(@"\t\tERR: couldn't finish writing in %s",__func__);
@@ -680,6 +722,39 @@
 	normalizedProgress = 1.0;
 	//NSLog(@"\t\tnormalizedProgress now %0.3f",normalizedProgress);
 	pthread_mutex_unlock(&theLock);
+	
+	if (localDelegate!=nil)
+		[localDelegate finishedTranscoding:self];
+}
+- (void) _cancelAndCleanUpShop	{
+	pthread_mutex_lock(&theLock);
+	id<VVAVFTranscoderDelegate>		localDelegate = delegate;
+	if (writer != nil)	{
+		[writer cancelWriting];
+		[writer release];
+		writer = nil;
+	}
+	if (reader != nil)	{
+		[reader cancelReading];
+		[reader release];
+		reader = nil;
+	}
+	[writerInputs removeAllObjects];
+	[readerOutputs removeAllObjects];
+	if (srcAsset!=nil)	{
+		[srcAsset release];
+		srcAsset = nil;
+	}
+	
+	normalizedProgress = 1.0;
+	//NSLog(@"\t\tnormalizedProgress now %0.3f",normalizedProgress);
+	pthread_mutex_unlock(&theLock);
+	
+	//	because we're cancelling, move the file at "dstPath" (if it exists) to the trash
+	NSFileManager		*fm = [NSFileManager defaultManager];
+	if ([fm fileExistsAtPath:dstPath])	{
+		[fm trashItemAtURL:[NSURL fileURLWithPath:dstPath] resultingItemURL:nil error:nil];
+	}
 	
 	if (localDelegate!=nil)
 		[localDelegate finishedTranscoding:self];
@@ -711,6 +786,10 @@
 	if (dstPath!=nil)	{
 		[dstPath release];
 		dstPath = nil;
+	}
+	if (errorString!=nil)	{
+		[errorString release];
+		errorString = nil;
 	}
 	pthread_mutex_unlock(&theLock);
 	
@@ -767,6 +846,13 @@
 	NSString		*returnMe = nil;
 	pthread_mutex_lock(&theLock);
 	returnMe = (dstPath==nil) ? nil : [[dstPath retain] autorelease];
+	pthread_mutex_unlock(&theLock);
+	return returnMe;
+}
+- (NSString *) errorString	{
+	NSString		*returnMe = nil;
+	pthread_mutex_lock(&theLock);
+	returnMe = (errorString==nil) ? nil : [[errorString retain] autorelease];
 	pthread_mutex_unlock(&theLock);
 	return returnMe;
 }
