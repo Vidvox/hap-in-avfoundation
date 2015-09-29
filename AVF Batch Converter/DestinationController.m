@@ -20,6 +20,8 @@
 	
 	//	check the user defaults, populate the fields
 	numPtr = [def objectForKey:@"sameAsOriginalVal"];
+	if (numPtr==nil)
+		numPtr = [NSNumber numberWithInteger:NSOnState];
 	if (numPtr != nil)
 		[sameAsOriginalToggle setIntValue:[numPtr intValue]];
 	stringPtr = [def objectForKey:@"destPath"];

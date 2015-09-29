@@ -164,7 +164,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		encoderInputPxlFmtBytesPerRow = roundUpToMultipleOf16(((uint32_t)exportImgSize.width * 4));
 		formatConvertPoolLength = encoderInputPxlFmtBytesPerRow*(NSUInteger)(exportImgSize.height);
 		
-		//encodeQueue = dispatch_queue_create("HapEncode", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, DISPATCH_QUEUE_PRIORITY_HIGH, -1));
+		//encodeQueue = dispatch_queue_create("HapEncode", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INITIATED, -1));
 		encodeQueue = dispatch_queue_create("HapEncode", DISPATCH_QUEUE_CONCURRENT);
 	}
 	return self;
@@ -493,6 +493,16 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 	OSSpinLockUnlock(&encoderProgressLock);
 	return returnMe;
 }
+- (void) finishEncoding	{
+	OSSpinLockLock(&encoderProgressLock);
+	BOOL			needsToEncodeMore = NO;
+	if (encoderWaitingToRunOut || [encoderProgressFrames count]>0)
+		needsToEncodeMore = YES;
+	OSSpinLockUnlock(&encoderProgressLock);
+	
+	if (needsToEncodeMore)
+		[self appendEncodedFrames];
+}
 - (void)markAsFinished	{
 	//NSLog(@"%s",__func__);
 	OSSpinLockLock(&encoderProgressLock);
@@ -554,8 +564,13 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 	
 	
 	OSSpinLockLock(&encoderProgressLock);
+	if (![super isReadyForMoreMediaData])	{
+		NSLog(@"\t\terr: not ready for more media data, %s",__func__);
+		[encoderProgressFrames removeAllObjects];
+		[super markAsFinished];
+	}
 	//	first of all, if there's only one sample and i'm waiting to finish- append the last sample and then i'm done (yay!)
-	if (encoderWaitingToRunOut && [encoderProgressFrames count]<=1)	{
+	else if (encoderWaitingToRunOut && [encoderProgressFrames count]<=1)	{
 		HapEncoderFrame			*lastFrame = ([encoderProgressFrames count]<1) ? nil : [encoderProgressFrames objectAtIndex:0];
 		if (lastFrame!=nil && [lastFrame encoded])	{
 			//NSLog(@"\t\tone frame left and it's encoded, making a sample buffer and then appending it");

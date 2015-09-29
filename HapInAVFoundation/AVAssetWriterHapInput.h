@@ -39,7 +39,7 @@ This class is the main interface for using AVFoundation to encode and output vid
 	void				*dxtEncoder;	//	actually a 'HapCodecDXTEncoderRef'
 	
 	OSSpinLock			encoderProgressLock;	//	locks 'encoderProgressFrames' and 'encoderWaitingToRunOut'
-	NSMutableArray		*encoderProgressFrames;	//	array of HapEncoderFrame instances.  the frames are made when you append a pixel buffer, and are flagged as encoded and appended (as an encoded sample buffer) in the GCD-driven block that did the encoding
+	__block NSMutableArray		*encoderProgressFrames;	//	array of HapEncoderFrame instances.  the frames are made when you append a pixel buffer, and are flagged as encoded and appended (as an encoded sample buffer) in the GCD-driven block that did the encoding
 	BOOL				encoderWaitingToRunOut;	//	set to YES when the user marks this input as finished (the frames that are "in flight" via GCD need to finish up)
 	
 	CMTime				lastEncodedDuration;
@@ -71,6 +71,7 @@ Begins encoding the passed pixel buffer and appends the encoded frame to this in
 It's not necessary to check this- but for best results, you should mark the AVAssetWriterHapInput as finished, wait until "finishedEncoding" returns a YES, and then tell your AVAssetWriter to finish writing.  If you don't wait for this method to return YES, the last X pixel buffers may get dropped (depends how long it takes to wrap up, could be no dropped frames, could be a couple).
 */
 - (BOOL) finishedEncoding;
+- (void) finishEncoding;
 
 
 @end

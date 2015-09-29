@@ -444,7 +444,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 				[h264KeyframesMatrix selectCellAtRow:0 column:0];
 			else	{
 				[h264KeyframesMatrix selectCellAtRow:1 column:0];
-				[h264KeyframesField setStringValue:[NSString stringWithFormat:@"%ld",[tmpNum integerValue]]];
+				[h264KeyframesField setStringValue:[NSString stringWithFormat:@"%ld",(long)[tmpNum integerValue]]];
 			}
 			[self h264KeyframesMatrixUsed:h264KeyframesMatrix];
 			
@@ -511,14 +511,14 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 		[self noResizeVideoClicked:nil];
 	else	{
 		[self resizeVideoTextFieldUsed:nil];
-		[vidWidthField setStringValue:[NSString stringWithFormat:@"%ld",[tmpNum integerValue]]];
+		[vidWidthField setStringValue:[NSString stringWithFormat:@"%ld",(long)[tmpNum integerValue]]];
 	}
 	tmpNum = [n objectForKey:AVVideoHeightKey];
 	if (tmpNum==nil)
 		[self noResizeVideoClicked:nil];
 	else	{
 		[self resizeVideoTextFieldUsed:nil];
-		[vidHeightField setStringValue:[NSString stringWithFormat:@"%ld",[tmpNum integerValue]]];
+		[vidHeightField setStringValue:[NSString stringWithFormat:@"%ld",(long)[tmpNum integerValue]]];
 	}
 }
 - (void) populateUIWithAudioSettingsDict:(NSDictionary *)n	{
@@ -577,7 +577,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 			[self noResampleAudioClicked:nil];
 		else	{
 			[self resampleAudioClicked:nil];
-			[audioResampleField setStringValue:[NSString stringWithFormat:@"%ld",[tmpNum integerValue]]];
+			[audioResampleField setStringValue:[NSString stringWithFormat:@"%ld",(long)[tmpNum integerValue]]];
 		}
 	}
 }
@@ -654,7 +654,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 				break;
 			//	resizing
 			case 1:
-				returnMe = [NSString stringWithFormat:@"%@ Sized to %ld x %ld.",returnMe,[vidWidthField integerValue],[vidHeightField integerValue]];
+				returnMe = [NSString stringWithFormat:@"%@ Sized to %ld x %ld.",returnMe,(long)[vidWidthField integerValue],(long)[vidHeightField integerValue]];
 				break;
 			}
 		}
@@ -789,11 +789,11 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 	tmpString = [vidWidthField stringValue];
 	tmpVal = (tmpString==nil) ? -1 : [tmpString integerValue];
 	if (tmpVal<=0)
-		[vidWidthField setStringValue:[NSString stringWithFormat:@"%ld",(NSUInteger)displayVideoDims.width]];
+		[vidWidthField setStringValue:[NSString stringWithFormat:@"%ld",(unsigned long)displayVideoDims.width]];
 	tmpString = [vidHeightField stringValue];
 	tmpVal = (tmpString==nil) ? -1 : [tmpString integerValue];
 	if (tmpVal<=0)
-		[vidHeightField setStringValue:[NSString stringWithFormat:@"%ld",(NSUInteger)displayVideoDims.height]];
+		[vidHeightField setStringValue:[NSString stringWithFormat:@"%ld",(unsigned long)displayVideoDims.height]];
 	
 }
 
@@ -870,7 +870,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 	NSNumber		*tmpNum = [[audioResamplePUB selectedItem] representedObject];
 	NSUInteger		newSampleRate = (tmpNum==nil) ? 0.0 : [tmpNum unsignedLongValue];
 	if (newSampleRate!=0)
-		[audioResampleField setStringValue:[NSString stringWithFormat:@"%ld",newSampleRate]];
+		[audioResampleField setStringValue:[NSString stringWithFormat:@"%ld",(unsigned long)newSampleRate]];
 }
 - (IBAction) resampleAudioTextFieldUsed:(id)sender	{
 	//NSLog(@"%s",__func__);
@@ -897,7 +897,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 			intVal = 8000;
 		else if (intVal>192000)
 			intVal = 192000;
-		[audioResampleField setStringValue:[NSString stringWithFormat:@"%ld",intVal]];
+		[audioResampleField setStringValue:[NSString stringWithFormat:@"%ld",(unsigned long)intVal]];
 		//if (intVal<8 || intVal>192)
 		//	[self audioResamplePUBUsed:audioResamplePUB];
 	}
@@ -913,7 +913,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 		
 		OSStatus		osErr = noErr;
 		uint32_t		replySize;
-		osErr = AudioFormatGetPropertyInfo(popQueryProperty, sizeof(popAudioFormat), &popAudioFormat, &replySize);
+		osErr = AudioFormatGetPropertyInfo(popQueryProperty, sizeof(popAudioFormat), &popAudioFormat, (UInt32 *)&replySize);
 		if (osErr!=noErr)	{
 			NSLog(@"\t\terr %d at AudioFormatGetProperty() in %s",(int)osErr,__func__);
 			NSLog(@"\t\tproperty is %c%c%c%c", (int)((popQueryProperty>>24)&0xFF), (int)((popQueryProperty>>16)&0xFF), (int)((popQueryProperty>>8)&0xFF), (int)((popQueryProperty>>0)&0xFF));
@@ -921,7 +921,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 		}
 		else	{
 			void			*replyData = malloc(replySize);
-			osErr = AudioFormatGetProperty(popQueryProperty, sizeof(popAudioFormat), &popAudioFormat, &replySize, replyData);
+			osErr = AudioFormatGetProperty(popQueryProperty, sizeof(popAudioFormat), &popAudioFormat, (UInt32 *)&replySize, replyData);
 			if (osErr!=noErr)	{
 				NSLog(@"\t\terr %d at AudioFormatGetProperty() in %s",(int)osErr,__func__);
 				NSLog(@"\t\tproperty is %c%c%c%c", (int)((popQueryProperty>>24)&0xFF), (int)((popQueryProperty>>16)&0xFF), (int)((popQueryProperty>>8)&0xFF), (int)((popQueryProperty>>0)&0xFF));
@@ -935,7 +935,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 				for (int i=0; i<rangeCount; ++i)	{
 					//NSLog(@"\t\trange %d is %f / %f",i,rangePtr->mMinimum,rangePtr->mMaximum);
 					NSUInteger			tmpInt = rangePtr->mMaximum;
-					NSMenuItem			*tmpItem = [[[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:@"%ld",tmpInt] action:nil keyEquivalent:@""] autorelease];
+					NSMenuItem			*tmpItem = [[[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:@"%ld",(unsigned long)tmpInt] action:nil keyEquivalent:@""] autorelease];
 					[tmpItem setRepresentedObject:[NSNumber numberWithInteger:tmpInt]];
 					[popMenu addItem:tmpItem];
 					++rangePtr;

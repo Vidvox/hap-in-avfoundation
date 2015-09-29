@@ -63,6 +63,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		atomicLock = OS_SPINLOCK_INIT;
 		userInfo = nil;
 		decoded = NO;
+		age = 0;
 		
 		hapSampleBuffer = sb;
 		if (hapSampleBuffer==NULL)	{
@@ -197,6 +198,14 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 - (CMTime) presentationTime	{
 	return ((hapSampleBuffer==NULL) ? kCMTimeInvalid : CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer));
 }
+- (BOOL) containsTime:(CMTime)n	{
+	if (hapSampleBuffer==NULL)
+		return NO;
+	CMTimeRange		timeRange = CMTimeRangeMake(CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer),CMSampleBufferGetDuration(hapSampleBuffer));
+	if (CMTimeRangeContainsTime(timeRange,n))
+		return YES;
+	return NO;
+}
 
 
 - (CMSampleBufferRef) allocCMSampleBufferFromRGBData	{
@@ -267,7 +276,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 				&timing,
 				&returnMe);
 			if (osErr!=noErr || returnMe==NULL)
-				NSLog(@"\t\terr %d at CMSampleBufferCreateForImageBuffer() in %s",osErr,__func__);
+				NSLog(@"\t\terr %d at CMSampleBufferCreateForImageBuffer() in %s",(int)osErr,__func__);
 			else	{
 				//NSLog(@"\t\tsuccessfully allocated a CMSampleBuffer from the RGB data in me! %@/%s",self,__func__);
 			}
@@ -313,6 +322,18 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	BOOL		returnMe = NO;
 	OSSpinLockLock(&atomicLock);
 	returnMe = decoded;
+	OSSpinLockUnlock(&atomicLock);
+	return returnMe;
+}
+- (void) incrementAge	{
+	OSSpinLockLock(&atomicLock);
+	++age;
+	OSSpinLockUnlock(&atomicLock);
+}
+- (int) age	{
+	int		returnMe = 0;
+	OSSpinLockLock(&atomicLock);
+	returnMe = age;
 	OSSpinLockUnlock(&atomicLock);
 	return returnMe;
 }

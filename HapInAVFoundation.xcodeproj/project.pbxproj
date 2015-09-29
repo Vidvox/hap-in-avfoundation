@@ -93,6 +93,7 @@
 		1AC0CA1A1A437C2A00A9BC2C /* HapEncoderFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */; };
 		1ACF5DEC1A3E4127005DDF19 /* PixelFormats.c in Sources */ = {isa = PBXBuildFile; fileRef = 1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */; };
 		1ACF5DED1A3E41FF005DDF19 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
+		1AE092DC1AFE96F4004E866B /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -273,6 +274,7 @@
 		1AC0CA171A437C2A00A9BC2C /* HapEncoderFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HapEncoderFrame.h; sourceTree = "<group>"; };
 		1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapEncoderFrame.m; sourceTree = "<group>"; };
 		1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = PixelFormats.c; path = source/PixelFormats.c; sourceTree = SOURCE_ROOT; };
+		1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = ../../../../System/Library/Frameworks/VideoToolbox.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -289,6 +291,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1AE092DC1AFE96F4004E866B /* VideoToolbox.framework in Frameworks */,
 				1A642D1C1A652CE900E2152D /* HapInAVFoundation.framework in Frameworks */,
 				1A642D181A65245900E2152D /* AVFoundation.framework in Frameworks */,
 				1A642D171A65245600E2152D /* CoreMedia.framework in Frameworks */,
@@ -441,6 +444,7 @@
 				1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */,
 				1A680E291A39F67E007678E5 /* CoreMedia.framework */,
 				1A680E231A39CFFF007678E5 /* AVFoundation.framework */,
+				1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */,
 				1A6060741A38D929008E693F /* Carbon.framework */,
 				1A60606F1A38D8DE008E693F /* Accelerate.framework */,
 				1A60606D1A38D8D9008E693F /* OpenGL.framework */,
@@ -981,7 +985,7 @@
 		1A97F5BF1A38ABBF00E0DC74 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
@@ -1002,7 +1006,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -1010,7 +1014,7 @@
 		1A97F5C01A38ABBF00E0DC74 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
@@ -1025,6 +1029,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -1047,6 +1052,7 @@
 				INFOPLIST_FILE = HapInAVFoundation/Info.plist;
 				INSTALL_PATH = "@rpath";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -1070,6 +1076,7 @@
 				INFOPLIST_FILE = HapInAVFoundation/Info.plist;
 				INSTALL_PATH = "@rpath";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};

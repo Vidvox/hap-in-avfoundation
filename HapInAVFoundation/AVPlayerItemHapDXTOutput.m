@@ -122,57 +122,89 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 }
 - (HapDecoderFrame *) allocFrameClosestToTime:(CMTime)n	{
 	HapDecoderFrame			*returnMe = nil;
-	
+	BOOL					foundExactMatchToTarget = NO;
+	BOOL					exactMatchToTargetWasDecoded = NO;
 	OSSpinLockLock(&propertyLock);
 	if (track!=nil && gen!=nil)	{
-		//	check and see if any of my frames have finished decoding
+		//	copy all the frames that have finished decoding into the 'decodedFrames' array
 		NSMutableArray			*decodedFrames = nil;
 		for (HapDecoderFrame *framePtr in decompressedFrames)	{
-			//	if this frame has been decoded, i'll either be returning it or adding it to an array and returning something from the array
-			if ([framePtr decoded])	{
-				//	if there's an array of completed frames, add this (decoded) frame to it
-				if (decodedFrames!=nil)
-					[decodedFrames addObject:framePtr];
-				//	else there's no array of completed frames...
-				else	{
-					//	if i haven't found a frame to return yet, i'll be returning this one
-					if (returnMe==nil)
-						returnMe = framePtr;
-					//	else i already found a frame to return- i need to start using the decodedFrames array!
-					else	{
-						decodedFrames = [NSMutableArray arrayWithCapacity:0];
-						[decodedFrames addObject:returnMe];
-						returnMe = nil;
-						[decodedFrames addObject:framePtr];
-					}
+			BOOL					decodedFrame = [framePtr decoded];
+			//	i need to know if i encounter a frame that is being decompressed which contains the passed time (if not, i'll have to start decompressing one later)
+			if ([framePtr containsTime:n])	{
+				foundExactMatchToTarget = YES;
+				exactMatchToTargetWasDecoded = decodedFrame;
+			}
+			//	if the frame is decoded, stick it in an array of decoded frames
+			if (decodedFrame)	{
+				if (decodedFrames==nil)
+					decodedFrames = [NSMutableArray arrayWithCapacity:0];
+				[decodedFrames addObject:framePtr];
+			}
+		}
+		
+		//	now find either an exact match to the target time (if available) or the closest available decoded frame...
+		
+		//	if i found an exact match and the exact match was already decoded, just run through and find it
+		if (foundExactMatchToTarget && exactMatchToTargetWasDecoded)	{
+			for (HapDecoderFrame *decFrame in decodedFrames)	{
+				if ([decFrame containsTime:n])	{
+					returnMe = [decFrame retain];
 				}
 			}
 		}
-		//	if i have an array of decoded frames, sort it by the frame's time, find the frame i'll be returning, remove all of them from the array
-		if (decodedFrames!=nil)	{
-			[decodedFrames sortUsingComparator:^(id obj1, id obj2)	{
-				return (NSComparisonResult)CMTimeCompare(CMSampleBufferGetPresentationTimeStamp([obj1 hapSampleBuffer]), CMSampleBufferGetPresentationTimeStamp([obj2 hapSampleBuffer]));
-			}];
-			returnMe = [decodedFrames objectAtIndex:0];
-			[returnMe retain];
-			for (id anObj in decodedFrames)
-				[decompressedFrames removeObjectIdenticalTo:anObj];
+		//	else i either didn't find an exact match to the target time, or i did but it's not done being decoded yet- return the closest decoded frame
+		else	{
+			//	find the time of the target frame
+			AVSampleCursor			*targetFrameCursor = [track makeSampleCursorWithPresentationTimeStamp:n];
+			CMTime					targetFrameTime = [targetFrameCursor presentationTimeStamp];
+			//	run through all the decoded frames, looking for the frame with the smallest delta > 0
+			double					runningDelta = 9999.0;
+			for (HapDecoderFrame *framePtr in decodedFrames)	{
+				CMSampleBufferRef		sampleBuffer = [framePtr hapSampleBuffer];
+				CMTime					frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+				double					frameDeltaInSeconds = CMTimeGetSeconds(CMTimeSubtract(targetFrameTime, frameTime));
+				if (frameDeltaInSeconds>0.0 && frameDeltaInSeconds<runningDelta)	{
+					runningDelta = frameDeltaInSeconds;
+					if (returnMe!=nil)
+						[returnMe release];
+					returnMe = [framePtr retain];
+				}
+			}
 		}
-		//	else if i found a single frame to return, remove it from the array
-		else if (returnMe!=nil)	{
-			[returnMe retain];
-			[decompressedFrames removeObjectIdenticalTo:returnMe];
+		//	i only want to return a frame if it's not the last frame i returned
+		if (returnMe!=nil)	{
+			CMTime			returnedFrameTime = CMSampleBufferGetPresentationTimeStamp([returnMe hapSampleBuffer]);
+			if (CMTIME_COMPARE_INLINE(lastGeneratedSampleTime,==,returnedFrameTime))	{
+				if (returnMe != nil)	{
+					[returnMe release];
+					returnMe = nil;
+				}
+			}
+			lastGeneratedSampleTime = returnedFrameTime;
 		}
 		
-		
-		//	use GCD to start decompressing a frame for the passed time
-		dispatch_async(decodeQueue, ^{
-			[self _decodeFrameForTime:n];
-		});
-		
+		//	if i didn't find an exact match to the target...
+		if (!foundExactMatchToTarget)	{
+			//	run through the decoded frames- increment their ages, and then remove/release any frames that are "too old" from 'decompressedFrames'
+			//	this is only done when we start decompressing another frame, so this is essentially a cache of the last X requested frames
+			for (HapDecoderFrame *framePtr in decodedFrames)	{
+				[framePtr incrementAge];
+				if ([framePtr age]>5)	{
+					[decompressedFrames removeObjectIdenticalTo:framePtr];
+				}
+			}
+		}
 	}
 	OSSpinLockUnlock(&propertyLock);
 	
+	//	if i didn't find an exact match to the target then i need to start decompressing that frame (i know it's async but i'm going to do this outside the lock anyway)
+	if (!foundExactMatchToTarget)	{
+		//	now use GCD to start decoding the frame
+		dispatch_async(decodeQueue, ^{
+			[self _decodeFrameForTime:n];
+		});
+	}
 	return returnMe;
 }
 - (HapDecoderFrame *) allocFrameForTime:(CMTime)n	{
@@ -225,10 +257,10 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	//NSLog(@"%s ... %p",__func__,newSample);
 	HapDecoderFrameAllocBlock		localAllocFrameBlock = nil;
 	AVFHapDXTPostDecodeBlock		localPostDecodeBlock = nil;
-	CMTime							cursorTime = CMSampleBufferGetPresentationTimeStamp(newSample);
+	//CMTime							cursorTime = CMSampleBufferGetPresentationTimeStamp(newSample);
 	
 	OSSpinLockLock(&propertyLock);
-	lastGeneratedSampleTime = cursorTime;
+	//lastGeneratedSampleTime = cursorTime;
 	localAllocFrameBlock = (allocFrameBlock==nil) ? nil : [allocFrameBlock retain];
 	localPostDecodeBlock = (postDecodeBlock==nil) ? nil : [postDecodeBlock retain];
 	BOOL				localOutputAsRGB = outputAsRGB;
@@ -293,6 +325,14 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	if (newDecoderFrame==nil)
 		NSLog(@"\t\terr: decoder frame nil, %s",__func__);
 	else	{
+		
+		//	add the frame i just decoded into the 'decompressedFrames' array immediately (so other stuff will "see" the frame and know it's being decoded)
+		if (newDecoderFrame!=nil)	{
+			OSSpinLockLock(&propertyLock);
+			[decompressedFrames addObject:newDecoderFrame];
+			OSSpinLockUnlock(&propertyLock);
+		}
+		
 		//	decode the frame (into DXT data)
 		NSSize				imgSize = [newDecoderFrame imgSize];
 		NSSize				dxtImgSize = [newDecoderFrame dxtImgSize];
@@ -409,14 +449,16 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	}
 	
 	
-	OSSpinLockLock(&propertyLock);
+	
+	//OSSpinLockLock(&propertyLock);
 	//	add the frame i just decoded into the 'decompressedFrames' array
 	if (newDecoderFrame!=nil)	{
-		[decompressedFrames addObject:newDecoderFrame];
+		//[decompressedFrames addObject:newDecoderFrame];
 		[newDecoderFrame release];
 		newDecoderFrame = nil;
 	}
-	OSSpinLockUnlock(&propertyLock);
+	//OSSpinLockUnlock(&propertyLock);
+	
 	
 	
 	if (localAllocFrameBlock!=nil)
