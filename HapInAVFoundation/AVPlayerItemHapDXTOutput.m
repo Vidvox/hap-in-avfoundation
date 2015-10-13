@@ -201,9 +201,11 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	//	if i didn't find an exact match to the target then i need to start decompressing that frame (i know it's async but i'm going to do this outside the lock anyway)
 	if (!foundExactMatchToTarget)	{
 		//	now use GCD to start decoding the frame
-		dispatch_async(decodeQueue, ^{
-			[self _decodeFrameForTime:n];
-		});
+		if (decodeQueue != NULL)	{
+			dispatch_async(decodeQueue, ^{
+				[self _decodeFrameForTime:n];
+			});
+		}
 	}
 	return returnMe;
 }
