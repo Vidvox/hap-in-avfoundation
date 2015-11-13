@@ -12,7 +12,7 @@
 	if (self!=nil)	{
 		displayLink = NULL;
 		sharedContext = [[NSOpenGLContext alloc] initWithFormat:[self createGLPixelFormat] shareContext:nil];
-		player = [[AVPlayer alloc] initWithPlayerItem:nil];
+		player = [[AVPlayer alloc] init];
 		[player setActionAtItemEnd:AVPlayerActionAtItemEndPause];
 		[player play];
 		playerItem = nil;
@@ -139,9 +139,7 @@
 		//	else there's no output- create one
 		else	{
 			NSDictionary				*pba = [NSDictionary dictionaryWithObjectsAndKeys:
-				//NUMINT(kCVPixelFormatType_422YpCbCr8), kCVPixelBufferPixelFormatTypeKey,
-				//NUMINT(kCVPixelFormatType_32BGRA), kCVPixelBufferPixelFormatTypeKey,
-				//NUMINT(FOURCC_PACK('D','X','t','1')), kCVPixelBufferPixelFormatTypeKey,
+				[NSNumber numberWithInteger:kCVPixelFormatType_32BGRA], kCVPixelBufferPixelFormatTypeKey,
 				[NSNumber numberWithBool:YES], kCVPixelBufferIOSurfaceOpenGLFBOCompatibilityKey,
 				//NUMINT(dims.width), kCVPixelBufferWidthKey,
 				//NUMINT(dims.height), kCVPixelBufferHeightKey,
@@ -296,26 +294,71 @@
 			if (pb==NULL)
 				NSLog(@"\t\tERR: unable to copy pixel buffer from nativeAVFOutput");
 			else	{
-				
-				//	make a CV GL texture from the pixel buffer
-				CVOpenGLTextureRef		newTex = NULL;
-				CVReturn				err = CVOpenGLTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
-					texCache,
-					pb,
-					NULL,
-					&newTex);
-				if (err == kCVReturnSuccess)	{
-					//	draw the CV GL texture in the GL view
-					CGSize		texSize = CVImageBufferGetEncodedSize(newTex);
-					[glView
-						drawTexture:CVOpenGLTextureGetName(newTex)
-						sized:NSMakeSize(texSize.width,texSize.height)
-						flipped:CVOpenGLTextureIsFlipped(newTex)];
+				//	if we want to use opengl to display the buffer...
+				if ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]==0)	{
+					//	make a CV GL texture from the pixel buffer
+					CVOpenGLTextureRef		newTex = NULL;
+					CVReturn				err = CVOpenGLTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
+						texCache,
+						pb,
+						NULL,
+						&newTex);
+					if (err == kCVReturnSuccess)	{
+						//	draw the CV GL texture in the GL view
+						CGSize		texSize = CVImageBufferGetEncodedSize(newTex);
+						[glView
+							drawTexture:CVOpenGLTextureGetName(newTex)
+							sized:NSMakeSize(texSize.width,texSize.height)
+							flipped:CVOpenGLTextureIsFlipped(newTex)];
 					
-					CVOpenGLTextureRelease(newTex);
+						CVOpenGLTextureRelease(newTex);
+					}
+					else
+						NSLog(@"\t\terr %d at CVOpenGLTextureCacheCreateTextureFromImage()",err);
 				}
-				else
-					NSLog(@"\t\terr %d at CVOpenGLTextureCacheCreateTextureFromImage()",err);
+				//	else we want to use NSImage to display the buffer...
+				else	{
+					size_t				pbBytesPerRow = CVPixelBufferGetBytesPerRow(pb);
+					NSSize				imgSize = NSMakeSize(CVPixelBufferGetWidth(pb), CVPixelBufferGetHeight(pb));
+					NSBitmapImageRep	*bitmapRep = [[NSBitmapImageRep alloc]
+						initWithBitmapDataPlanes:NULL
+						pixelsWide:(NSUInteger)imgSize.width
+						pixelsHigh:(NSUInteger)imgSize.height
+						bitsPerSample:8
+						samplesPerPixel:4
+						hasAlpha:YES
+						isPlanar:NO
+						colorSpaceName:NSCalibratedRGBColorSpace
+						bitmapFormat:0
+						bytesPerRow:pbBytesPerRow
+						bitsPerPixel:32];
+					if (bitmapRep==nil)
+						NSLog(@"\t\terr: bitmap rep nil, %s",__func__);
+					else	{
+						CVPixelBufferLockBaseAddress(pb, kCVPixelBufferLock_ReadOnly);
+						size_t				bitmapBytesPerRow = [bitmapRep bytesPerRow];
+						size_t				minBytesPerRow = fminl(pbBytesPerRow, bitmapBytesPerRow);
+						void				*readAddr = CVPixelBufferGetBaseAddress(pb);
+						void				*writeAddr = [bitmapRep bitmapData];
+						for (int i=0; i<imgSize.height; ++i)	{
+							memcpy(writeAddr, readAddr, minBytesPerRow);
+							writeAddr += bitmapBytesPerRow;
+							readAddr += pbBytesPerRow;
+						}
+						CVPixelBufferUnlockBaseAddress(pb, kCVPixelBufferLock_ReadOnly);
+						
+						NSImage				*newImg = [[NSImage alloc] initWithSize:imgSize];
+						[newImg addRepresentation:bitmapRep];
+						//	draw the NSImage in the view
+						[imgView setImage:newImg];
+					
+						[newImg release];
+						newImg = nil;
+						[bitmapRep release];
+						bitmapRep = nil;
+					}
+					
+				}
 				
 				CVPixelBufferRelease(pb);
 			}

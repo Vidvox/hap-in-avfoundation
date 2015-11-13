@@ -1,5 +1,6 @@
 #import "AVPlayerItemHapDXTOutput.h"
 #import "AVPlayerItemAdditions.h"
+#import "AVAssetAdditions.h"
 #import "PixelFormats.h"
 #import "HapPlatform.h"
 #import "HapCodecGL.h"
@@ -122,6 +123,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 }
 - (HapDecoderFrame *) allocFrameClosestToTime:(CMTime)n	{
 	HapDecoderFrame			*returnMe = nil;
+	BOOL					noHapTrackLoaded = NO;
 	BOOL					foundExactMatchToTarget = NO;
 	BOOL					exactMatchToTargetWasDecoded = NO;
 	OSSpinLockLock(&propertyLock);
@@ -150,6 +152,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			for (HapDecoderFrame *decFrame in decodedFrames)	{
 				if ([decFrame containsTime:n])	{
 					returnMe = [decFrame retain];
+					break;
 				}
 			}
 		}
@@ -164,12 +167,21 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 				CMSampleBufferRef		sampleBuffer = [framePtr hapSampleBuffer];
 				CMTime					frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
 				double					frameDeltaInSeconds = CMTimeGetSeconds(CMTimeSubtract(targetFrameTime, frameTime));
+				
+				if (fabs(frameDeltaInSeconds)<fabs(runningDelta))	{
+					runningDelta = frameDeltaInSeconds;
+					if (returnMe!=nil)
+						[returnMe release];
+					returnMe = [framePtr retain];
+				}
+				/*
 				if (frameDeltaInSeconds>0.0 && frameDeltaInSeconds<runningDelta)	{
 					runningDelta = frameDeltaInSeconds;
 					if (returnMe!=nil)
 						[returnMe release];
 					returnMe = [framePtr retain];
 				}
+				*/
 			}
 		}
 		//	i only want to return a frame if it's not the last frame i returned
@@ -196,7 +208,13 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			}
 		}
 	}
+	else
+		noHapTrackLoaded = YES;
 	OSSpinLockUnlock(&propertyLock);
+	
+	//	if we aren't currently working with a hap track, return immediately (nothing to decode)
+	if (noHapTrackLoaded)
+		return returnMe;
 	
 	//	if i didn't find an exact match to the target then i need to start decompressing that frame (i know it's async but i'm going to do this outside the lock anyway)
 	if (!foundExactMatchToTarget)	{
@@ -207,6 +225,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			});
 		}
 	}
+	
 	return returnMe;
 }
 - (HapDecoderFrame *) allocFrameForTime:(CMTime)n	{
@@ -545,9 +564,27 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	//NSLog(@"%s",__func__);
 	BOOL		returnMe = YES;
 	if (arg1!=nil)	{
-		//	from the player item's asset, find the hap video track
-		AVAsset				*itemAsset = [arg1 asset];
-		AVAssetTrack		*hapTrack = [arg1 hapTrack];
+		
+		AVAsset				*itemAsset = nil;
+		AVAssetTrack		*hapTrack = nil;
+		/*	AVMutableComposition is a subclass of AVAsset- but AVSampleBufferGenerator can't work with 
+		it, so if the player we're attaching to loaded a composition we have to programmatically 
+		determine the source URL, creat our own asset, pull its hap track, and create the sample 
+		buffer generator from *that*.			*/
+		if ([[arg1 asset] isKindOfClass:[AVComposition class]])	{
+			NSArray				*segments = [[arg1 hapTrack] segments];
+			AVCompositionTrackSegment	*segment = (segments==nil || [segments count]<1) ? nil : [segments objectAtIndex:0];
+			NSURL				*assetURL = (segment==nil) ? nil : [segment sourceURL];
+			itemAsset = [AVAsset assetWithURL:assetURL];
+			NSArray				*hapTracks = [itemAsset hapVideoTracks];
+			hapTrack = (hapTracks==nil || [hapTracks count]<1) ? nil : [hapTracks objectAtIndex:0];
+		}
+		//	else the passed player item's asset is presumably a plain, old-fashioned AVAsset
+		else	{
+			itemAsset = [arg1 asset];
+			hapTrack = [arg1 hapTrack];
+		}
+		
 		//	i only want to attach if there's a hap track...
 		if (hapTrack!=nil)	{
 			OSSpinLockLock(&propertyLock);

@@ -126,8 +126,8 @@
 		}
 		else	{
 			[filePtr setStatusString:@"Ready"];
-			//[filePtr setConversionDone:NO];
-			//[filePtr setConvertedFilePath:nil];
+			[filePtr setConversionDone:NO];
+			[filePtr setConvertedFilePath:nil];
 		}
 	}
 }
