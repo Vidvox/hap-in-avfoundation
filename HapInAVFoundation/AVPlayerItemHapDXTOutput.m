@@ -164,24 +164,26 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			//	run through all the decoded frames, looking for the frame with the smallest delta > 0
 			double					runningDelta = 9999.0;
 			for (HapDecoderFrame *framePtr in decodedFrames)	{
-				CMSampleBufferRef		sampleBuffer = [framePtr hapSampleBuffer];
-				CMTime					frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-				double					frameDeltaInSeconds = CMTimeGetSeconds(CMTimeSubtract(targetFrameTime, frameTime));
-				
-				if (fabs(frameDeltaInSeconds)<fabs(runningDelta))	{
-					runningDelta = frameDeltaInSeconds;
-					if (returnMe!=nil)
-						[returnMe release];
-					returnMe = [framePtr retain];
+				if (![framePtr playedOut])	{
+					CMSampleBufferRef		sampleBuffer = [framePtr hapSampleBuffer];
+					CMTime					frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+					double					frameDeltaInSeconds = CMTimeGetSeconds(CMTimeSubtract(targetFrameTime, frameTime));
+					
+					if (fabs(frameDeltaInSeconds)<fabs(runningDelta))	{
+						runningDelta = frameDeltaInSeconds;
+						if (returnMe!=nil)
+							[returnMe release];
+						returnMe = [framePtr retain];
+					}
+					/*
+					if (frameDeltaInSeconds>0.0 && frameDeltaInSeconds<runningDelta)	{
+						runningDelta = frameDeltaInSeconds;
+						if (returnMe!=nil)
+							[returnMe release];
+						returnMe = [framePtr retain];
+					}
+					*/
 				}
-				/*
-				if (frameDeltaInSeconds>0.0 && frameDeltaInSeconds<runningDelta)	{
-					runningDelta = frameDeltaInSeconds;
-					if (returnMe!=nil)
-						[returnMe release];
-					returnMe = [framePtr retain];
-				}
-				*/
 			}
 		}
 		//	i only want to return a frame if it's not the last frame i returned
@@ -195,6 +197,10 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			}
 			lastGeneratedSampleTime = returnedFrameTime;
 		}
+		
+		//	make sure we flag the frame as having been played out now!
+		if (returnMe != nil)
+			[returnMe setPlayedOut:YES];
 		
 		//	if i didn't find an exact match to the target...
 		if (!foundExactMatchToTarget)	{

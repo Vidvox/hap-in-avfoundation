@@ -64,6 +64,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		userInfo = nil;
 		decoded = NO;
 		age = 0;
+		playedOut = NO;
 		
 		hapSampleBuffer = sb;
 		if (hapSampleBuffer==NULL)	{
@@ -336,6 +337,18 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	int		returnMe = 0;
 	OSSpinLockLock(&atomicLock);
 	returnMe = age;
+	OSSpinLockUnlock(&atomicLock);
+	return returnMe;
+}
+- (void) setPlayedOut:(BOOL)n	{
+	OSSpinLockLock(&atomicLock);
+	playedOut = n;
+	OSSpinLockUnlock(&atomicLock);
+}
+- (BOOL) playedOut	{
+	BOOL		returnMe = 0;
+	OSSpinLockLock(&atomicLock);
+	returnMe = playedOut;
 	OSSpinLockUnlock(&atomicLock);
 	return returnMe;
 }

@@ -36,6 +36,7 @@ This object represents a frame, and holds all the values necessary to decode a h
 	
 	BOOL					decoded;	//	when decoding is complete, this is set to YES.
 	int						age;	//	used by the output during decoding, once a frame is "too old" (hasn't been used in a while) it's removed from the output's local cache of decompressed frames
+	BOOL					playedOut;
 }
 
 /**
@@ -85,5 +86,7 @@ Returns an "empty" decoder frame- all the fields except "dxtData" and "dxtDataSi
 @property (assign,readwrite) BOOL decoded;
 - (void) incrementAge;
 - (int) age;
+- (void) setPlayedOut:(BOOL)n;
+- (BOOL) playedOut;
 
 @end
