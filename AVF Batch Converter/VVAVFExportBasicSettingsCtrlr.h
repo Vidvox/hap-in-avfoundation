@@ -38,6 +38,8 @@ extern NSString *const		VVAVVideoMultiPassEncodeKey;
 	IBOutlet NSMatrix			*h264BitrateMatrix;
 	IBOutlet NSTextField		*h264BitrateField;
 	IBOutlet NSButton			*h264MultiPassButton;
+	IBOutlet NSMatrix			*hapQChunkMatrix;
+	IBOutlet NSTextField		*hapQChunkField;
 	IBOutlet NSTabView			*vidDimsTabView;	//	tab view hosting a toggle for selecting whether or not video should be resized
 	IBOutlet NSTextField		*vidWidthField;	//	text field in 'vidDimsTabView', destination width
 	IBOutlet NSTextField		*vidHeightField;	//	text field in 'vidDimsTabView', destination height
@@ -88,6 +90,8 @@ extern NSString *const		VVAVVideoMultiPassEncodeKey;
 - (IBAction) h264KeyframesFieldUsed:(id)sender;
 - (IBAction) h264BitrateMatrixUsed:(id)sender;
 - (IBAction) h264BitrateFieldUsed:(id)sender;
+- (IBAction) hapQChunkMatrixUsed:(id)sender;
+- (IBAction) hapQChunkFieldUsed:(id)sender;
 - (IBAction) resizeVideoClicked:(id)sender;
 - (IBAction) noResizeVideoClicked:(id)sender;
 - (IBAction) resizeVideoTextFieldUsed:(id)sender;

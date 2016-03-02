@@ -29,6 +29,7 @@ YCoCg encodes YCoCg in DXT and requires a shader to draw, and produces very high
 NSString *const			AVVideoCodecHap = @"Hap1";
 NSString *const			AVVideoCodecHapAlpha = @"Hap5";
 NSString *const			AVVideoCodecHapQ = @"HapY";
+NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 
 #define FourCCLog(n,f) NSLog(@"%@, %c%c%c%c",n,(int)((f>>24)&0xFF),(int)((f>>16)&0xFF),(int)((f>>8)&0xFF),(int)((f>>0)&0xFF))
 
@@ -39,6 +40,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 @interface AVAssetWriterHapInput ()
 @property (assign,readwrite) CMTime lastEncodedDuration;
 - (void) appendEncodedFrames;
+- (void *) allocDXTEncoder;
 @end
 
 
@@ -71,11 +73,13 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		exportTextureType = HapTextureFormat_RGB_DXT1;
 		exportImgSize = NSMakeSize(1,1);
 		exportDXTImgSize = NSMakeSize(4,4);
+		exportChunkCount = 1;
+		exportHighQualityFlag = NO;
 		formatConvertPoolLength = 0;
 		dxtBufferPoolLength = 0;
 		hapBufferPoolLength = 0;
 		encoderLock = OS_SPINLOCK_INIT;
-		dxtEncoder = NULL;
+		glDXTEncoder = NULL;
 		encoderProgressLock = OS_SPINLOCK_INIT;
 		encoderProgressFrames = [[NSMutableArray arrayWithCapacity:0] retain];
 		encoderWaitingToRunOut = NO;
@@ -99,7 +103,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		//	get the requested codec type- if it's not hap, bail
 		NSString		*codecString = [n objectForKey:AVVideoCodecKey];
 		BOOL			hapExport = NO;
-		BOOL			highQualityExport = NO;
+		exportHighQualityFlag = NO;
 		if (codecString==nil)
 			goto BAIL;
 		else if ([codecString isEqualToString:AVVideoCodecHap])	{
@@ -126,30 +130,21 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		NSDictionary	*propertiesDict = [n objectForKey:AVVideoCompressionPropertiesKey];
 		NSNumber		*qualityNum = (propertiesDict==nil) ? nil : [propertiesDict objectForKey:AVVideoQualityKey];
 		if (qualityNum!=nil && [qualityNum floatValue]>=0.80)
-			highQualityExport = YES;
+			exportHighQualityFlag = YES;
+		NSNumber		*chunkNum = (propertiesDict==nil) ? nil : [propertiesDict objectForKey:AVHapVideoChunkCountKey];
+		exportChunkCount = (chunkNum==nil) ? 1 : [chunkNum intValue];
+		exportChunkCount = fmaxl(fminl(exportChunkCount, HAPQMAXCHUNKS), 1);
+		
 		//	figure out the max dxt frame size in bytes, make the dxt buffer pool
 		NSUInteger		dxtFrameSizeInBytes = dxtBytesForDimensions(exportDXTImgSize.width, exportDXTImgSize.height, exportCodecType);
 		//NSLog(@"\t\tdxtFrameSizeInBytes is %d",dxtFrameSizeInBytes);
 		dxtBufferPoolLength = dxtFrameSizeInBytes;
 		//	figure out the max hap frame size in bytes, make the hap buffer pool
-		hapBufferPoolLength = HapMaxEncodedLength(dxtFrameSizeInBytes);
+		hapBufferPoolLength = HapMaxEncodedLength(dxtFrameSizeInBytes, exportTextureType, exportChunkCount);
 		//NSLog(@"\t\thapBufferPoolLength is %d",hapBufferPoolLength);
 		
-		//	make the dxt encoder
-		switch (exportCodecType)	{
-		case kHapCodecSubType:
-		case kHapAlphaCodecSubType:
-		{
-			if (highQualityExport)
-				dxtEncoder = HapCodecSquishEncoderCreate(HapCodecSquishEncoderMediumQuality, exportPixelFormat);
-			else
-				dxtEncoder = HapCodecGLEncoderCreate((unsigned int)exportImgSize.width, (unsigned int)exportImgSize.height, exportPixelFormat);
-			break;
-		}
-		case kHapYCoCgCodecSubType:
-			dxtEncoder = HapCodecYCoCgDXTEncoderCreate();
-			break;
-		}
+		//	make a DXT encoder just to make sure we can
+		void			*dxtEncoder = [self allocDXTEncoder];
 		if (dxtEncoder==NULL)	{
 			NSLog(@"\t\terr: couldn't make dxtEncoder, %s",__func__);
 			FourCCLog(@"\t\texport codec type was",exportCodecType);
@@ -160,6 +155,31 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		//FourCCLog(@"\t\texportPixelFormat is",exportPixelFormat);
 		//	make a buffer pool for format conversion buffers (i know what the desired pixel format is for the dxt encoder, so i know how big the format conversion buffers have to be)
 		encoderInputPxlFmt = ((HapCodecDXTEncoderRef)dxtEncoder)->pixelformat_function(dxtEncoder, exportPixelFormat);
+		
+		//	if we aren't using a GL-based DXT encoder (which is "expensive" to delete/recreate), release the DXT encoder
+		if (dxtEncoder!=NULL)	{
+			switch (exportCodecType)	{
+			case kHapCodecSubType:
+			case kHapAlphaCodecSubType:
+			{
+				if (exportHighQualityFlag)	{
+					HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)dxtEncoder);
+					dxtEncoder = NULL;
+				}
+				else	{
+					//	do not release the DXT encoder for this case (this is the GL encoder)
+					glDXTEncoder = dxtEncoder;
+					dxtEncoder = NULL;
+				}
+				break;
+			}
+			case kHapYCoCgCodecSubType:
+				HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)dxtEncoder);
+				dxtEncoder = NULL;
+				break;
+			}
+		}
+		
 		//FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmt);
 		encoderInputPxlFmtBytesPerRow = roundUpToMultipleOf16(((uint32_t)exportImgSize.width * 4));
 		formatConvertPoolLength = encoderInputPxlFmtBytesPerRow*(NSUInteger)(exportImgSize.height);
@@ -178,18 +198,19 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 		dispatch_release(encodeQueue);
 		encodeQueue = NULL;
 	}
-	OSSpinLockLock(&encoderLock);
-	if (dxtEncoder!=NULL)	{
-		HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)dxtEncoder);
-		dxtEncoder = NULL;
-	}
-	OSSpinLockUnlock(&encoderLock);
 	OSSpinLockLock(&encoderProgressLock);
 	if (encoderProgressFrames!=nil)	{
 		[encoderProgressFrames release];
 		encoderProgressFrames = nil;
 	}
 	OSSpinLockUnlock(&encoderProgressLock);
+	OSSpinLockLock(&encoderLock);
+	//	release the DXT encoder
+	if (glDXTEncoder!=NULL)	{
+		HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)glDXTEncoder);
+		glDXTEncoder = NULL;
+	}
+	OSSpinLockUnlock(&encoderLock);
 	[super dealloc];
 }
 - (BOOL) appendPixelBuffer:(CVPixelBufferRef)pb withPresentationTime:(CMTime)t	{
@@ -213,7 +234,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 	}
 	
 	//	if i'm done accepting samples (because something marked me as finished), i won't be encoding a frame- but i'll still want to execute the block
-	HapEncoderFrame		*encoderFrame = nil;
+	__block HapEncoderFrame		*encoderFrame = nil;
 	OSSpinLockLock(&encoderProgressLock);
 	if (encoderWaitingToRunOut)	{
 		if (pb!=NULL)	{
@@ -302,15 +323,29 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			
 			void			*dxtBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtBufferPoolLength, 0);
 			int				intErr = 0;
-			//	slightly different path depending on whether i'm converting the passed pixel buffer...
+			//	try to get the default GL-based DXT encoder- if it exists we need to use it (and it's shared)
 			OSSpinLockLock(&encoderLock);
-			if (dxtEncoder==nil)	{
+			void			*targetDXTEncoder = glDXTEncoder;
+			OSSpinLockUnlock(&encoderLock);
+			void			*newDXTEncoder = NULL;
+			//	if we aren't sharing a GL-based DXT encoder, we need to make a new DXT encoder (which will be freed after this frame is encoded)
+			if (targetDXTEncoder == NULL)	{
+				newDXTEncoder = [self allocDXTEncoder];
+				targetDXTEncoder = newDXTEncoder;
+			}
+			
+			//	if we don't have a target encoder, something went wrong
+			if (targetDXTEncoder == NULL)	{
 				NSLog(@"\t\terr: encoder nil in %s",__func__);
 				intErr = -1;
 			}
 			else	{
+				//	if we haven't created a new DXT encoder then we're using the GL encoder, which is shared- and must thus be locked
+				if (newDXTEncoder == NULL)
+					OSSpinLockLock(&encoderLock);
+				//	slightly different path depending on whether i'm converting the passed pixel buffer...
 				if (formatConvertBuffer==nil)	{
-					intErr = ((HapCodecDXTEncoderRef)dxtEncoder)->encode_function(dxtEncoder,
+					intErr = ((HapCodecDXTEncoderRef)targetDXTEncoder)->encode_function(targetDXTEncoder,
 						sourceBuffer,
 						(unsigned int)CVPixelBufferGetBytesPerRow(pb),
 						encoderInputPxlFmt,
@@ -320,7 +355,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 				}
 				//	...or if i'm converting the format conversion buffer 
 				else	{
-					intErr = ((HapCodecDXTEncoderRef)dxtEncoder)->encode_function(dxtEncoder,
+					intErr = ((HapCodecDXTEncoderRef)targetDXTEncoder)->encode_function(targetDXTEncoder,
 						formatConvertBuffer,
 						(unsigned int)(formatConvertPoolLength/(NSUInteger)exportImgSize.height),
 						encoderInputPxlFmt,
@@ -328,8 +363,10 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 						(unsigned int)exportImgSize.width,
 						(unsigned int)exportImgSize.height);
 				}
+				if (newDXTEncoder == NULL)
+					OSSpinLockUnlock(&encoderLock);
 			}
-			OSSpinLockUnlock(&encoderLock);
+			
 			//	unlock the pixel buffer immediately
 			CVPixelBufferUnlockBaseAddress(pb,kHapCodecCVPixelBufferLockFlags);
 			//	if there was an error with the DXT encode, don't proceed
@@ -356,6 +393,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 							dxtBufferPoolLength,
 							exportTextureType,
 							HapCompressorSnappy,
+							exportChunkCount,
 							hapBuffer,
 							hapBufferLength,
 							&bytesWrittenToHapBuffer);
@@ -426,6 +464,12 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 			if (formatConvertBuffer!=nil)	{
 				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, formatConvertBuffer);
 				formatConvertBuffer = nil;
+			}
+			
+			//	release the dxt encoder
+			if (newDXTEncoder!=NULL)	{
+				HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)newDXTEncoder);
+				newDXTEncoder = NULL;
 			}
 			
 			//	release the pixel buffer i retained before i dispatched this block!
@@ -533,45 +577,20 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 //	runs through the encoder progress frames, getting as many sample buffers as possible and appending them (in order)
 - (void) appendEncodedFrames	{
 	//NSLog(@"%s",__func__);
-	/*
-	//	this bit just appends every encoded frame with a duration of 1- i don't know if it produces an accurate file or not.
-	OSSpinLockLock(&encoderProgressLock);
-	//	run through all the frames that are encoded, stop as soon as i hit a frame that isn't encoded
-	NSUInteger			countOfFramesToRemove = 0;
-	for (HapEncoderFrame *framePtr in encoderProgressFrames)	{
-		if (![framePtr encoded])
-			break;
-		CMSampleBufferRef		hapSampleBuffer = [framePtr allocCMSampleBufferWithDurationTimeValue:1];
-		if (hapSampleBuffer==NULL)
-			NSLog(@"\t\terr: couldn't make hap sample buffer, %s",__func__);
-		else	{
-			[super appendSampleBuffer:hapSampleBuffer];
-			CFRelease(hapSampleBuffer);
-			hapSampleBuffer = NULL;
-		}
-		++countOfFramesToRemove;
-	}
-	for (int i=0; i<countOfFramesToRemove; ++i)
-		[encoderProgressFrames removeObjectAtIndex:0];
-	if (encoderWaitingToRunOut && [encoderProgressFrames count]==0)	{
-		NSLog(@"\t\twaiting to run out & no more frames, marking super as finished");
-		[super markAsFinished];
-	}
-	OSSpinLockUnlock(&encoderProgressLock);
-	*/
-	
-	
-	
 	
 	OSSpinLockLock(&encoderProgressLock);
 	if (![super isReadyForMoreMediaData])	{
 		NSLog(@"\t\terr: not ready for more media data, %s",__func__);
 		[encoderProgressFrames removeAllObjects];
+		OSSpinLockUnlock(&encoderProgressLock);
+		
 		[super markAsFinished];
 	}
 	//	first of all, if there's only one sample and i'm waiting to finish- append the last sample and then i'm done (yay!)
 	else if (encoderWaitingToRunOut && [encoderProgressFrames count]<=1)	{
 		HapEncoderFrame			*lastFrame = ([encoderProgressFrames count]<1) ? nil : [encoderProgressFrames objectAtIndex:0];
+		OSSpinLockUnlock(&encoderProgressLock);
+		
 		if (lastFrame!=nil && [lastFrame encoded])	{
 			//NSLog(@"\t\tone frame left and it's encoded, making a sample buffer and then appending it");
 			//	make a hap sample buffer, append it
@@ -582,7 +601,11 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 				[super appendSampleBuffer:hapSampleBuffer];
 				CFRelease(hapSampleBuffer);
 			}
+			
+			OSSpinLockLock(&encoderProgressLock);
 			[encoderProgressFrames removeObjectAtIndex:0];
+			OSSpinLockUnlock(&encoderProgressLock);
+			
 			//	mark myself as finished either way
 			//NSLog(@"\t\tmarking super as finished in %s",__func__);
 			[super markAsFinished];
@@ -594,43 +617,82 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 	}
 	//	else i'm either not waiting to run out, or there's more than one frame in the array...
 	else	{
-		//	i'm going to run through all the encoderProgressFrames, trying to append as many encoded frames as i can
-		HapEncoderFrame		*lastFramePtr = nil;
-		int					numberOfSamplesAppended = 0;
-		for (HapEncoderFrame *framePtr in encoderProgressFrames)	{
-			//	if there's at least one other encoded frame...
-			if (lastFramePtr!=nil)	{
-				//	if the last frame isn't encoded or i'm not ready for more media data, bail- i can't do anything
-				if (![lastFramePtr encoded] || ![super isReadyForMoreMediaData])
-					break;
-				
-				//	tell the last frame to create a sample buffer derived from this frame's presentation time
-				CMSampleBufferRef	hapSampleBuffer = [lastFramePtr allocCMSampleBufferWithNextFramePresentationTime:[framePtr presentationTime]];
-				if (hapSampleBuffer==NULL)
-					NSLog(@"\t\terr: couldn't make sample buffer from frame, %s, not appending buffer",__func__);
-				else	{
-					//	save the duration- i need to save the duration because i have to apply a duration to the final frame
-					CMSampleTimingInfo		sampleTimingInfo;
-					CMSampleBufferGetSampleTimingInfo(hapSampleBuffer, 0, &sampleTimingInfo);
-					//NSLog(@"\t\tappending sample at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.presentationTimeStamp) autorelease]);
-					[self setLastEncodedDuration:sampleTimingInfo.duration];
-					
-					[super appendSampleBuffer:hapSampleBuffer];
-					CFRelease(hapSampleBuffer);
+		OSSpinLockUnlock(&encoderProgressLock);
+		
+		//	we want to add as many samples as possible
+		while ([super isReadyForMoreMediaData])	{
+			//	get the first two frames- if they're both encoded then i can append the first frame
+			OSSpinLockLock(&encoderProgressLock);
+			HapEncoderFrame		*thisFrame = nil;
+			HapEncoderFrame		*nextFrame = nil;
+			if ([encoderProgressFrames count]>1)	{
+				thisFrame = [encoderProgressFrames objectAtIndex:0];
+				nextFrame = [encoderProgressFrames objectAtIndex:1];
+				if (thisFrame==nil || nextFrame==nil || ![thisFrame encoded] || ![nextFrame encoded])	{
+					thisFrame = nil;
+					nextFrame = nil;
 				}
-				//	increment the # of samples appended regardless- if i couldn't make a sample buffer i want to free the frame
-				++numberOfSamplesAppended;
+				else	{
+					[thisFrame retain];
+					[nextFrame retain];
+					[encoderProgressFrames removeObjectAtIndex:0];
+				}
 			}
-			lastFramePtr = framePtr;
+			OSSpinLockUnlock(&encoderProgressLock);
+			
+			//	if we don't have any frames to work with, break out of the while loop- there's nothing for us to append
+			if (thisFrame==nil || nextFrame==nil)
+				break;
+			//NSLog(@"\t\tthisFrame is %@, nextFrame is %@",thisFrame,nextFrame);
+			
+			//	tell this frame to create a sample buffer derived from the next frame's presentation time
+			CMSampleBufferRef	hapSampleBuffer = [thisFrame allocCMSampleBufferWithNextFramePresentationTime:[nextFrame presentationTime]];
+			if (hapSampleBuffer==NULL)
+				NSLog(@"\t\terr: couldn't make hap sample buffer from frame, %s, not appending buffer",__func__);
+			else	{
+				//	save the duration- i need to save the duration because i have to apply a duration to the final frame
+				CMSampleTimingInfo		sampleTimingInfo;
+				CMSampleBufferGetSampleTimingInfo(hapSampleBuffer, 0, &sampleTimingInfo);
+				//NSLog(@"\t\tappending sample at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.presentationTimeStamp) autorelease]);
+				[self setLastEncodedDuration:sampleTimingInfo.duration];
+				
+				[super appendSampleBuffer:hapSampleBuffer];
+				
+				CFRelease(hapSampleBuffer);
+			}
+			
+			if (thisFrame!=nil)
+				[thisFrame release];
+			if (nextFrame!=nil)
+				[nextFrame release];
 		}
-		//	if i appended samples, i can free those frames now...
-		if (numberOfSamplesAppended>0)	{
-			for (int i=0; i<numberOfSamplesAppended; ++i)
-				[encoderProgressFrames removeObjectAtIndex:0];
-		}
+		
+	}
+	
+}
+- (void *) allocDXTEncoder	{
+	void			*returnMe = NULL;
+	OSSpinLockLock(&encoderProgressLock);
+	switch (exportCodecType)	{
+	case kHapCodecSubType:
+	case kHapAlphaCodecSubType:
+	{
+		if (exportHighQualityFlag)
+			returnMe = HapCodecSquishEncoderCreate(HapCodecSquishEncoderMediumQuality, exportPixelFormat);
+		else
+			returnMe = HapCodecGLEncoderCreate((unsigned int)exportImgSize.width, (unsigned int)exportImgSize.height, exportPixelFormat);
+		break;
+	}
+	case kHapYCoCgCodecSubType:
+		returnMe = HapCodecYCoCgDXTEncoderCreate();
+		break;
+	}
+	if (returnMe==NULL)	{
+		NSLog(@"\t\terr: couldn't make dxtEncoder, %s",__func__);
+		FourCCLog(@"\t\texport codec type was",exportCodecType);
 	}
 	OSSpinLockUnlock(&encoderProgressLock);
-	
+	return returnMe;
 }
 
 

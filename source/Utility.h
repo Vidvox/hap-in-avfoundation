@@ -36,8 +36,6 @@
 #endif
 #include "HapPlatform.h"
 
-#define kHapCodecSampleDescriptionExtension 'HAPe'
-
 void addNumberToDictionary( CFMutableDictionaryRef dictionary, CFStringRef key, SInt32 numberSInt32 );
 void addDoubleToDictionary( CFMutableDictionaryRef dictionary, CFStringRef key, double numberDouble );
 int roundUpToMultipleOf4( int n );
@@ -58,6 +56,8 @@ unsigned long dxtBytesForDimensions(int width, int height, OSType codecSubType);
                                 || (fmt) == kHapCVPixelFormat_YCoCg_DXT5) ? true : false)
 
 SInt16 resourceIDForComponentType(OSType componentType, OSType resourceType);
+
+int hapCodecMaxTasks();
 
 #ifdef DEBUG
 #if defined(_WIN32)

@@ -34,6 +34,7 @@
 		1A0536221A38CA5D005B47BD /* ImageMath.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A05361E1A38CA5D005B47BD /* ImageMath.h */; };
 		1A0536231A38CA5D005B47BD /* YCoCg.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A05361F1A38CA5D005B47BD /* YCoCg.c */; };
 		1A0536241A38CA5D005B47BD /* YCoCg.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0536201A38CA5D005B47BD /* YCoCg.h */; };
+		1A0E542D1C85F809003EAED8 /* Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A0E542C1C85F809003EAED8 /* Utility.m */; };
 		1A32301A1A3BA14000DDB2E0 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3230191A3BA14000DDB2E0 /* AppDelegate.m */; };
 		1A32301C1A3BA14000DDB2E0 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A32301B1A3BA14000DDB2E0 /* main.m */; };
 		1A32301E1A3BA14000DDB2E0 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A32301D1A3BA14000DDB2E0 /* Images.xcassets */; };
@@ -205,6 +206,7 @@
 		1A05361E1A38CA5D005B47BD /* ImageMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageMath.h; path = source/YCoCg/ImageMath.h; sourceTree = "<group>"; };
 		1A05361F1A38CA5D005B47BD /* YCoCg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = YCoCg.c; path = source/YCoCg/YCoCg.c; sourceTree = "<group>"; };
 		1A0536201A38CA5D005B47BD /* YCoCg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = YCoCg.h; path = source/YCoCg/YCoCg.h; sourceTree = "<group>"; };
+		1A0E542C1C85F809003EAED8 /* Utility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Utility.m; path = source/Utility.m; sourceTree = SOURCE_ROOT; };
 		1A3230141A3BA14000DDB2E0 /* HapInAVF Test App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "HapInAVF Test App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A3230171A3BA14000DDB2E0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1A3230181A3BA14000DDB2E0 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -515,6 +517,7 @@
 				1A628E771A422EAD003736AC /* CMBlockBufferPool.m */,
 				1AB1C98E1A38CAFA00688AB4 /* Utility.h */,
 				1AB1C98D1A38CAFA00688AB4 /* Utility.c */,
+				1A0E542C1C85F809003EAED8 /* Utility.m */,
 				1A0536261A38CA61005B47BD /* YCoCg */,
 				1A97F5CF1A38AC8700E0DC74 /* Hap (and snappy) */,
 				1A0535F21A38C9CC005B47BD /* DXT (and squish) */,
@@ -655,7 +658,7 @@
 		1A97F5A21A38ABBF00E0DC74 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = Vidvox;
 				TargetAttributes = {
 					1A3230131A3BA14000DDB2E0 = {
@@ -800,6 +803,7 @@
 				1A0536211A38CA5D005B47BD /* ImageMath.c in Sources */,
 				1A5A4DE51A54A047005C961F /* AVAssetAdditions.m in Sources */,
 				1A97F5D21A38AC9800E0DC74 /* hap.c in Sources */,
+				1A0E542D1C85F809003EAED8 /* Utility.m in Sources */,
 				1A0536111A38CA11005B47BD /* HapCodecGL.c in Sources */,
 				1A0536231A38CA5D005B47BD /* YCoCg.c in Sources */,
 				1A401D6D1A41FF79003B6E0A /* AVAssetWriterHapInput.m in Sources */,
@@ -881,6 +885,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "HapInAVF Test App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -912,6 +917,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "HapInAVF Test App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -947,6 +953,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "AVF Batch Converter/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -978,6 +985,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "AVF Batch Converter/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -985,9 +993,9 @@
 		1A97F5BF1A38ABBF00E0DC74 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_OPTIMIZATION_LEVEL = s;
@@ -1006,7 +1014,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -1014,7 +1022,6 @@
 		1A97F5C01A38ABBF00E0DC74 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
@@ -1053,6 +1060,7 @@
 				INSTALL_PATH = "@rpath";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @loader_path/Frameworks";
 				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -1077,6 +1085,7 @@
 				INSTALL_PATH = "@rpath";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @loader_path/Frameworks";
 				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};

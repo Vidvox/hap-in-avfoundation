@@ -31,7 +31,6 @@ This class is the main interface for decoding hap video from AVFoundation.  You 
 	NSUInteger					dxtPoolLength;
 	NSUInteger					convPoolLength;
 	NSUInteger					rgbPoolLength;
-	void						*glDecoder;	//	actually a 'HapCodecGLRef'.  used to convert DXT to RGBA
 	
 	HapDecoderFrameAllocBlock		allocFrameBlock;	//	retained, nil by default.  this block is optional, but it must be threadsafe- it will be called (on a thread spawned by GCD) to create HapDecoderFrame instances.  if you want to provide your own memory into which the hap frames will be decoded into DXT, this is a good place to do it.
 	AVFHapDXTPostDecodeBlock		postDecodeBlock;	//	retained, nil by default.  this block is optional, but it must be threadsafe- it's executed on GCD-spawned threads immediately after decompression if decompression was successful.  if you want to upload your DXT data to a GL texture, this is a good place to do it.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6254" systemVersion="14C109" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9531" systemVersion="15D21" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6254"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9531"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="VVAVFExportBasicSettingsCtrlr">
@@ -21,6 +21,8 @@
                 <outlet property="h264KeyframesMatrix" destination="Tcu-ar-0Rh" id="UxZ-uR-KG4"/>
                 <outlet property="h264MultiPassButton" destination="fdh-q5-B42" id="EM3-8Q-Yl2"/>
                 <outlet property="h264ProfilesPUB" destination="FzX-Ew-zf5" id="TRC-zj-Epi"/>
+                <outlet property="hapQChunkField" destination="6za-U0-pgk" id="Yj3-3W-qVF"/>
+                <outlet property="hapQChunkMatrix" destination="exV-ej-bqF" id="Qt9-Fl-utw"/>
                 <outlet property="losslessBitDepthPUB" destination="aOl-cR-yft" id="L7u-hn-PMh"/>
                 <outlet property="pcmBitsPUB" destination="Jbu-y0-psL" id="rbM-ew-AAW"/>
                 <outlet property="pcmFloatingPointButton" destination="Krx-5c-Z39" id="aRp-hb-XKM"/>
@@ -39,7 +41,7 @@
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customView id="c22-O7-iKe">
-            <rect key="frame" x="0.0" y="4" width="597" height="430"/>
+            <rect key="frame" x="0.0" y="0.0" width="597" height="430"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <box horizontalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="dXX-Q4-ihM">
@@ -83,7 +85,7 @@
                                         <rect key="frame" x="41" y="137" width="204" height="38"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                        <size key="cellSize" width="195" height="18"/>
+                                        <size key="cellSize" width="192" height="18"/>
                                         <size key="intercellSpacing" width="4" height="2"/>
                                         <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="Qcl-fD-zNd">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -485,7 +487,7 @@
                                         <rect key="frame" x="43" y="266" width="204" height="38"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                        <size key="cellSize" width="195" height="18"/>
+                                        <size key="cellSize" width="192" height="18"/>
                                         <size key="intercellSpacing" width="4" height="2"/>
                                         <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="9pm-Hj-rNn">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -589,7 +591,7 @@
                                                             <rect key="frame" x="20" y="95" width="94" height="38"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                            <size key="cellSize" width="92" height="18"/>
+                                                            <size key="cellSize" width="91" height="18"/>
                                                             <size key="intercellSpacing" width="4" height="2"/>
                                                             <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="fib-s8-UWY">
                                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -645,7 +647,7 @@
                                                             <rect key="frame" x="20" y="24" width="94" height="38"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                            <size key="cellSize" width="85" height="18"/>
+                                                            <size key="cellSize" width="84" height="18"/>
                                                             <size key="intercellSpacing" width="4" height="2"/>
                                                             <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="lAU-de-tbF">
                                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -705,6 +707,61 @@
                                                                 <font key="font" metaFont="system"/>
                                                             </buttonCell>
                                                         </button>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="Item 3" identifier="" id="rnh-3r-728" userLabel="HapQ">
+                                                <view key="view" id="O3h-AH-uAE">
+                                                    <rect key="frame" x="0.0" y="0.0" width="244" height="212"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <matrix verticalHuggingPriority="750" allowsEmptySelection="NO" autorecalculatesCellSize="YES" id="exV-ej-bqF">
+                                                            <rect key="frame" x="18" y="149" width="103" height="38"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            <size key="cellSize" width="98" height="18"/>
+                                                            <size key="intercellSpacing" width="4" height="2"/>
+                                                            <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="Wzu-hB-Lvr">
+                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                            <cells>
+                                                                <column>
+                                                                    <buttonCell type="radio" title="Off (Default)" imagePosition="left" alignment="left" state="on" tag="1" inset="2" id="6Mn-zE-buu">
+                                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                        <font key="font" metaFont="system"/>
+                                                                    </buttonCell>
+                                                                    <buttonCell type="radio" title="# of chunks:" imagePosition="left" alignment="left" inset="2" id="arG-8L-oWF">
+                                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                        <font key="font" metaFont="system"/>
+                                                                    </buttonCell>
+                                                                </column>
+                                                            </cells>
+                                                            <connections>
+                                                                <action selector="hapQChunkMatrixUsed:" target="-2" id="fOU-Zn-LFQ"/>
+                                                            </connections>
+                                                        </matrix>
+                                                        <textField verticalHuggingPriority="750" id="6za-U0-pgk">
+                                                            <rect key="frame" x="129" y="149" width="58" height="22"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="U1S-7E-lnb">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <action selector="hapQChunkFieldUsed:" target="-2" id="4Eb-FZ-Tmk"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FWF-Bz-OB1">
+                                                            <rect key="frame" x="-2" y="195" width="139" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Chunked En/Decoding" id="IgE-k1-1wU">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
                                                     </subviews>
                                                 </view>
                                             </tabViewItem>

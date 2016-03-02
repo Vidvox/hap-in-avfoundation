@@ -6,6 +6,9 @@
 @implementation HapEncoderFrame
 
 
+- (NSString *) description	{
+	return [NSString stringWithFormat:@"<HapEncoderFrame %@, %d>",[(id)CMTimeCopyDescription(NULL,timing.presentationTimeStamp) autorelease], encoded];
+}
 + (id) createWithPresentationTime:(CMTime)t	{
 	id		returnMe = [[HapEncoderFrame alloc] initWithPresentationTime:t];
 	return (returnMe==nil) ? nil : [returnMe autorelease];

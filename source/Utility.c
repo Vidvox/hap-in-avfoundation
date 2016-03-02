@@ -105,6 +105,25 @@ SInt16 resourceIDForComponentType(OSType componentType, OSType resourceType)
 #endif
 
 #if defined(_WIN32)
+int hapCodecMaxTasks()
+{
+    /*
+    Some Adobe products throw an error if they queue more than 10 buffers
+    */
+    TCHAR executablePath[MAX_PATH + 1];
+    if (GetModuleFileName(0, executablePath, MAX_PATH + 1) != 0)
+    {
+        if (wcsstr(executablePath, L"Adobe") != NULL)
+        {
+            return 10;
+        }
+    }
+    return 20;
+}
+// Mac version is in Utility.m
+#endif
+
+#if defined(_WIN32) && defined(DEBUG)
 void debug_print_s(void *glob, const char *func, const char *s)
 {
     char buffer[255];

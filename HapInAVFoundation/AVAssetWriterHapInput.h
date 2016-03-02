@@ -12,6 +12,10 @@ extern NSString *const			AVVideoCodecHap;
 extern NSString *const			AVVideoCodecHapAlpha;
 //	same as "AVVideoCodecHap", except this defines a video using the HapQ codec
 extern NSString *const			AVVideoCodecHapQ;
+//	the hapQ codec offers the ability to create "chunked" files- this string is the key in the compression properties dict (AVVideoCompressionPropertiesKey) at which the # of chunks is stored.  if the value at this key is nil or < 1, it is assumed to be 1.
+extern NSString *const			AVHapVideoChunkCountKey;
+
+#define				HAPQMAXCHUNKS 8
 
 
 
@@ -27,6 +31,8 @@ This class is the main interface for using AVFoundation to encode and output vid
 	uint32_t		exportTextureType;	//	like HapTextureFormat_RGB_DXT1, etc.  declared in hap.h
 	NSSize			exportImgSize;	//	the size of the exported image in pixels.  doesn't take any rounding/block sizes into account- just the image size.
 	NSSize			exportDXTImgSize;	//	'exportImgSize' rounded up to a multiple of 4
+	int				exportChunkCount;
+	BOOL			exportHighQualityFlag;	//	NO by default, YES if the quality slider is > .8 in hap or hap alpha codecs
 	
 	OSType			encoderInputPxlFmt;	//	the encoder wants pixels of a particular format.  this is the format they want.
 	uint32_t		encoderInputPxlFmtBytesPerRow;	//	the number of bytes per row in the buffers created to convert to 'encoderInputPxlFmt'
@@ -35,8 +41,8 @@ This class is the main interface for using AVFoundation to encode and output vid
 	size_t			dxtBufferPoolLength;	//	the size of the buffers that i need to create to hold dxt frames
 	size_t			hapBufferPoolLength;	//	the size of the buffers i need to create to hold hap frames
 	
-	OSSpinLock			encoderLock;
-	void				*dxtEncoder;	//	actually a 'HapCodecDXTEncoderRef'
+	OSSpinLock			encoderLock;	//	used to lock glDXTEncoder
+	void				*glDXTEncoder;	//	actually a 'HapCodecDXTEncoderRef'.  only non-NULL when using the GL encoder (creating/destroying GL-based encoders is so much slower that there's a perf benefit to creating a single and caching it)
 	
 	OSSpinLock			encoderProgressLock;	//	locks 'encoderProgressFrames' and 'encoderWaitingToRunOut'
 	__block NSMutableArray		*encoderProgressFrames;	//	array of HapEncoderFrame instances.  the frames are made when you append a pixel buffer, and are flagged as encoded and appended (as an encoded sample buffer) in the GCD-driven block that did the encoding

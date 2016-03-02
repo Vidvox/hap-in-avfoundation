@@ -81,7 +81,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		dxtPoolLength = 0;
 		convPoolLength = 0;
 		rgbPoolLength = 0;
-		glDecoder = NULL;
 		allocFrameBlock = NULL;
 		postDecodeBlock = NULL;
 		[self setSuppressesPlayerRendering:YES];
@@ -105,10 +104,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	if (decompressedFrames != nil)	{
 		[decompressedFrames release];
 		decompressedFrames = nil;
-	}
-	if (glDecoder != NULL)	{
-		HapCodecGLDestroy(glDecoder);
-		glDecoder = NULL;
 	}
 	if (allocFrameBlock != nil)	{
 		Block_release(allocFrameBlock);
@@ -431,32 +426,27 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 							}
 							//	else it's a "normal" (non-YCoCg) DXT texture format, use the GL decoder
 							else if (dxtTextureFormat==HapTextureFormat_RGB_DXT1 || dxtTextureFormat==HapTextureFormat_RGBA_DXT5)	{
-								OSSpinLockLock(&propertyLock);
-								//	if the decoder exists and its format or dimensions have changed, trash it
-								if (glDecoder!=nil && (dxtTextureFormat!=HapCodecGLGetCompressedFormat(glDecoder) || HapCodecGLGetWidth(glDecoder)!=(NSUInteger)dxtImgSize.width || HapCodecGLGetHeight(glDecoder)!=(NSUInteger)dxtImgSize.height))	{
+								//	make a GL decoder
+								void			*glDecoder = HapCodecGLCreateDecoder(imgSize.width, imgSize.height, dxtTextureFormat);
+								if (glDecoder != NULL)	{
+									//	decode the DXT data into the rgb buffer
+									//NSLog(@"\t\tcalling %ld with userInfo %@",rgbDataSize/(NSUInteger)dxtImgSize.height,[newDecoderFrame userInfo]);
+									hapErr = HapCodecGLDecode(glDecoder,
+										(unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height),
+										(rgbPixelFormat==kCVPixelFormatType_32BGRA) ? HapCodecGLPixelFormat_BGRA8 : HapCodecGLPixelFormat_RGBA8,
+										dxtData,
+										rgbData);
+									if (hapErr!=HapResult_No_Error)
+										NSLog(@"\t\terr %d at HapCodecGLDecoder() in %s",hapErr,__func__);
+									else	{
+										//NSLog(@"\t\tsuccessfully decoded to RGB data!");
+									}
+									
+									//	free the GL decoder
 									HapCodecGLDestroy(glDecoder);
 									glDecoder = NULL;
 								}
-								//	if necessary, make a decoder
-								if (glDecoder==NULL)	{
-									glDecoder = HapCodecGLCreateDecoder(imgSize.width, imgSize.height, dxtTextureFormat);
-									if (glDecoder==NULL)
-										NSLog(@"\t\terr: couldn't create gl decoder in %s",__func__);
-								}
 								
-								//	decode the DXT data into the rgb buffer
-								//NSLog(@"\t\tcalling %ld with userInfo %@",rgbDataSize/(NSUInteger)dxtImgSize.height,[newDecoderFrame userInfo]);
-								hapErr = HapCodecGLDecode(glDecoder,
-									(unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height),
-									(rgbPixelFormat==kCVPixelFormatType_32BGRA) ? HapCodecGLPixelFormat_BGRA8 : HapCodecGLPixelFormat_RGBA8,
-									dxtData,
-									rgbData);
-								if (hapErr!=HapResult_No_Error)
-									NSLog(@"\t\terr %d at HapCodecGLDecoder() in %s",hapErr,__func__);
-								else	{
-									//NSLog(@"\t\tsuccessfully decoded to RGB data!");
-								}
-								OSSpinLockUnlock(&propertyLock);
 							}
 							else	{
 								NSLog(@"\t\terr: unrecognized text format %X in %s",dxtTextureFormat,__func__);

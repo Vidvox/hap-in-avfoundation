@@ -274,7 +274,7 @@
 							tmpNum = [baseVideoExportSettings objectForKey:AVVideoHeightKey];
 							exportSize.height = [tmpNum doubleValue];
 							if (tmpNum==nil || NSEqualSizes(exportSize,trackSize))	{
-								NSLog(@"\t\texport description matches source description, skipping transcode on track %@",trackPtr);
+								//NSLog(@"\t\texport description matches source description, skipping transcode on track %@",trackPtr);
 								transcodeThisTrack = NO;
 							}
 						}
@@ -314,7 +314,7 @@
 							//	if i'm either not resampling, or the new sample rate matches the track's sample rate, skip the transcode on this track
 							tmpNum = [baseAudioExportSettings objectForKey:AVSampleRateKey];
 							if (tmpNum==nil || [tmpNum integerValue]==trackSampleRate)	{
-								NSLog(@"\t\texport description matches source description, skipping transcode on track %@",trackPtr);
+								//NSLog(@"\t\texport description matches source description, skipping transcode on track %@",trackPtr);
 								transcodeThisTrack = NO;
 							}
 						}
