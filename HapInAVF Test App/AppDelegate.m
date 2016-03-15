@@ -240,13 +240,26 @@
 					tmpInt = tmpInt<<1;
 				dxtTexSize.height = tmpInt;
 				
-				[glView
-					drawTexture:[hapTexture textureName]
-					target:GL_TEXTURE_2D
-					imageSize:imgSize
-					textureSize:dxtTexSize
-					flipped:YES
-					usingShader:[hapTexture shaderProgramObject]];
+				if ([hapTexture textureCount]>1)	{
+					[glView
+						drawTexture:[hapTexture textureNames][0]
+						target:GL_TEXTURE_2D
+						alphaTexture:[hapTexture textureNames][1]
+						alphaTarget:GL_TEXTURE_2D
+						imageSize:imgSize
+						textureSize:dxtTexSize
+						flipped:YES
+						usingShader:[hapTexture shaderProgramObject]];
+				}
+				else	{
+					[glView
+						drawTexture:[hapTexture textureNames][0]
+						target:GL_TEXTURE_2D
+						imageSize:imgSize
+						textureSize:dxtTexSize
+						flipped:YES
+						usingShader:[hapTexture shaderProgramObject]];
+				}
 			}
 			
 			//	if the frame has RGB data attached to it, make an NSBitmapImageRep & NSImage from the data, then draw it in the NSImageView

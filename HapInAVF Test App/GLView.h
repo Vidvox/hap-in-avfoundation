@@ -35,6 +35,7 @@
 @interface GLView : NSOpenGLView {
     BOOL                needsReshape;
 }
+- (void) drawTexture:(GLuint)texture target:(GLenum)target alphaTexture:(GLuint)alphaTexture alphaTarget:(GLenum)alphaTarget imageSize:(NSSize)imageSize textureSize:(NSSize)textureSize flipped:(BOOL)isFlipped usingShader:(GLhandleARB)shader;
 - (void) drawTexture:(GLuint)texture target:(GLenum)target imageSize:(NSSize)imageSize textureSize:(NSSize)textureSize flipped:(BOOL)isFlipped usingShader:(GLhandleARB)shader;
 - (void) drawTexture:(GLuint)t sized:(NSSize)s flipped:(BOOL)f;
 

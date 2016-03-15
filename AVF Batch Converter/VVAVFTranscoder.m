@@ -406,7 +406,7 @@
 						//NSLog(@"\t\tvideo output settings are %@",outputSettings);
 						//	if i'm going to be writing to a hap track, i need to make an asset writer hap input
 						NSString		*codecString = [outputSettings objectForKey:AVVideoCodecKey];
-						if (codecString!=nil && ([codecString isEqualToString:AVVideoCodecHap] || [codecString isEqualToString:AVVideoCodecHapAlpha] || [codecString isEqualToString:AVVideoCodecHapQ]))
+						if (codecString!=nil && ([codecString isEqualToString:AVVideoCodecHap] || [codecString isEqualToString:AVVideoCodecHapAlpha] || [codecString isEqualToString:AVVideoCodecHapQ] || [codecString isEqualToString:AVVideoCodecHapQAlpha] || [codecString isEqualToString:AVVideoCodecHapAlphaOnly]))
 							newInput = [[[AVAssetWriterHapInput alloc] initWithOutputSettings:outputSettings] autorelease];
 						//	else i'm making a writer input for an AVFoundation-supported codec
 						else	{

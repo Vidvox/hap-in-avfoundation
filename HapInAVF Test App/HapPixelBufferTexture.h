@@ -41,15 +41,17 @@
 {
 @private
     CGLContextObj   cgl_ctx;
-    GLuint          texture;
+    int				textureCount;
+    GLuint          textures[2];
     HapDecoderFrame		*decodedFrame;
-    GLuint    backingHeight;
-    GLuint     backingWidth;
+    GLuint    backingHeights[2];
+    GLuint     backingWidths[2];
     GLuint            width;
     GLuint           height;
     BOOL              valid;
-    GLenum   internalFormat;
+    GLenum   internalFormats[2];
     GLhandleARB      shader;
+    GLhandleARB      alphaShader;
 }
 /**
  Returns a HapPixelBufferTexture to draw in the provided CGL context.
@@ -62,19 +64,24 @@ The decoded frame to draw.  setting this creates a GL texture (deleting the old 
 @property (retain,readwrite) HapDecoderFrame *decodedFrame;
 
 /**
+	The number of textures in this pixel buffer (2 if dealing with Hap Q Alpha frames, 1 otherwise)
+*/
+@property (readonly) int textureCount;
+
+/**
  The name of the GL_TEXTURE_2D texture.
  */
-@property (readonly) GLuint textureName;
+@property (readonly) GLuint* textureNames;
 
 /**
  The width of the texture in texels. This may be greater than the image width.
  */
-@property (readonly) GLuint textureWidth;
+@property (readonly) GLuint* textureWidths;
 
 /**
  The height of the texture in texels. This may be greater than the image height.
  */
-@property (readonly) GLuint textureHeight;
+@property (readonly) GLuint* textureHeights;
 
 /**
  The width of the image in texels. The image may not fill the entire texture.

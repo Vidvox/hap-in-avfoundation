@@ -78,7 +78,8 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		decompressedFrames = [[NSMutableArray arrayWithCapacity:0] retain];
 		outputAsRGB = NO;
 		destRGBPixelFormat = kCVPixelFormatType_32RGBA;
-		dxtPoolLength = 0;
+		dxtPoolLengths[0] = 0;
+		dxtPoolLengths[1] = 0;
 		convPoolLength = 0;
 		rgbPoolLength = 0;
 		allocFrameBlock = NULL;
@@ -292,11 +293,11 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	
 	//	make a sample decoder frame from the sample buffer- this calculates various minimum buffer sizes
 	HapDecoderFrame		*sampleDecoderFrame = [[HapDecoderFrame alloc] initEmptyWithHapSampleBuffer:newSample];
-	size_t				dxtMinDataSize = [sampleDecoderFrame dxtMinDataSize];
+	size_t				*dxtMinDataSizes = [sampleDecoderFrame dxtMinDataSizes];
 	size_t				rgbMinDataSize = [sampleDecoderFrame rgbMinDataSize];
 	//	make sure that the buffer pools are sized appropriately.  don't know if i'll be using them or not, but make sure they're sized properly regardless.
-	if (dxtPoolLength!=dxtMinDataSize)
-		dxtPoolLength = dxtMinDataSize;
+	dxtPoolLengths[0] = dxtMinDataSizes[0];
+	dxtPoolLengths[1] = dxtMinDataSizes[1];
 	if (localOutputAsRGB)	{
 		if (rgbPoolLength!=rgbMinDataSize)
 			rgbPoolLength = rgbMinDataSize;
@@ -304,7 +305,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	//	allocate a decoder frame- this data structure holds all the values needed to decode the hap frame into a blob of memory (actually a DXT frame).  if there's a custom frame allocator block, use that- otherwise, just make a CFData and decode into that.
 	HapDecoderFrame			*newDecoderFrame = nil;
 	if (localAllocFrameBlock!=nil)	{
-		//NSLog(@"\t\tthere's a local frame allocator block, using that...");
 		newDecoderFrame = localAllocFrameBlock(newSample);
 	}
 	if (newDecoderFrame==nil)	{
@@ -312,30 +312,43 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		newDecoderFrame = (sampleDecoderFrame==nil) ? nil : [sampleDecoderFrame retain];
 		
 		//	allocate mem objects for dxt and rgb data
-		void			*dxtMem = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtPoolLength, 0);
+		void			**dxtMem = [newDecoderFrame dxtDatas];
+		dxtMem[0] = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtPoolLengths[0], 0);
+		dxtMem[1] = (dxtPoolLengths[1]<1) ? nil : CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtPoolLengths[1], 0);
+		//	update the data sizes in the frame
+		size_t			*dxtDataSizes = [newDecoderFrame dxtDataSizes];
+		dxtDataSizes[0] = dxtPoolLengths[0];
+		dxtDataSizes[1] = (dxtPoolLengths[1]<1) ? 0 : dxtPoolLengths[1];
 		void			*rgbMem = (localOutputAsRGB) ? CFAllocatorAllocate(_HIAVFMemPoolAllocator, rgbPoolLength, 0) : nil;
 		
-		//	populate the empty frame with the dxt/rgb mem objects i just created
-		[newDecoderFrame setDXTData:dxtMem];
-		[newDecoderFrame setDXTDataSize:dxtPoolLength];
+		
 		if (localOutputAsRGB)	{
 			[newDecoderFrame setRGBData:rgbMem];
 			[newDecoderFrame setRGBDataSize:rgbPoolLength];
 			//	make sure that the frame i'll be decoding knows what pixel format it should be decoding to
 			[newDecoderFrame setRGBPixelFormat:localDestRGBPixelFormat];
 		}
-		//	store the MemObject instances- which are pooled- in the frame
+		//	store the CFData instances- which are pooled- in the frame
+		CFDataRef		dxtAlphaDataRef = (dxtPoolLengths[1]<1 || dxtMem[1]==NULL)
+			?	NULL
+			:	CFDataCreateWithBytesNoCopy(NULL, dxtMem[1], dxtPoolLengths[1], _HIAVFMemPoolAllocator);
 		if (localOutputAsRGB)	{
-			CFDataRef		dxtDataRef = CFDataCreateWithBytesNoCopy(NULL, dxtMem, dxtPoolLength, _HIAVFMemPoolAllocator);
-			CFDataRef		rgbDataRef = CFDataCreateWithBytesNoCopy(NULL, rgbMem, rgbPoolLength, _HIAVFMemPoolAllocator);
-			[newDecoderFrame setUserInfo:[NSArray arrayWithObjects:(NSData *)dxtDataRef, (NSData *)rgbDataRef, nil]];
+			CFDataRef		dxtDataRef = CFDataCreateWithBytesNoCopy(NULL, dxtMem[0], dxtPoolLengths[0], _HIAVFMemPoolAllocator);
+			CFDataRef		rgbDataRef = (rgbPoolLength<1 || rgbMem==NULL)
+				?	NULL
+				:	CFDataCreateWithBytesNoCopy(NULL, rgbMem, rgbPoolLength, _HIAVFMemPoolAllocator);
+			[newDecoderFrame setUserInfo:[NSArray arrayWithObjects:(NSData *)dxtDataRef, (dxtAlphaDataRef==NULL)?(id)[NSNull null]:(NSData *)dxtAlphaDataRef, (rgbDataRef==NULL)?[NSNull null]:(NSData *)rgbDataRef, nil]];
 			CFRelease(dxtDataRef);
 			CFRelease(rgbDataRef);
 		}
 		else	{
-			CFDataRef		dxtDataRef = CFDataCreateWithBytesNoCopy(NULL, dxtMem, dxtPoolLength, _HIAVFMemPoolAllocator);
-			[newDecoderFrame setUserInfo:(NSData *)dxtDataRef];
+			CFDataRef		dxtDataRef = CFDataCreateWithBytesNoCopy(NULL, dxtMem[0], dxtPoolLengths[0], _HIAVFMemPoolAllocator);
+			[newDecoderFrame setUserInfo:[NSArray arrayWithObjects:(NSData *)dxtDataRef, (NSData *)dxtAlphaDataRef, nil]];
 			CFRelease(dxtDataRef);
+		}
+		if (dxtAlphaDataRef != NULL)	{
+			CFRelease(dxtAlphaDataRef);
+			dxtAlphaDataRef = NULL;
 		}
 	}
 	//	free the sample decoder frame i used to calculate and configure the size of the buffer pools
@@ -347,7 +360,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	if (newDecoderFrame==nil)
 		NSLog(@"\t\terr: decoder frame nil, %s",__func__);
 	else	{
-		
 		//	add the frame i just decoded into the 'decompressedFrames' array immediately (so other stuff will "see" the frame and know it's being decoded)
 		if (newDecoderFrame!=nil)	{
 			OSSpinLockLock(&propertyLock);
@@ -358,18 +370,19 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		//	decode the frame (into DXT data)
 		NSSize				imgSize = [newDecoderFrame imgSize];
 		NSSize				dxtImgSize = [newDecoderFrame dxtImgSize];
-		void				*dxtData = [newDecoderFrame dxtData];
-		size_t				dxtDataSize = [newDecoderFrame dxtDataSize];
+		void				**dxtDatas = [newDecoderFrame dxtDatas];
+		size_t				*dxtDataSizes = [newDecoderFrame dxtDataSizes];
 		CMSampleBufferRef	hapSampleBuffer = [newDecoderFrame hapSampleBuffer];
 		CMBlockBufferRef	dataBlockBuffer = (hapSampleBuffer==nil) ? nil : CMSampleBufferGetDataBuffer(hapSampleBuffer);
-		if (dxtData==NULL || dataBlockBuffer==NULL)
+		if (dxtDatas[0]==NULL || dataBlockBuffer==NULL)
 			NSLog(@"\t\terr:dxtData or dataBlockBuffer null in %s",__func__);
 		else	{
 			OSStatus				cmErr = kCMBlockBufferNoErr;
 			size_t					dataBlockBufferAvailableData = 0;
 			size_t					dataBlockBufferTotalDataSize = 0;
-			//OSType					dxtPixelFormat = [newDecoderFrame dxtPixelFormat];
-			enum HapTextureFormat	dxtTextureFormat = 0;
+			enum HapTextureFormat	*dxtTextureFormats = [newDecoderFrame dxtTextureFormats];
+			dxtTextureFormats[0] = 0;
+			dxtTextureFormats[1] = 0;
 			char					*dataBuffer = nil;
 			cmErr = CMBlockBufferGetDataPointer(dataBlockBuffer,
 				0,
@@ -379,38 +392,55 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			if (cmErr != kCMBlockBufferNoErr)
 				NSLog(@"\t\terr %d at CMBlockBufferGetDataPointer() in %s",(int)cmErr,__func__);
 			else	{
-				if (dataBlockBufferAvailableData > dxtDataSize)
-					NSLog(@"\t\terr: block buffer larger than allocated dxt data, %ld vs. %ld, %s",dataBlockBufferAvailableData,dxtDataSize,__func__);
+				if (dataBlockBufferAvailableData > (dxtDataSizes[0]+dxtDataSizes[1]))
+					NSLog(@"\t\terr: block buffer larger than allocated dxt data, %ld vs. (%ld + %ld), %s",dataBlockBufferAvailableData,dxtDataSizes[0],dxtDataSizes[1],__func__);
 				else	{
-					//unsigned long			outputBufferBytesUsed = 0;
 					unsigned int			hapErr = HapResult_No_Error;
-					hapErr = HapDecode(dataBuffer,
-						dataBlockBufferAvailableData,
-						(HapDecodeCallback)HapMTDecode,
-						NULL,
-						dxtData,
-						dxtDataSize,
-						NULL,
-						&dxtTextureFormat);
+					unsigned int			hapTexCount = 0;
+					hapErr = HapGetFrameTextureCount(dataBuffer, dataBlockBufferAvailableData, &hapTexCount);
 					if (hapErr != HapResult_No_Error)
-						NSLog(@"\t\terr %d at HapDecode() in %s",hapErr,__func__);
+						NSLog(@"\t\terr: %d at HapGetFrameTextureCount() in %s",hapErr,__func__);
 					else	{
-						//NSLog(@"\t\thap decode successful, output texture format is %d",dxtTextureFormat);
-						[newDecoderFrame setDXTTextureFormat:dxtTextureFormat];
-						
+						hapErr = HapDecode(dataBuffer, dataBlockBufferAvailableData,
+							0,
+							(HapDecodeCallback)HapMTDecode,
+							NULL,
+							dxtDatas[0],
+							dxtDataSizes[0],
+							NULL,
+							&(dxtTextureFormats[0]));
+						if (hapErr != HapResult_No_Error)	{
+							NSLog(@"\t\terr: %d at HapDecode() with index 0 in %s",hapErr,__func__);
+						}
+						if (hapTexCount>1)	{
+							hapErr = HapDecode(dataBuffer, dataBlockBufferAvailableData,
+								1,
+								(HapDecodeCallback)HapMTDecode,
+								NULL,
+								dxtDatas[1],
+								dxtDataSizes[1],
+								NULL,
+								&(dxtTextureFormats[1]));
+							if (hapErr != HapResult_No_Error)	{
+								NSLog(@"\t\terr: %d at HapDecode() with index 1 in %s",hapErr,__func__);
+							}
+						}
+					}
+					
+					if (hapErr == HapResult_No_Error)	{
 						//	if the decoder frame has a buffer for rgb data, convert the DXT data into rgb data of some sort
 						void			*rgbData = [newDecoderFrame rgbData];
 						size_t			rgbDataSize = [newDecoderFrame rgbDataSize];
 						OSType			rgbPixelFormat = [newDecoderFrame rgbPixelFormat];
 						if (rgbData!=nil)	{
 							//	if the DXT data is a YCoCg texture format
-							if (dxtTextureFormat == HapTextureFormat_YCoCg_DXT5)	{
+							if (dxtTextureFormats[0] == HapTextureFormat_YCoCg_DXT5)	{
 								//	convert the YCoCg/DXT5 data to just plain ol' DXT5 data in a conversion buffer
 								size_t			convMinDataSize = (NSUInteger)dxtImgSize.width * (NSUInteger)dxtImgSize.height * 32 / 8;
 								if (convMinDataSize!=convPoolLength)
 									convPoolLength = convMinDataSize;
 								void			*convMem = CFAllocatorAllocate(_HIAVFMemPoolAllocator, convPoolLength, 0);
-								DeCompressYCoCgDXT5((const byte *)dxtData, (byte *)convMem, imgSize.width, imgSize.height, dxtImgSize.width*4);
+								DeCompressYCoCgDXT5((const byte *)dxtDatas[0], (byte *)convMem, imgSize.width, imgSize.height, dxtImgSize.width*4);
 								//	convert the DXT5 data in the conversion buffer to either RGBA or BGRA data in the rgb buffer
 								if (rgbPixelFormat == k32RGBAPixelFormat)	{
 									ConvertCoCg_Y8888ToRGB_((uint8_t *)convMem, (uint8_t *)rgbData, imgSize.width, imgSize.height, dxtImgSize.width * 4, rgbDataSize/(NSUInteger)dxtImgSize.height, 1);
@@ -425,16 +455,16 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 								}
 							}
 							//	else it's a "normal" (non-YCoCg) DXT texture format, use the GL decoder
-							else if (dxtTextureFormat==HapTextureFormat_RGB_DXT1 || dxtTextureFormat==HapTextureFormat_RGBA_DXT5)	{
+							else if (dxtTextureFormats[0]==HapTextureFormat_RGB_DXT1 || dxtTextureFormats[0]==HapTextureFormat_RGBA_DXT5)	{
 								//	make a GL decoder
-								void			*glDecoder = HapCodecGLCreateDecoder(imgSize.width, imgSize.height, dxtTextureFormat);
+								void			*glDecoder = HapCodecGLCreateDecoder(imgSize.width, imgSize.height, dxtTextureFormats[0]);
 								if (glDecoder != NULL)	{
 									//	decode the DXT data into the rgb buffer
 									//NSLog(@"\t\tcalling %ld with userInfo %@",rgbDataSize/(NSUInteger)dxtImgSize.height,[newDecoderFrame userInfo]);
 									hapErr = HapCodecGLDecode(glDecoder,
 										(unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height),
 										(rgbPixelFormat==kCVPixelFormatType_32BGRA) ? HapCodecGLPixelFormat_BGRA8 : HapCodecGLPixelFormat_RGBA8,
-										dxtData,
+										dxtDatas[0],
 										rgbData);
 									if (hapErr!=HapResult_No_Error)
 										NSLog(@"\t\terr %d at HapCodecGLDecoder() in %s",hapErr,__func__);
@@ -449,13 +479,14 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 								
 							}
 							else	{
-								NSLog(@"\t\terr: unrecognized text format %X in %s",dxtTextureFormat,__func__);
+								NSLog(@"\t\terr: unrecognized text formats %X/%x in %s",dxtTextureFormats[0],dxtTextureFormats[1],__func__);
 							}
 						}
 						
 						//	mark the frame as decoded so it can be displayed
 						[newDecoderFrame setDecoded:YES];
 					}
+					
 				}
 			}
 		}

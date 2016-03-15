@@ -50,6 +50,17 @@
  */
 #define kHapCVPixelFormat_CoCgXY 'CCXY'
 
+/*
+ Planar Scaled YCoCg in SRTC RGBA DXT5 + Alpha in RGTC1
+ */
+#define kHapCVPixelFormat_YCoCg_DXT5_A_RGTC1 'DYtA'
+
+/*
+ Alpha stored in RGTC1
+
+ This is not advertised and the value is only used by the squish encoder
+ */
+#define kHapCVPixelFormat_A_RGTC1 'RGA1'
 
 /*		CoreVideo requires us to "register" the DXT pixel format- if this isn't done, the various CV-related resources won't recognize it as a valid pixel format and stuff won't work.  this function only needs to be called once, before you do anything with hap.  the framework does this automatically in the +initialize methods of AVPlayerItemHapDXTOutput and AVAssetWriterHapInput.		*/
 void HapCodecRegisterDXTPixelFormat(OSType fmt, short bits_per_pixel, SInt32 open_gl_internal_format, Boolean has_alpha);
@@ -58,7 +69,3 @@ void HapCodecRegisterPixelFormats(void);
 
 
 #endif
-
-
-
-

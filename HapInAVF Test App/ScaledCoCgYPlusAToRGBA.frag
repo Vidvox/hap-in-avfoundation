@@ -1,6 +1,6 @@
 /*
- HapCodecSubTypes.h
- Hap Codec
+ ScaledCoCgYToRGBA.frag
+ Hap
  
  Copyright (c) 2012-2013, Tom Butterworth and Vidvox LLC. All rights reserved.
  Redistribution and use in source and binary forms, with or without
@@ -25,13 +25,25 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Hap_Codec_HapCodecSubTypes_h
-#define Hap_Codec_HapCodecSubTypes_h
+uniform sampler2D cocgsy_src;
+uniform sampler2D alpha_src;
 
-#define kHapCodecSubType 'Hap1'
-#define kHapAlphaCodecSubType 'Hap5'
-#define kHapYCoCgCodecSubType 'HapY'
-#define kHapYCoCgACodecSubType 'HapM'
-#define kHapAOnlyCodecSubType 'HapA'
+const vec4 offsets = vec4(-0.50196078431373, -0.50196078431373, 0.0, 0.0);
 
-#endif
+void main()
+{
+    vec4 CoCgSY = texture2D(cocgsy_src, gl_TexCoord[0].xy);
+    vec4 theAlpha = texture2D(alpha_src, gl_TexCoord[0].xy);
+    
+    CoCgSY += offsets;
+    
+    float scale = ( CoCgSY.z * ( 255.0 / 8.0 ) ) + 1.0;
+    
+    float Co = CoCgSY.x / scale;
+    float Cg = CoCgSY.y / scale;
+    float Y = CoCgSY.w;
+    
+    vec4 rgba = vec4(Y + Co - Cg, Y + Cg, Y - Co - Cg, theAlpha.r);
+    
+    gl_FragColor = rgba;
+}

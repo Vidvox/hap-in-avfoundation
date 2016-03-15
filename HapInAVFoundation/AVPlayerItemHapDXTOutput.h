@@ -28,7 +28,7 @@ This class is the main interface for decoding hap video from AVFoundation.  You 
 	
 	BOOL						outputAsRGB;	//	NO by default.  if YES, outputs frames as RGB data
 	OSType						destRGBPixelFormat;	//	if 'outputAsRGB' is YES, this is the pixel format that will be output.  kCVPixelFormatType_32BGRA or kCVPixelFormatType_32RGBA.
-	NSUInteger					dxtPoolLength;
+	NSUInteger					dxtPoolLengths[2];
 	NSUInteger					convPoolLength;
 	NSUInteger					rgbPoolLength;
 	

@@ -54,6 +54,10 @@
 
 - (void) drawTexture:(GLuint)texture target:(GLenum)target imageSize:(NSSize)imageSize textureSize:(NSSize)textureSize flipped:(BOOL)isFlipped usingShader:(GLhandleARB)shader
 {
+	[self drawTexture:texture target:target alphaTexture:0 alphaTarget:0 imageSize:imageSize textureSize:textureSize flipped:isFlipped usingShader:shader];
+}
+- (void) drawTexture:(GLuint)texture target:(GLenum)target alphaTexture:(GLuint)alphaTexture alphaTarget:(GLenum)alphaTarget imageSize:(NSSize)imageSize textureSize:(NSSize)textureSize flipped:(BOOL)isFlipped usingShader:(GLhandleARB)shader
+{
     CGLContextObj cgl_ctx = [[self openGLContext] CGLContextObj];
     
     CGLLockContext(cgl_ctx);
@@ -65,7 +69,10 @@
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         glDisable(GL_DEPTH_TEST);
-        glDisable(GL_BLEND);
+        //glDisable(GL_BLEND);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glHint(GL_CLIP_VOLUME_CLIPPING_HINT_EXT, GL_FASTEST);
 
         glMatrixMode(GL_TEXTURE);
@@ -84,7 +91,7 @@
     if (!NSEqualSizes(imageSize, bounds.size))
     {
         // clear the view if the texture won't fill it
-        glClearColor(0.0,0.0,0.0,0.0);
+        glClearColor(1.0,0.0,0.0,1.0);
         glClear(GL_COLOR_BUFFER_BIT);
     }
     if (texture != 0 && !NSEqualSizes(imageSize, NSZeroSize) && !NSEqualSizes(textureSize, NSZeroSize))
@@ -141,7 +148,13 @@
             texCoords[4] /= (float)textureSize.width;
         }
         
-        glBindTexture(target,texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(target, texture);
+		glActiveTexture(GL_TEXTURE1);
+        if (alphaTexture>0)
+			glBindTexture(alphaTarget, alphaTexture);
+        else
+        	glBindTexture(target, texture);
         
         glVertexPointer(2,GL_FLOAT,0,vertices);
         glTexCoordPointer(2,GL_FLOAT,0,texCoords);

@@ -38,9 +38,13 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 }
 - (id) initWithHapSampleBuffer:(CMSampleBufferRef)sb	{
 	self = [self initEmptyWithHapSampleBuffer:sb];
-	dxtData = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtMinDataSize, 0);
-	dxtDataSize = dxtMinDataSize;
-	userInfo = (id)CFDataCreateWithBytesNoCopy(NULL, dxtData, dxtMinDataSize, _HIAVFMemPoolAllocator);
+	dxtDatas[0] = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtMinDataSizes[0], 0);
+	dxtDataSizes[0] = dxtMinDataSizes[0];
+	if (dxtMinDataSizes[1]>0)	{
+		dxtDatas[1] = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtMinDataSizes[1], 0);
+		dxtDataSizes[1] = dxtMinDataSizes[1];
+	}
+	userInfo = (id)CFDataCreateWithBytesNoCopy(NULL, dxtDatas[0], dxtMinDataSizes[0], _HIAVFMemPoolAllocator);
 	return self;
 }
 - (id) initEmptyWithHapSampleBuffer:(CMSampleBufferRef)sb	{
@@ -49,12 +53,18 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		hapSampleBuffer = NULL;
 		codecSubType = 0;
 		imgSize = NSMakeSize(0,0);
-		dxtData = nil;
-		dxtMinDataSize = 0;
-		dxtDataSize = 0;
-		dxtPixelFormat = 0;
+		dxtPlaneCount = 0;
+		dxtDatas[0] = nil;
+		dxtDatas[1] = nil;
+		dxtMinDataSizes[0] = 0;
+		dxtMinDataSizes[1] = 0;
+		dxtDataSizes[0] = 0;
+		dxtDataSizes[1] = 0;
+		dxtPixelFormats[0] = 0;
+		dxtPixelFormats[1] = 0;
 		dxtImgSize = NSMakeSize(0,0);
-		dxtTextureFormat = 0;
+		dxtTextureFormats[0] = 0;
+		dxtTextureFormats[1] = 0;
 		rgbData = nil;
 		rgbMinDataSize = 0;
 		rgbDataSize = 0;
@@ -92,18 +102,39 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		//NSLog(@"\t\timgSize is %f x %f",imgSize.width,imgSize.height);
 		//NSLog(@"\t\tdxtImgSize is %f x %f",dxtImgSize.width,dxtImgSize.height);
 		codecSubType = CMFormatDescriptionGetMediaSubType(desc);
+		dxtMinDataSizes[0] = dxtBytesForDimensions(dxtImgSize.width, dxtImgSize.height, codecSubType);
 		switch (codecSubType)	{
 		case kHapCodecSubType:
-			dxtPixelFormat = kHapCVPixelFormat_RGB_DXT1;
+			dxtPlaneCount = 1;
+			dxtPixelFormats[0] = kHapCVPixelFormat_RGB_DXT1;
+			dxtPixelFormats[1] = 0;
+			dxtMinDataSizes[1] = 0;
 			break;
 		case kHapAlphaCodecSubType:
-			dxtPixelFormat = kHapCVPixelFormat_RGBA_DXT5;
+			dxtPlaneCount = 1;
+			dxtPixelFormats[0] = kHapCVPixelFormat_RGBA_DXT5;
+			dxtPixelFormats[1] = 0;
+			dxtMinDataSizes[1] = 0;
 			break;
 		case kHapYCoCgCodecSubType:
-			dxtPixelFormat = kHapCVPixelFormat_YCoCg_DXT5;
+			dxtPlaneCount = 1;
+			dxtPixelFormats[0] = kHapCVPixelFormat_YCoCg_DXT5;
+			dxtPixelFormats[1] = 0;
+			dxtMinDataSizes[1] = 0;
+			break;
+		case kHapYCoCgACodecSubType:
+			dxtPlaneCount = 2;
+			dxtPixelFormats[0] = kHapCVPixelFormat_CoCgXY;
+			dxtPixelFormats[1] = kHapCVPixelFormat_A_RGTC1;
+			dxtMinDataSizes[1] = dxtBytesForDimensions(dxtImgSize.width, dxtImgSize.height, kHapAOnlyCodecSubType);
+			break;
+		case kHapAOnlyCodecSubType:
+			dxtPlaneCount = 1;
+			dxtPixelFormats[0] = kHapCVPixelFormat_A_RGTC1;
+			dxtPixelFormats[1] = 0;
+			dxtMinDataSizes[1] = 0;
 			break;
 		}
-		dxtMinDataSize = dxtBytesForDimensions(dxtImgSize.width, dxtImgSize.height, codecSubType);
 		rgbMinDataSize = 32 * imgSize.width * imgSize.height / 8;
 	}
 	return self;
@@ -116,7 +147,8 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		CFRelease(hapSampleBuffer);
 		hapSampleBuffer = NULL;
 	}
-	dxtData = NULL;
+	dxtDatas[0] = NULL;
+	dxtDatas[1] = NULL;
 	rgbData = NULL;
 	if (userInfo != nil)	{
 		[userInfo release];
@@ -128,7 +160,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	if (hapSampleBuffer==nil)
 		return @"<HapDecoderFrame>";
 	CMTime		presentationTime = CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer);
-	return [NSString stringWithFormat:@"<HapDecoderFrame, %d, %f x %f, %@>",dxtTextureFormat,dxtImgSize.width,dxtImgSize.height,[(id)CMTimeCopyDescription(kCFAllocatorDefault,presentationTime) autorelease]];
+	return [NSString stringWithFormat:@"<HapDecoderFrame, %d/%d, %f x %f, %@>",dxtTextureFormats[0],dxtTextureFormats[1],dxtImgSize.width,dxtImgSize.height,[(id)CMTimeCopyDescription(kCFAllocatorDefault,presentationTime) autorelease]];
 }
 - (CMSampleBufferRef) hapSampleBuffer	{
 	return hapSampleBuffer;
@@ -139,32 +171,26 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 - (NSSize) imgSize	{
 	return imgSize;
 }
-- (void) setDXTData:(void *)n	{
-	dxtData = n;
+- (int) dxtPlaneCount	{
+	return dxtPlaneCount;
 }
-- (size_t) dxtMinDataSize	{
-	return dxtMinDataSize;
+- (void **) dxtDatas	{
+	return dxtDatas;
 }
-- (void) setDXTDataSize:(size_t)n	{
-	dxtDataSize = n;
+- (size_t *) dxtMinDataSizes	{
+	return dxtMinDataSizes;
 }
-- (void *) dxtData	{
-	return dxtData;
+- (size_t *) dxtDataSizes	{
+	return dxtDataSizes;
 }
-- (size_t) dxtDataSize	{
-	return dxtDataSize;
-}
-- (OSType) dxtPixelFormat	{
-	return dxtPixelFormat;
+- (OSType *) dxtPixelFormats	{
+	return dxtPixelFormats;
 }
 - (NSSize) dxtImgSize	{
 	return dxtImgSize;
 }
-- (void) setDXTTextureFormat:(enum HapTextureFormat)n	{
-	dxtTextureFormat = n;
-}
-- (enum HapTextureFormat) dxtTextureFormat	{
-	return dxtTextureFormat;
+- (enum HapTextureFormat *) dxtTextureFormats	{
+	return dxtTextureFormats;
 }
 - (void) setRGBData:(void *)n	{
 	rgbData = n;

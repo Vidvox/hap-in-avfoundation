@@ -29,6 +29,8 @@ YCoCg encodes YCoCg in DXT and requires a shader to draw, and produces very high
 NSString *const			AVVideoCodecHap = @"Hap1";
 NSString *const			AVVideoCodecHapAlpha = @"Hap5";
 NSString *const			AVVideoCodecHapQ = @"HapY";
+NSString *const			AVVideoCodecHapQAlpha = @"HapM";
+NSString *const			AVVideoCodecHapAlphaOnly = @"HapA";
 NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 
 #define FourCCLog(n,f) NSLog(@"%@, %c%c%c%c",n,(int)((f>>24)&0xFF),(int)((f>>16)&0xFF),(int)((f>>8)&0xFF),(int)((f>>0)&0xFF))
@@ -41,6 +43,7 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 @property (assign,readwrite) CMTime lastEncodedDuration;
 - (void) appendEncodedFrames;
 - (void *) allocDXTEncoder;
+- (void *) allocAlphaEncoder;
 @end
 
 
@@ -69,14 +72,20 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 	if (self!=nil)	{
 		encodeQueue = NULL;
 		exportCodecType = kHapCodecSubType;
-		exportPixelFormat = kHapCVPixelFormat_RGB_DXT1;
-		exportTextureType = HapTextureFormat_RGB_DXT1;
+		exportPixelFormatsCount = 1;
+		exportPixelFormats[0] = kHapCVPixelFormat_RGB_DXT1;
+		exportPixelFormats[1] = 0;
+		exportTextureTypes[0] = HapTextureFormat_RGB_DXT1;
+		exportTextureTypes[1] = 0;
 		exportImgSize = NSMakeSize(1,1);
 		exportDXTImgSize = NSMakeSize(4,4);
-		exportChunkCount = 1;
+		exportChunkCounts[0] = 1;
+		exportChunkCounts[1] = 1;
 		exportHighQualityFlag = NO;
-		formatConvertPoolLength = 0;
-		dxtBufferPoolLength = 0;
+		formatConvertPoolLengths[0] = 0;
+		formatConvertPoolLengths[1] = 0;
+		dxtBufferPoolLengths[0] = 0;
+		dxtBufferPoolLengths[1] = 0;
 		hapBufferPoolLength = 0;
 		encoderLock = OS_SPINLOCK_INIT;
 		glDXTEncoder = NULL;
@@ -109,20 +118,47 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		else if ([codecString isEqualToString:AVVideoCodecHap])	{
 			hapExport = YES;
 			exportCodecType = kHapCodecSubType;
-			exportPixelFormat = kHapCVPixelFormat_RGB_DXT1;
-			exportTextureType = HapTextureFormat_RGB_DXT1;
+			exportPixelFormatsCount = 1;
+			exportPixelFormats[0] = kHapCVPixelFormat_RGB_DXT1;
+			exportPixelFormats[1] = 0;
+			exportTextureTypes[0] = HapTextureFormat_RGB_DXT1;
+			exportTextureTypes[1] = 0;
 		}
 		else if ([codecString isEqualToString:AVVideoCodecHapAlpha])	{
 			hapExport = YES;
 			exportCodecType = kHapAlphaCodecSubType;
-			exportPixelFormat = kHapCVPixelFormat_RGBA_DXT5;
-			exportTextureType = HapTextureFormat_RGBA_DXT5;
+			exportPixelFormatsCount = 1;
+			exportPixelFormats[0] = kHapCVPixelFormat_RGBA_DXT5;
+			exportPixelFormats[1] = 0;
+			exportTextureTypes[0] = HapTextureFormat_RGBA_DXT5;
+			exportTextureTypes[1] = 0;
 		}
 		else if ([codecString isEqualToString:AVVideoCodecHapQ])	{
 			hapExport = YES;
 			exportCodecType = kHapYCoCgCodecSubType;
-			exportPixelFormat = kHapCVPixelFormat_YCoCg_DXT5;
-			exportTextureType = HapTextureFormat_YCoCg_DXT5;
+			exportPixelFormatsCount = 1;
+			exportPixelFormats[0] = kHapCVPixelFormat_YCoCg_DXT5;
+			exportPixelFormats[1] = 0;
+			exportTextureTypes[0] = HapTextureFormat_YCoCg_DXT5;
+			exportTextureTypes[1] = 0;
+		}
+		else if ([codecString isEqualToString:AVVideoCodecHapQAlpha])	{
+			hapExport = YES;
+			exportCodecType = kHapYCoCgACodecSubType;
+			exportPixelFormatsCount = 2;
+			exportPixelFormats[0] = kHapCVPixelFormat_YCoCg_DXT5;
+			exportPixelFormats[1] = kHapCVPixelFormat_A_RGTC1;
+			exportTextureTypes[0] = HapTextureFormat_YCoCg_DXT5;
+			exportTextureTypes[1] = HapTextureFormat_A_RGTC1;
+		}
+		else if ([codecString isEqualToString:AVVideoCodecHapAlphaOnly])	{
+			hapExport = YES;
+			exportCodecType = kHapAOnlyCodecSubType;
+			exportPixelFormatsCount = 1;
+			exportPixelFormats[0] = kHapCVPixelFormat_A_RGTC1;
+			exportPixelFormats[1] = 0;
+			exportTextureTypes[0] = HapTextureFormat_A_RGTC1;
+			exportTextureTypes[1] = 0;
 		}
 		if (!hapExport)
 			goto BAIL;
@@ -132,15 +168,21 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		if (qualityNum!=nil && [qualityNum floatValue]>=0.80)
 			exportHighQualityFlag = YES;
 		NSNumber		*chunkNum = (propertiesDict==nil) ? nil : [propertiesDict objectForKey:AVHapVideoChunkCountKey];
-		exportChunkCount = (chunkNum==nil) ? 1 : [chunkNum intValue];
-		exportChunkCount = fmaxl(fminl(exportChunkCount, HAPQMAXCHUNKS), 1);
+		exportChunkCounts[0] = (chunkNum==nil) ? 1 : [chunkNum intValue];
+		exportChunkCounts[0] = fmaxl(fminl(exportChunkCounts[0], HAPQMAXCHUNKS), 1);
+		exportChunkCounts[1] = exportChunkCounts[1];
 		
-		//	figure out the max dxt frame size in bytes, make the dxt buffer pool
-		NSUInteger		dxtFrameSizeInBytes = dxtBytesForDimensions(exportDXTImgSize.width, exportDXTImgSize.height, exportCodecType);
+		//	figure out the max dxt frame size in bytes
+		NSUInteger		dxtFrameSizeInBytes[2];
+		dxtFrameSizeInBytes[0] = dxtBytesForDimensions(exportDXTImgSize.width, exportDXTImgSize.height, exportCodecType);
+		dxtFrameSizeInBytes[1] = 0;
+		if (exportPixelFormatsCount>1)
+			dxtFrameSizeInBytes[1] = dxtBytesForDimensions(exportDXTImgSize.width, exportDXTImgSize.height, kHapAOnlyCodecSubType);
 		//NSLog(@"\t\tdxtFrameSizeInBytes is %d",dxtFrameSizeInBytes);
-		dxtBufferPoolLength = dxtFrameSizeInBytes;
-		//	figure out the max hap frame size in bytes, make the hap buffer pool
-		hapBufferPoolLength = HapMaxEncodedLength(dxtFrameSizeInBytes, exportTextureType, exportChunkCount);
+		dxtBufferPoolLengths[0] = dxtFrameSizeInBytes[0];
+		dxtBufferPoolLengths[1] = dxtFrameSizeInBytes[1];
+		//	figure out the max hap frame size in bytes
+		hapBufferPoolLength = HapMaxEncodedLength(exportPixelFormatsCount, dxtFrameSizeInBytes, exportTextureTypes, exportChunkCounts);
 		//NSLog(@"\t\thapBufferPoolLength is %d",hapBufferPoolLength);
 		
 		//	make a DXT encoder just to make sure we can
@@ -152,12 +194,13 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		}
 		
 		//FourCCLog(@"\t\texportCodecType is",exportCodecType);
-		//FourCCLog(@"\t\texportPixelFormat is",exportPixelFormat);
+		//FourCCLog(@"\t\texportPixelFormat[0] is",exportPixelFormats[0]);
+		//FourCCLog(@"\t\texportPixelFormat[1] is",exportPixelFormats[1]);
 		//	make a buffer pool for format conversion buffers (i know what the desired pixel format is for the dxt encoder, so i know how big the format conversion buffers have to be)
-		encoderInputPxlFmt = ((HapCodecDXTEncoderRef)dxtEncoder)->pixelformat_function(dxtEncoder, exportPixelFormat);
 		
 		//	if we aren't using a GL-based DXT encoder (which is "expensive" to delete/recreate), release the DXT encoder
 		if (dxtEncoder!=NULL)	{
+			encoderInputPxlFmts[0] = ((HapCodecDXTEncoderRef)dxtEncoder)->pixelformat_function(dxtEncoder, exportPixelFormats[0]);
 			switch (exportCodecType)	{
 			case kHapCodecSubType:
 			case kHapAlphaCodecSubType:
@@ -174,15 +217,39 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 				break;
 			}
 			case kHapYCoCgCodecSubType:
+			case kHapYCoCgACodecSubType:
+			case kHapAOnlyCodecSubType:
 				HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)dxtEncoder);
 				dxtEncoder = NULL;
 				break;
 			}
 		}
 		
-		//FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmt);
-		encoderInputPxlFmtBytesPerRow = roundUpToMultipleOf16(((uint32_t)exportImgSize.width * 4));
-		formatConvertPoolLength = encoderInputPxlFmtBytesPerRow*(NSUInteger)(exportImgSize.height);
+		if (exportPixelFormatsCount > 1)	{
+			void			*alphaEncoder = [self allocAlphaEncoder];
+			if (alphaEncoder==NULL)	{
+				NSLog(@"\t\terr: couldn't make alphaEncoder, %s",__func__);
+				FourCCLog(@"\t\texport codec type was",exportCodecType);
+				goto BAIL;
+			}
+			else	{
+				encoderInputPxlFmts[1] = ((HapCodecDXTEncoderRef)alphaEncoder)->pixelformat_function(alphaEncoder, exportPixelFormats[1]);
+				HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)alphaEncoder);
+				alphaEncoder = NULL;
+			}
+		}
+		
+		//FourCCLog(@"\t\tencoderInputPxlFmts[0] is",encoderInputPxlFmts[0]);
+		//FourCCLog(@"\t\tencoderInputPxlFmts[1] is",encoderInputPxlFmts[1]);
+		encoderInputPxlFmtBytesPerRow[0] = roundUpToMultipleOf16(((uint32_t)exportImgSize.width * 4));
+		encoderInputPxlFmtBytesPerRow[1] = 0;
+		if (exportPixelFormatsCount>1)
+			encoderInputPxlFmtBytesPerRow[1] = roundUpToMultipleOf16(((uint32_t)exportImgSize.width * 4));
+		
+		formatConvertPoolLengths[0] = encoderInputPxlFmtBytesPerRow[0]*(NSUInteger)(exportImgSize.height);
+		formatConvertPoolLengths[1] = 0;
+		if (exportPixelFormatsCount>1)
+			formatConvertPoolLengths[1] = encoderInputPxlFmtBytesPerRow[1]*(NSUInteger)(exportImgSize.height);
 		
 		//encodeQueue = dispatch_queue_create("HapEncode", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INITIATED, -1));
 		encodeQueue = dispatch_queue_create("HapEncode", DISPATCH_QUEUE_CONCURRENT);
@@ -266,72 +333,89 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 			//	lock the base address of the pixel buffer, get a ptr to the raw pixel data- i'll either be converting it or encoding it
 			CVPixelBufferLockBaseAddress(pb,kHapCodecCVPixelBufferLockFlags);
 			void			*sourceBuffer = CVPixelBufferGetBaseAddress(pb);
-			void			*formatConvertBuffer = nil;
+			void			*formatConvertBuffers[2];
+			formatConvertBuffers[0] = nil;
+			formatConvertBuffers[1] = nil;
 			
-			//	if the passed buffer's pixel format doesn't match 'encoderInputPxlFmt', convert the pixels
-			if (sourceFormat!=encoderInputPxlFmt)	{
-				//FourCCLog(@"\t\tsource doesn't match encoder input, which is",encoderInputPxlFmt);
-				formatConvertBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, formatConvertPoolLength, 0);
-				switch (encoderInputPxlFmt)	{
-				case kHapCVPixelFormat_CoCgXY:
-					if (sourceFormat==k32BGRAPixelFormat)	{
-						ConvertBGR_ToCoCg_Y8888((uint8_t *)sourceBuffer,
-							(uint8_t *)formatConvertBuffer,
-							(NSUInteger)exportImgSize.width,
-							(NSUInteger)exportImgSize.height,
-							CVPixelBufferGetBytesPerRow(pb),
-							encoderInputPxlFmtBytesPerRow,
-							0);
-					}
-					else	{
-						ConvertRGB_ToCoCg_Y8888((uint8_t *)sourceBuffer,
-							(uint8_t *)formatConvertBuffer,
-							(NSUInteger)exportImgSize.width,
-							(NSUInteger)exportImgSize.height,
-							CVPixelBufferGetBytesPerRow(pb),
-							encoderInputPxlFmtBytesPerRow,
-							0);
-					}
-					break;
-				case k32RGBAPixelFormat:
-					if (sourceFormat==k32BGRAPixelFormat)	{
-						uint8_t			permuteMap[] = {2, 1, 0, 3};
-						ImageMath_Permute8888(sourceBuffer,
-							CVPixelBufferGetBytesPerRow(pb),
-							formatConvertBuffer,
-							encoderInputPxlFmtBytesPerRow,
-							(NSUInteger)exportImgSize.width,
-							(NSUInteger)exportImgSize.height,
-							permuteMap,
-							0);
-					}
-					else	{
-						NSLog(@"\t\terr: unhandled, %s",__func__);
+			
+			//	if the passed buffer's pixel format doesn't match either of the 'encoderInputPxlFmts', convert the pixels
+			for (int i=0; i<exportPixelFormatsCount; ++i)	{
+				if (sourceFormat!=encoderInputPxlFmts[i])	{
+					formatConvertBuffers[i] = CFAllocatorAllocate(_HIAVFMemPoolAllocator, formatConvertPoolLengths[i], 0);
+					switch (encoderInputPxlFmts[i])	{
+					case kHapCVPixelFormat_CoCgXY:
+						if (sourceFormat==k32BGRAPixelFormat)	{
+							
+							ConvertBGR_ToCoCg_Y8888((uint8_t *)sourceBuffer,
+								(uint8_t *)formatConvertBuffers[i],
+								(NSUInteger)exportImgSize.width,
+								(NSUInteger)exportImgSize.height,
+								CVPixelBufferGetBytesPerRow(pb),
+								encoderInputPxlFmtBytesPerRow[i],
+								0);
+							
+						}
+						else	{
+							
+							ConvertRGB_ToCoCg_Y8888((uint8_t *)sourceBuffer,
+								(uint8_t *)formatConvertBuffers[i],
+								(NSUInteger)exportImgSize.width,
+								(NSUInteger)exportImgSize.height,
+								CVPixelBufferGetBytesPerRow(pb),
+								encoderInputPxlFmtBytesPerRow[i],
+								0);
+							
+						}
+						break;
+					case k32RGBAPixelFormat:
+						if (sourceFormat==k32BGRAPixelFormat)	{
+							
+							uint8_t			permuteMap[] = {2, 1, 0, 3};
+							ImageMath_Permute8888(sourceBuffer,
+								CVPixelBufferGetBytesPerRow(pb),
+								formatConvertBuffers[i],
+								encoderInputPxlFmtBytesPerRow[i],
+								(NSUInteger)exportImgSize.width,
+								(NSUInteger)exportImgSize.height,
+								permuteMap,
+								0);
+							
+						}
+						else	{
+							NSLog(@"\t\terr: unhandled, %s",__func__);
+							FourCCLog(@"\t\tsourceFormat is",sourceFormat);
+							FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmts[i]);
+						}
+						break;
+					default:
+						NSLog(@"\t\terr: default case, %s",__func__);
 						FourCCLog(@"\t\tsourceFormat is",sourceFormat);
-						FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmt);
+						FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmts[i]);
+						break;
 					}
-					break;
-				default:
-					NSLog(@"\t\terr: default case, %s",__func__);
-					FourCCLog(@"\t\tsourceFormat is",sourceFormat);
-					FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmt);
-					break;
 				}
 			}
 			
 			//	encode the DXT frame...
 			
-			void			*dxtBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtBufferPoolLength, 0);
+			void			*dxtBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtBufferPoolLengths[0], 0);
+			void			*dxtAlphaBuffer = NULL;
 			int				intErr = 0;
 			//	try to get the default GL-based DXT encoder- if it exists we need to use it (and it's shared)
 			OSSpinLockLock(&encoderLock);
 			void			*targetDXTEncoder = glDXTEncoder;
+			void			*targetAlphaEncoder = NULL;
 			OSSpinLockUnlock(&encoderLock);
 			void			*newDXTEncoder = NULL;
+			void			*newAlphaEncoder = NULL;
 			//	if we aren't sharing a GL-based DXT encoder, we need to make a new DXT encoder (which will be freed after this frame is encoded)
 			if (targetDXTEncoder == NULL)	{
 				newDXTEncoder = [self allocDXTEncoder];
 				targetDXTEncoder = newDXTEncoder;
+			}
+			if (exportPixelFormatsCount > 1)	{
+				newAlphaEncoder = [self allocAlphaEncoder];
+				targetAlphaEncoder = newAlphaEncoder;
 			}
 			
 			//	if we don't have a target encoder, something went wrong
@@ -344,27 +428,65 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 				if (newDXTEncoder == NULL)
 					OSSpinLockLock(&encoderLock);
 				//	slightly different path depending on whether i'm converting the passed pixel buffer...
-				if (formatConvertBuffer==nil)	{
+				if (formatConvertBuffers[0]==nil)	{
+					
 					intErr = ((HapCodecDXTEncoderRef)targetDXTEncoder)->encode_function(targetDXTEncoder,
 						sourceBuffer,
 						(unsigned int)CVPixelBufferGetBytesPerRow(pb),
-						encoderInputPxlFmt,
+						encoderInputPxlFmts[0],
 						dxtBuffer,
 						(unsigned int)exportImgSize.width,
 						(unsigned int)exportImgSize.height);
+					
 				}
 				//	...or if i'm converting the format conversion buffer 
 				else	{
+					
 					intErr = ((HapCodecDXTEncoderRef)targetDXTEncoder)->encode_function(targetDXTEncoder,
-						formatConvertBuffer,
-						(unsigned int)(formatConvertPoolLength/(NSUInteger)exportImgSize.height),
-						encoderInputPxlFmt,
+						formatConvertBuffers[0],
+						(unsigned int)(formatConvertPoolLengths[0]/(NSUInteger)exportImgSize.height),
+						encoderInputPxlFmts[0],
 						dxtBuffer,
 						(unsigned int)exportImgSize.width,
 						(unsigned int)exportImgSize.height);
+					
 				}
 				if (newDXTEncoder == NULL)
 					OSSpinLockUnlock(&encoderLock);
+			}
+			
+			//	if we don't have a target alpha encoder, something went wrong
+			if (exportPixelFormatsCount>1 && targetAlphaEncoder==NULL)	{
+				NSLog(@"\t\terr: alpha encoder nil in %s",__func__);
+				intErr = -1;
+			}
+			else if (exportPixelFormatsCount>1 && targetAlphaEncoder!=NULL)	{
+				//	only make the buffer for creating a DXT-encoded alpha image if necessary!
+				dxtAlphaBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtBufferPoolLengths[1], 0);
+				//	slightly different path depending on whether i'm converting the passed pixel buffer...
+				if (formatConvertBuffers[1]==nil)	{
+					
+					intErr = ((HapCodecDXTEncoderRef)targetAlphaEncoder)->encode_function(targetAlphaEncoder,
+						sourceBuffer,
+						(unsigned int)CVPixelBufferGetBytesPerRow(pb),
+						encoderInputPxlFmts[1],
+						dxtAlphaBuffer,
+						(unsigned int)exportImgSize.width,
+						(unsigned int)exportImgSize.height);
+					
+				}
+				//	...or if i'm converting the format conversion buffer 
+				else	{
+					
+					intErr = ((HapCodecDXTEncoderRef)targetAlphaEncoder)->encode_function(targetAlphaEncoder,
+						formatConvertBuffers[1],
+						(unsigned int)(formatConvertPoolLengths[1]/(NSUInteger)exportImgSize.height),
+						encoderInputPxlFmts[1],
+						dxtAlphaBuffer,
+						(unsigned int)exportImgSize.width,
+						(unsigned int)exportImgSize.height);
+					
+				}
 			}
 			
 			//	unlock the pixel buffer immediately
@@ -389,14 +511,18 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 						NSLog(@"\t\terr %d at CMBlockBufferGetDataPointer() in %s, not appending buffer",(int)osErr,__func__);
 					else	{
 						enum HapResult		hapErr = HapResult_No_Error;
-						hapErr = HapEncode(dxtBuffer,
-							dxtBufferPoolLength,
-							exportTextureType,
-							HapCompressorSnappy,
-							exportChunkCount,
+						const void			*tmpDXTBuffers[] = {dxtBuffer, dxtAlphaBuffer};
+						unsigned int		compressors[] = {HapCompressorSnappy, HapCompressorSnappy};
+						hapErr = HapEncode(exportPixelFormatsCount,
+							(const void **)tmpDXTBuffers,
+							dxtBufferPoolLengths,
+							exportTextureTypes,
+							compressors,
+							exportChunkCounts,
 							hapBuffer,
 							hapBufferLength,
 							&bytesWrittenToHapBuffer);
+						
 						if (hapErr!=HapResult_No_Error)
 							NSLog(@"\t\terr %d at HapEncode() in %s, not appending buffer",hapErr,__func__);
 						else	{
@@ -461,15 +587,27 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, dxtBuffer);
 				dxtBuffer = nil;
 			}
-			if (formatConvertBuffer!=nil)	{
-				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, formatConvertBuffer);
-				formatConvertBuffer = nil;
+			if (dxtAlphaBuffer!=nil)	{
+				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, dxtAlphaBuffer);
+				dxtAlphaBuffer = nil;
+			}
+			if (formatConvertBuffers[0]!=nil)	{
+				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, formatConvertBuffers[0]);
+				formatConvertBuffers[0] = nil;
+			}
+			if (formatConvertBuffers[1]!=nil)	{
+				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, formatConvertBuffers[1]);
+				formatConvertBuffers[1] = nil;
 			}
 			
 			//	release the dxt encoder
 			if (newDXTEncoder!=NULL)	{
 				HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)newDXTEncoder);
 				newDXTEncoder = NULL;
+			}
+			if (newAlphaEncoder!=NULL)	{
+				HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)newAlphaEncoder);
+				newAlphaEncoder = NULL;
 			}
 			
 			//	release the pixel buffer i retained before i dispatched this block!
@@ -678,17 +816,43 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 	case kHapAlphaCodecSubType:
 	{
 		if (exportHighQualityFlag)
-			returnMe = HapCodecSquishEncoderCreate(HapCodecSquishEncoderMediumQuality, exportPixelFormat);
+			returnMe = HapCodecSquishEncoderCreate(HapCodecSquishEncoderMediumQuality, exportPixelFormats[0]);
 		else
-			returnMe = HapCodecGLEncoderCreate((unsigned int)exportImgSize.width, (unsigned int)exportImgSize.height, exportPixelFormat);
+			returnMe = HapCodecGLEncoderCreate((unsigned int)exportImgSize.width, (unsigned int)exportImgSize.height, exportPixelFormats[0]);
 		break;
 	}
 	case kHapYCoCgCodecSubType:
+	case kHapYCoCgACodecSubType:
 		returnMe = HapCodecYCoCgDXTEncoderCreate();
+		break;
+	case kHapAOnlyCodecSubType:
 		break;
 	}
 	if (returnMe==NULL)	{
-		NSLog(@"\t\terr: couldn't make dxtEncoder, %s",__func__);
+		NSLog(@"\t\terr: couldn't make encoder, %s",__func__);
+		FourCCLog(@"\t\texport codec type was",exportCodecType);
+	}
+	OSSpinLockUnlock(&encoderProgressLock);
+	return returnMe;
+}
+- (void *) allocAlphaEncoder	{
+	//	note: only create and return an alpha encoder if appropriate (if i should be exporting a discrete alpha channel)
+	void			*returnMe = NULL;
+	OSSpinLockLock(&encoderProgressLock);
+	switch (exportCodecType)	{
+	case kHapCodecSubType:
+	case kHapAlphaCodecSubType:
+		//	intentionally blank, these codecs do not require discrete alpha-channel encoding
+		break;
+	case kHapYCoCgCodecSubType:
+	case kHapYCoCgACodecSubType:
+		returnMe = HapCodecSquishEncoderCreate(HapCodecSquishEncoderBestQuality, kHapCVPixelFormat_A_RGTC1);
+		break;
+	case kHapAOnlyCodecSubType:
+		break;
+	}
+	if (returnMe==NULL)	{
+		NSLog(@"\t\terr: couldn't make encoder, %s",__func__);
 		FourCCLog(@"\t\texport codec type was",exportCodecType);
 	}
 	OSSpinLockUnlock(&encoderProgressLock);

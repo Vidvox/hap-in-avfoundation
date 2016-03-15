@@ -90,6 +90,7 @@
 		1AB26ECC1A3B3AE1001360D7 /* HapDecoderFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AB26ECA1A3B3AE1001360D7 /* HapDecoderFrame.m */; };
 		1AB26EF51A3B59D5001360D7 /* AVPlayerItemAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB26EF31A3B59D5001360D7 /* AVPlayerItemAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AB26EF61A3B59D5001360D7 /* AVPlayerItemAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AB26EF41A3B59D5001360D7 /* AVPlayerItemAdditions.m */; };
+		1AB665EE1C96CDA500FC1B9D /* ScaledCoCgYPlusAToRGBA.frag in Resources */ = {isa = PBXBuildFile; fileRef = 1AB665ED1C96CDA500FC1B9D /* ScaledCoCgYPlusAToRGBA.frag */; };
 		1AC0CA191A437C2A00A9BC2C /* HapEncoderFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AC0CA171A437C2A00A9BC2C /* HapEncoderFrame.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AC0CA1A1A437C2A00A9BC2C /* HapEncoderFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */; };
 		1ACF5DEC1A3E4127005DDF19 /* PixelFormats.c in Sources */ = {isa = PBXBuildFile; fileRef = 1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */; };
@@ -273,6 +274,7 @@
 		1AB26ECA1A3B3AE1001360D7 /* HapDecoderFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapDecoderFrame.m; sourceTree = "<group>"; };
 		1AB26EF31A3B59D5001360D7 /* AVPlayerItemAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerItemAdditions.h; sourceTree = "<group>"; };
 		1AB26EF41A3B59D5001360D7 /* AVPlayerItemAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerItemAdditions.m; sourceTree = "<group>"; };
+		1AB665ED1C96CDA500FC1B9D /* ScaledCoCgYPlusAToRGBA.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = ScaledCoCgYPlusAToRGBA.frag; sourceTree = "<group>"; };
 		1AC0CA171A437C2A00A9BC2C /* HapEncoderFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HapEncoderFrame.h; sourceTree = "<group>"; };
 		1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapEncoderFrame.m; sourceTree = "<group>"; };
 		1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = PixelFormats.c; path = source/PixelFormats.c; sourceTree = SOURCE_ROOT; };
@@ -380,6 +382,7 @@
 				1A05185B1A3E17CF00FC80D2 /* GLView.m */,
 				1A05185C1A3E17CF00FC80D2 /* HapPixelBufferTexture.h */,
 				1A05185D1A3E17CF00FC80D2 /* HapPixelBufferTexture.m */,
+				1AB665ED1C96CDA500FC1B9D /* ScaledCoCgYPlusAToRGBA.frag */,
 				1A0518691A3E228700FC80D2 /* ScaledCoCgYToRGBA.frag */,
 				1A05186A1A3E228700FC80D2 /* ScaledCoCgYToRGBA.vert */,
 				1A32301D1A3BA14000DDB2E0 /* Images.xcassets */,
@@ -725,6 +728,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A32301E1A3BA14000DDB2E0 /* Images.xcassets in Resources */,
+				1AB665EE1C96CDA500FC1B9D /* ScaledCoCgYPlusAToRGBA.frag in Resources */,
 				1A05186C1A3E228700FC80D2 /* ScaledCoCgYToRGBA.vert in Resources */,
 				1A3230211A3BA14000DDB2E0 /* MainMenu.xib in Resources */,
 				1A05186B1A3E228700FC80D2 /* ScaledCoCgYToRGBA.frag in Resources */,

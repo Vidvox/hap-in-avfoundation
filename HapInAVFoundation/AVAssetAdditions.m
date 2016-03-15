@@ -35,6 +35,8 @@
 		case kHapCodecSubType:
 		case kHapAlphaCodecSubType:
 		case kHapYCoCgCodecSubType:
+		case kHapYCoCgACodecSubType:
+		case kHapAOnlyCodecSubType:
 			returnMe = YES;
 			break;
 		default:

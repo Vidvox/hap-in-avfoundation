@@ -12,6 +12,8 @@ extern NSString *const			AVVideoCodecHap;
 extern NSString *const			AVVideoCodecHapAlpha;
 //	same as "AVVideoCodecHap", except this defines a video using the HapQ codec
 extern NSString *const			AVVideoCodecHapQ;
+extern NSString *const			AVVideoCodecHapQAlpha;
+extern NSString *const			AVVideoCodecHapAlphaOnly;
 //	the hapQ codec offers the ability to create "chunked" files- this string is the key in the compression properties dict (AVVideoCompressionPropertiesKey) at which the # of chunks is stored.  if the value at this key is nil or < 1, it is assumed to be 1.
 extern NSString *const			AVHapVideoChunkCountKey;
 
@@ -27,18 +29,19 @@ This class is the main interface for using AVFoundation to encode and output vid
 	dispatch_queue_t	encodeQueue;	//	encoding is performed on this queue
 	
 	OSType			exportCodecType;	//	like kHapCodecSubType/'Hap1', etc.  declared in HapCodecSubTypes.h
-	OSType			exportPixelFormat;	//	like kHapCVPixelFormat_RGB_DXT1/'DXt1', etc.  declared in PixelFormats.h.
-	uint32_t		exportTextureType;	//	like HapTextureFormat_RGB_DXT1, etc.  declared in hap.h
+	int				exportPixelFormatsCount;	//	the number of pixel formats- 1 by default and for most codecs, only 2 if using HapQ + Alpha
+	OSType			exportPixelFormats[2];	//	like kHapCVPixelFormat_RGB_DXT1/'DXt1', etc.  declared in PixelFormats.h.
+	uint32_t		exportTextureTypes[2];	//	like HapTextureFormat_RGB_DXT1, etc.  declared in hap.h
 	NSSize			exportImgSize;	//	the size of the exported image in pixels.  doesn't take any rounding/block sizes into account- just the image size.
 	NSSize			exportDXTImgSize;	//	'exportImgSize' rounded up to a multiple of 4
-	int				exportChunkCount;
+	unsigned int	exportChunkCounts[2];
 	BOOL			exportHighQualityFlag;	//	NO by default, YES if the quality slider is > .8 in hap or hap alpha codecs
 	
-	OSType			encoderInputPxlFmt;	//	the encoder wants pixels of a particular format.  this is the format they want.
-	uint32_t		encoderInputPxlFmtBytesPerRow;	//	the number of bytes per row in the buffers created to convert to 'encoderInputPxlFmt'
+	OSType			encoderInputPxlFmts[2];	//	the encoder wants pixels of a particular format.  this is the format they want.
+	uint32_t		encoderInputPxlFmtBytesPerRow[2];	//	the number of bytes per row in the buffers created to convert to 'encoderInputPxlFmts'
 	
-	size_t			formatConvertPoolLength;	//	the size of the buffers that i need to create if i need to convert pixel formats
-	size_t			dxtBufferPoolLength;	//	the size of the buffers that i need to create to hold dxt frames
+	size_t			formatConvertPoolLengths[2];	//	the size of the buffers that i need to create if i need to convert pixel formats
+	size_t			dxtBufferPoolLengths[2];	//	the size of the buffers that i need to create to hold dxt frames
 	size_t			hapBufferPoolLength;	//	the size of the buffers i need to create to hold hap frames
 	
 	OSSpinLock			encoderLock;	//	used to lock glDXTEncoder
