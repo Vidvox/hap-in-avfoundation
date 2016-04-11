@@ -35,7 +35,7 @@
 		1A0536231A38CA5D005B47BD /* YCoCg.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A05361F1A38CA5D005B47BD /* YCoCg.c */; };
 		1A0536241A38CA5D005B47BD /* YCoCg.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0536201A38CA5D005B47BD /* YCoCg.h */; };
 		1A0E542D1C85F809003EAED8 /* Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A0E542C1C85F809003EAED8 /* Utility.m */; };
-		1A32301A1A3BA14000DDB2E0 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3230191A3BA14000DDB2E0 /* AppDelegate.m */; };
+		1A32301A1A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3230191A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.m */; };
 		1A32301C1A3BA14000DDB2E0 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A32301B1A3BA14000DDB2E0 /* main.m */; };
 		1A32301E1A3BA14000DDB2E0 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A32301D1A3BA14000DDB2E0 /* Images.xcassets */; };
 		1A3230211A3BA14000DDB2E0 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1A32301F1A3BA14000DDB2E0 /* MainMenu.xib */; };
@@ -210,8 +210,8 @@
 		1A0E542C1C85F809003EAED8 /* Utility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Utility.m; path = source/Utility.m; sourceTree = SOURCE_ROOT; };
 		1A3230141A3BA14000DDB2E0 /* HapInAVF Test App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "HapInAVF Test App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A3230171A3BA14000DDB2E0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		1A3230181A3BA14000DDB2E0 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		1A3230191A3BA14000DDB2E0 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		1A3230181A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HapInAVFTestAppDelegate.h; sourceTree = "<group>"; };
+		1A3230191A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HapInAVFTestAppDelegate.m; sourceTree = "<group>"; };
 		1A32301B1A3BA14000DDB2E0 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		1A32301D1A3BA14000DDB2E0 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1A3230201A3BA14000DDB2E0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -376,8 +376,8 @@
 		1A3230151A3BA14000DDB2E0 /* HapInAVF Test App */ = {
 			isa = PBXGroup;
 			children = (
-				1A3230181A3BA14000DDB2E0 /* AppDelegate.h */,
-				1A3230191A3BA14000DDB2E0 /* AppDelegate.m */,
+				1A3230181A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.h */,
+				1A3230191A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.m */,
 				1A05185A1A3E17CF00FC80D2 /* GLView.h */,
 				1A05185B1A3E17CF00FC80D2 /* GLView.m */,
 				1A05185C1A3E17CF00FC80D2 /* HapPixelBufferTexture.h */,
@@ -761,7 +761,7 @@
 			files = (
 				1A05185F1A3E17CF00FC80D2 /* HapPixelBufferTexture.m in Sources */,
 				1A32301C1A3BA14000DDB2E0 /* main.m in Sources */,
-				1A32301A1A3BA14000DDB2E0 /* AppDelegate.m in Sources */,
+				1A32301A1A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.m in Sources */,
 				1A05185E1A3E17CF00FC80D2 /* GLView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

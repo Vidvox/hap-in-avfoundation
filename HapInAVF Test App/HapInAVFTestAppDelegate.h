@@ -8,7 +8,7 @@
 
 
 
-@interface AppDelegate : NSObject <NSApplicationDelegate,NSTabViewDelegate>	{
+@interface HapInAVFTestAppDelegate : NSObject <NSApplicationDelegate,NSTabViewDelegate>	{
 	CVDisplayLinkRef			displayLink;	//	this "drives" rendering
 	NSOpenGLContext				*sharedContext;	//	all GL contexts share this, so textures from one contact can be used in others
 	IBOutlet NSWindow			*window;

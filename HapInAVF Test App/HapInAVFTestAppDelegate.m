@@ -1,10 +1,10 @@
-#import "AppDelegate.h"
+#import "HapInAVFTestAppDelegate.h"
 #import <OpenGL/CGLMacro.h>
 
 
 
 
-@implementation AppDelegate
+@implementation HapInAVFTestAppDelegate
 
 
 - (id) init	{
@@ -423,7 +423,7 @@ CVReturn displayLinkCallback(CVDisplayLinkRef displayLink,
 	void *displayLinkContext)
 {
 	NSAutoreleasePool		*pool =[[NSAutoreleasePool alloc] init];
-	[(AppDelegate *)displayLinkContext renderCallback];
+	[(HapInAVFTestAppDelegate *)displayLinkContext renderCallback];
 	[pool release];
 	return kCVReturnSuccess;
 }

@@ -198,10 +198,13 @@
 			//	NOTE: NEEDS TESTING. this used to be the case- but this API is only available on 10.10+, so this may have been fixed.
 			backingWidths[texIndex] = 1;
 			while (backingWidths[texIndex] < roundedWidth) backingWidths[texIndex] <<= 1;
-		
 			backingHeights[texIndex] = 1;
 			while (backingHeights[texIndex] < roundedHeight) backingHeights[texIndex] <<= 1;
-		
+			
+			//	...if we aren't doing POT dimensions, then we need to do this!
+			//backingWidths[texIndex] = roundedWidth;
+			//backingHeights[texIndex] = roundedHeight;
+			
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -223,18 +226,18 @@
 		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
 	
 		glCompressedTexSubImage2D(GL_TEXTURE_2D,
-								  0,
-								  0,
-								  0,
-								  roundedWidth,
-								  roundedHeight,
-								  newInternalFormat,
-								  newDataLength,
-								  baseAddress);
-	
+			0,
+			0,
+			0,
+			roundedWidth,
+			roundedHeight,
+			newInternalFormat,
+			newDataLength,
+			baseAddress);
+		
 		glPopClientAttrib();
 		glPopAttrib();
-	
+		
 		glFlush();
 	}
 }
