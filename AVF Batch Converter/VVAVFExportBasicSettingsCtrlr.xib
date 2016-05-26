@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9531" systemVersion="15D21" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9531" systemVersion="15F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9531"/>
     </dependencies>
@@ -21,8 +21,11 @@
                 <outlet property="h264KeyframesMatrix" destination="Tcu-ar-0Rh" id="UxZ-uR-KG4"/>
                 <outlet property="h264MultiPassButton" destination="fdh-q5-B42" id="EM3-8Q-Yl2"/>
                 <outlet property="h264ProfilesPUB" destination="FzX-Ew-zf5" id="TRC-zj-Epi"/>
-                <outlet property="hapQChunkField" destination="6za-U0-pgk" id="Yj3-3W-qVF"/>
-                <outlet property="hapQChunkMatrix" destination="exV-ej-bqF" id="Qt9-Fl-utw"/>
+                <outlet property="hapChunkField" destination="1fH-et-78n" id="wBP-DA-9E0"/>
+                <outlet property="hapChunkMatrix" destination="zHR-fu-bde" id="Bg0-s0-vZJ"/>
+                <outlet property="hapQChunkField" destination="6za-U0-pgk" id="x2f-g4-lZE"/>
+                <outlet property="hapQChunkMatrix" destination="exV-ej-bqF" id="bLW-he-db9"/>
+                <outlet property="hapQualitySlider" destination="lRs-U1-8Bz" id="9XK-f3-37S"/>
                 <outlet property="losslessBitDepthPUB" destination="aOl-cR-yft" id="L7u-hn-PMh"/>
                 <outlet property="pcmBitsPUB" destination="Jbu-y0-psL" id="rbM-ew-AAW"/>
                 <outlet property="pcmFloatingPointButton" destination="Krx-5c-Z39" id="aRp-hb-XKM"/>
@@ -404,7 +407,7 @@
                                                             </connections>
                                                         </button>
                                                         <popUpButton verticalHuggingPriority="750" id="Ys6-Kb-gXX">
-                                                            <rect key="frame" x="54" y="26" width="28" height="26"/>
+                                                            <rect key="frame" x="28" y="26" width="54" height="26"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" autoenablesItems="NO" altersStateOfSelectedItem="NO" id="HbJ-wB-jwN">
                                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -710,6 +713,75 @@
                                                     </subviews>
                                                 </view>
                                             </tabViewItem>
+                                            <tabViewItem label="Item 4" identifier="" id="wKu-9q-BWS" userLabel="Hap">
+                                                <view key="view" id="AvL-cg-edv">
+                                                    <rect key="frame" x="0.0" y="0.0" width="244" height="212"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField verticalHuggingPriority="750" id="Lfm-Wr-bSa">
+                                                            <rect key="frame" x="0.0" y="195" width="49" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Quality" id="ReW-T2-R21">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <slider verticalHuggingPriority="750" id="lRs-U1-8Bz">
+                                                            <rect key="frame" x="18" y="163" width="208" height="26"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <sliderCell key="cell" continuous="YES" state="on" alignment="left" maxValue="1" doubleValue="0.76000000000000001" tickMarkPosition="below" numberOfTickMarks="5" sliderType="linear" id="3UR-DV-5dZ"/>
+                                                        </slider>
+                                                        <matrix verticalHuggingPriority="750" allowsEmptySelection="NO" autorecalculatesCellSize="YES" id="zHR-fu-bde">
+                                                            <rect key="frame" x="20" y="93" width="103" height="38"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            <size key="cellSize" width="98" height="18"/>
+                                                            <size key="intercellSpacing" width="4" height="2"/>
+                                                            <buttonCell key="prototype" type="radio" title="Radio" imagePosition="left" alignment="left" inset="2" id="mRR-zU-bsk">
+                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                <font key="font" metaFont="system"/>
+                                                            </buttonCell>
+                                                            <cells>
+                                                                <column>
+                                                                    <buttonCell type="radio" title="Off (Default)" imagePosition="left" alignment="left" state="on" tag="1" inset="2" id="zRM-dK-uAE">
+                                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                        <font key="font" metaFont="system"/>
+                                                                    </buttonCell>
+                                                                    <buttonCell type="radio" title="# of chunks:" imagePosition="left" alignment="left" inset="2" id="eaA-hU-Do1">
+                                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                        <font key="font" metaFont="system"/>
+                                                                    </buttonCell>
+                                                                </column>
+                                                            </cells>
+                                                            <connections>
+                                                                <action selector="hapChunkMatrixUsed:" target="-2" id="nhF-7c-4K7"/>
+                                                            </connections>
+                                                        </matrix>
+                                                        <textField verticalHuggingPriority="750" id="1fH-et-78n">
+                                                            <rect key="frame" x="131" y="93" width="58" height="22"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="wds-Rh-REn">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <action selector="hapChunkFieldUsed:" target="-2" id="R6Z-M3-Dfo"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Oh3-2J-4dj">
+                                                            <rect key="frame" x="0.0" y="139" width="139" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Chunked En/Decoding" id="piG-MF-bjW">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
                                             <tabViewItem label="Item 3" identifier="" id="rnh-3r-728" userLabel="HapQ">
                                                 <view key="view" id="O3h-AH-uAE">
                                                     <rect key="frame" x="0.0" y="0.0" width="244" height="212"/>
@@ -738,7 +810,7 @@
                                                                 </column>
                                                             </cells>
                                                             <connections>
-                                                                <action selector="hapQChunkMatrixUsed:" target="-2" id="fOU-Zn-LFQ"/>
+                                                                <action selector="hapQChunkMatrixUsed:" target="-2" id="F3s-Nq-lss"/>
                                                             </connections>
                                                         </matrix>
                                                         <textField verticalHuggingPriority="750" id="6za-U0-pgk">
@@ -750,7 +822,7 @@
                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
                                                             <connections>
-                                                                <action selector="hapQChunkFieldUsed:" target="-2" id="4Eb-FZ-Tmk"/>
+                                                                <action selector="hapQChunkFieldUsed:" target="-2" id="B8e-xJ-6h7"/>
                                                             </connections>
                                                         </textField>
                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FWF-Bz-OB1">

@@ -138,6 +138,8 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 	//	select a default h.264 profile
 	[h264ProfilesPUB selectItemAtIndex:[[[h264ProfilesPUB menu] itemArray] count]-1];
 	
+	[hapChunkField setStringValue:@"1"];
+	[hapChunkField setEnabled:NO];
 	[hapQChunkField setStringValue:@"1"];
 	[hapQChunkField setEnabled:NO];
 	
@@ -306,13 +308,29 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 			else if ([codecString isEqualToString:AVVideoCodecHap])	{
 				NSMutableDictionary		*compProps = [NSMutableDictionary dictionaryWithCapacity:0];
 				[returnMe setObject:compProps forKey:AVVideoCompressionPropertiesKey];
-				[compProps setObject:[NSNumber numberWithDouble:[pjpegQualitySlider doubleValue]] forKey:AVVideoQualityKey];
+				[compProps setObject:[NSNumber numberWithDouble:[hapQualitySlider doubleValue]] forKey:AVVideoQualityKey];
+				if ([hapChunkMatrix selectedRow]==0)	{
+					[returnMe setObject:[NSNumber numberWithInteger:1] forKey:AVHapVideoChunkCountKey];
+				}
+				else	{
+					int			tmpInt = [[hapChunkField stringValue] intValue];
+					tmpInt = fmaxl(fminl(tmpInt, HAPQMAXCHUNKS), 1);
+					[compProps setObject:[NSNumber numberWithInteger:tmpInt] forKey:AVHapVideoChunkCountKey];
+				}
 			}
 			//	hap alpha
 			else if ([codecString isEqualToString:AVVideoCodecHapAlpha])	{
 				NSMutableDictionary		*compProps = [NSMutableDictionary dictionaryWithCapacity:0];
 				[returnMe setObject:compProps forKey:AVVideoCompressionPropertiesKey];
-				[compProps setObject:[NSNumber numberWithDouble:[pjpegQualitySlider doubleValue]] forKey:AVVideoQualityKey];
+				[compProps setObject:[NSNumber numberWithDouble:[hapQualitySlider doubleValue]] forKey:AVVideoQualityKey];
+				if ([hapChunkMatrix selectedRow]==0)	{
+					[returnMe setObject:[NSNumber numberWithInteger:1] forKey:AVHapVideoChunkCountKey];
+				}
+				else	{
+					int			tmpInt = [[hapChunkField stringValue] intValue];
+					tmpInt = fmaxl(fminl(tmpInt, HAPQMAXCHUNKS), 1);
+					[compProps setObject:[NSNumber numberWithInteger:tmpInt] forKey:AVHapVideoChunkCountKey];
+				}
 			}
 			//	hap Q
 			else if ([codecString isEqualToString:AVVideoCodecHapQ])	{
@@ -512,7 +530,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 		if (props!=nil)	{
 			tmpNum = [props objectForKey:AVVideoQualityKey];
 			if (tmpNum!=nil)
-				[pjpegQualitySlider setDoubleValue:[tmpNum doubleValue]];
+				[hapQualitySlider setDoubleValue:[tmpNum doubleValue]];
 		}
 	}
 	//	hap alpha
@@ -524,7 +542,7 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 		if (props!=nil)	{
 			tmpNum = [props objectForKey:AVVideoQualityKey];
 			if (tmpNum!=nil)
-				[pjpegQualitySlider setDoubleValue:[tmpNum doubleValue]];
+				[hapQualitySlider setDoubleValue:[tmpNum doubleValue]];
 		}
 	}
 	//	hap Q
@@ -540,6 +558,30 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 		[self vidCodecPUBUsed:vidCodecPUB];
 	}
 	
+	//	this code needs to run if i'm using hap
+	if ([codecString isEqualToString:AVVideoCodecHap] || [codecString isEqualToString:AVVideoCodecHapAlpha])	{
+		NSDictionary	*props = [n objectForKey:AVVideoCompressionPropertiesKey];
+		if (props != nil)	{
+			tmpNum = [props objectForKey:AVHapVideoChunkCountKey];
+			if (tmpNum == nil)	{
+				[hapChunkMatrix selectCellAtRow:0 column:0];
+				[hapChunkField setStringValue:@"1"];
+				[hapChunkField setEnabled:NO];
+			}
+			else	{
+				if ([tmpNum intValue]==0 || [tmpNum intValue]==1)	{
+					[hapChunkMatrix selectCellAtRow:0 column:0];
+					[hapChunkField setStringValue:@"1"];
+					[hapChunkField setEnabled:NO];
+				}
+				else	{
+					[hapChunkMatrix selectCellAtRow:1 column:0];
+					[hapChunkField setStringValue:[NSString stringWithFormat:@"%d",[tmpNum intValue]]];
+					[hapChunkField setEnabled:YES];
+				}
+			}
+		}
+	}
 	//	this code needs to run if i'm using hap Q or hap Q alpha
 	if ([codecString isEqualToString:AVVideoCodecHapQ] || [codecString isEqualToString:AVVideoCodecHapQAlpha])	{
 		NSDictionary	*props = [n objectForKey:AVVideoCompressionPropertiesKey];
@@ -696,18 +738,19 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 			}
 			//	hap
 			else if ([codecString isEqualToString:AVVideoCodecHap])	{
-				returnMe = [NSString stringWithFormat:@"Hap, %ld%%.",(unsigned long)(100.0*[pjpegQualitySlider doubleValue])];
+				returnMe = [NSString stringWithFormat:@"Hap, %ld%%.",(unsigned long)(100.0*[hapQualitySlider doubleValue])];
 			}
 			//	hap alpha
 			else if ([codecString isEqualToString:AVVideoCodecHapAlpha])	{
-				returnMe = [NSString stringWithFormat:@"Hap Alpha, %ld%%.",(unsigned long)(100.0*[pjpegQualitySlider doubleValue])];
+				returnMe = [NSString stringWithFormat:@"Hap Alpha, %ld%%.",(unsigned long)(100.0*[hapQualitySlider doubleValue])];
 			}
 			//	hap Q
 			else if ([codecString isEqualToString:AVVideoCodecHapQ])	{
 				returnMe = @"HapQ.";
 			}
+			//	hap Q alpha
 			else if ([codecString isEqualToString:AVVideoCodecHapQAlpha])	{
-				returnMe = @"HapQAlpha.";
+				returnMe = @"HapQ Alpha.";
 			}
 			
 			
@@ -798,16 +841,16 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 		[vidCodecTabView selectTabViewItemAtIndex:0];
 	}
 	else if ([selectedRepObj isEqualToString:AVVideoCodecHap])	{
-		[vidCodecTabView selectTabViewItemAtIndex:1];
+		[vidCodecTabView selectTabViewItemAtIndex:3];
 	}
 	else if ([selectedRepObj isEqualToString:AVVideoCodecHapAlpha])	{
-		[vidCodecTabView selectTabViewItemAtIndex:1];
+		[vidCodecTabView selectTabViewItemAtIndex:3];
 	}
 	else if ([selectedRepObj isEqualToString:AVVideoCodecHapQ])	{
-		[vidCodecTabView selectTabViewItemAtIndex:3];
+		[vidCodecTabView selectTabViewItemAtIndex:4];
 	}
 	else if ([selectedRepObj isEqualToString:AVVideoCodecHapQAlpha])	{
-		[vidCodecTabView selectTabViewItemAtIndex:3];
+		[vidCodecTabView selectTabViewItemAtIndex:4];
 	}
 }
 - (IBAction) h264KeyframesMatrixUsed:(id)sender	{
@@ -841,6 +884,35 @@ NSString *const		VVAVVideoMultiPassEncodeKey = @"VVAVVideoMultiPassEncodeKey";
 	NSString		*tmpString = [h264BitrateField stringValue];
 	if (tmpString==nil || [tmpString doubleValue]<=0.0)
 		[h264BitrateField setStringValue:@"4096.0"];
+}
+- (IBAction) hapChunkMatrixUsed:(id)sender	{
+	if ([hapChunkMatrix selectedRow] <= 0)	{
+		[hapChunkField setStringValue:@"1"];
+		[hapChunkField setEnabled:NO];
+	}
+	else	{
+		[hapChunkField setEnabled:YES];
+	}
+}
+- (IBAction) hapChunkFieldUsed:(id)sender	{
+	BOOL			needsCorrection = YES;
+	NSString		*tmpString = [hapChunkField stringValue];
+	int				tmpInt = 1;
+	if (tmpString!=nil && [tmpString length]<1)
+		tmpString = nil;
+	if (tmpString!=nil)	{
+		tmpInt = [tmpString intValue];
+		if (tmpInt > HAPQMAXCHUNKS)
+			tmpInt = HAPQMAXCHUNKS;
+		else if (tmpInt >= 1)
+			needsCorrection = NO;
+		else
+			tmpInt = 1;
+	}
+	
+	if (needsCorrection)	{
+		[hapChunkField setStringValue:[NSString stringWithFormat:@"%d",tmpInt]];
+	}
 }
 - (IBAction) hapQChunkMatrixUsed:(id)sender	{
 	if ([hapQChunkMatrix selectedRow] <= 0)	{

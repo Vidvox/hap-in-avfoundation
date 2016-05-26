@@ -150,11 +150,10 @@
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(target, texture);
-		glActiveTexture(GL_TEXTURE1);
-        if (alphaTexture>0)
+        if (alphaTexture>0)	{
+			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(alphaTarget, alphaTexture);
-        else
-        	glBindTexture(target, texture);
+		}
         
         glVertexPointer(2,GL_FLOAT,0,vertices);
         glTexCoordPointer(2,GL_FLOAT,0,texCoords);

@@ -36,12 +36,15 @@ This class is the main interface for using AVFoundation to encode and output vid
 	NSSize			exportDXTImgSize;	//	'exportImgSize' rounded up to a multiple of 4
 	unsigned int	exportChunkCounts[2];
 	BOOL			exportHighQualityFlag;	//	NO by default, YES if the quality slider is > .8 in hap or hap alpha codecs
+	size_t			exportSliceCount;
+	size_t			exportSliceHeight;
 	
 	OSType			encoderInputPxlFmts[2];	//	the encoder wants pixels of a particular format.  this is the format they want.
 	uint32_t		encoderInputPxlFmtBytesPerRow[2];	//	the number of bytes per row in the buffers created to convert to 'encoderInputPxlFmts'
 	
 	size_t			formatConvertPoolLengths[2];	//	the size of the buffers that i need to create if i need to convert pixel formats
 	size_t			dxtBufferPoolLengths[2];	//	the size of the buffers that i need to create to hold dxt frames
+	size_t			dxtBufferBytesPerRow[2];
 	size_t			hapBufferPoolLength;	//	the size of the buffers i need to create to hold hap frames
 	
 	OSSpinLock			encoderLock;	//	used to lock glDXTEncoder
