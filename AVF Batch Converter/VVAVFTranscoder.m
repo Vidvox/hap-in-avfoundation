@@ -196,7 +196,8 @@
 		NSArray			*tracks = [srcAsset tracks];
 		//	these dicts describe the standard reader output format if i need to transcode video or audio
 		NSDictionary	*videoReadNormalizedOutputSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-			[NSNumber numberWithInteger:kCVPixelFormatType_32BGRA], kCVPixelBufferPixelFormatTypeKey,
+			//[NSNumber numberWithInteger:kCVPixelFormatType_32BGRA], kCVPixelBufferPixelFormatTypeKey,	//	BGRA/RGBA stops working sometime at or before 8k resolution!
+			[NSNumber numberWithInteger:kCVPixelFormatType_32ARGB], kCVPixelBufferPixelFormatTypeKey,
 			nil];
 		NSDictionary	*audioReadNormalizedOutputSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 			[NSNumber numberWithInteger:kAudioFormatLinearPCM], AVFormatIDKey,

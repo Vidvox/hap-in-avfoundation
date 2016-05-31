@@ -24,7 +24,12 @@ This class is the main interface for decoding hap video from AVFoundation.  You 
 	AVAssetTrack				*track;	//	RETAINED
 	id							gen;	//	RETAINED.  actually a 'AVSampleBufferGenerator', but listed as an id here so the fmwk can be compiled against 10.6
 	CMTime						lastGeneratedSampleTime;	//	used to prevent requesting the same buffer twice from the sample generator
-	NSMutableArray				*decompressedFrames;	//	contains HapDecoderFrame instances that have been decompressed and are ready to be used elsewhere
+	
+	NSMutableArray				*decodeTimes;	//	contains CMTime/NSValues of frame times that need to be decoded
+	NSMutableArray				*decodeFrames;	//	contains HapDecoderFrame instances that are populated with all necessary fields and are ready to begin decoding
+	NSMutableArray				*decodingFrames;	//	contains HapDecoderFrame instances that are in the process of being decoded
+	NSMutableArray				*decodedFrames;	//	contains HapDecoderFrame instances that have been decoded, and are ready for retrieval
+	NSMutableArray				*playedOutFrames;	//	contains HapDecoderFrame instances that have been decoded and retrieved at least once
 	
 	BOOL						outputAsRGB;	//	NO by default.  if YES, outputs frames as RGB data
 	OSType						destRGBPixelFormat;	//	if 'outputAsRGB' is YES, this is the pixel format that will be output.  kCVPixelFormatType_32BGRA or kCVPixelFormatType_32RGBA.

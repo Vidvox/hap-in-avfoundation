@@ -74,7 +74,6 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		userInfo = nil;
 		decoded = NO;
 		age = 0;
-		playedOut = NO;
 		
 		hapSampleBuffer = sb;
 		if (hapSampleBuffer==NULL)	{
@@ -156,11 +155,29 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	}
 	[super dealloc];
 }
+
 - (NSString *) description	{
 	if (hapSampleBuffer==nil)
 		return @"<HapDecoderFrame>";
 	CMTime		presentationTime = CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer);
-	return [NSString stringWithFormat:@"<HapDecoderFrame, %d/%d, %f x %f, %@>",dxtTextureFormats[0],dxtTextureFormats[1],dxtImgSize.width,dxtImgSize.height,[(id)CMTimeCopyDescription(kCFAllocatorDefault,presentationTime) autorelease]];
+	//return [NSString stringWithFormat:@"<HapDecoderFrame, %d/%d, %f x %f, %@>",dxtTextureFormats[0],dxtTextureFormats[1],dxtImgSize.width,dxtImgSize.height,[(id)CMTimeCopyDescription(kCFAllocatorDefault,presentationTime) autorelease]];
+	return [NSString stringWithFormat:@"<HapDecoderFrame, %@>",[(id)CMTimeCopyDescription(kCFAllocatorDefault,presentationTime) autorelease]];
+}
+
+- (BOOL) isEqual:(HapDecoderFrame *)n	{
+	if (self == n)
+		return YES;
+	if (n == nil)
+		return NO;
+	CMSampleBufferRef		remoteSampleBuffer = [n hapSampleBuffer];
+	if (hapSampleBuffer == NULL || remoteSampleBuffer==NULL)
+		return NO;
+	
+	CMTime		myTime = CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer);
+	CMTime		remoteTime = CMSampleBufferGetPresentationTimeStamp(remoteSampleBuffer);
+	if (CMTIME_COMPARE_INLINE(myTime,==,remoteTime))
+		return YES;
+	return NO;
 }
 - (CMSampleBufferRef) hapSampleBuffer	{
 	return hapSampleBuffer;
@@ -363,18 +380,6 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	int		returnMe = 0;
 	OSSpinLockLock(&atomicLock);
 	returnMe = age;
-	OSSpinLockUnlock(&atomicLock);
-	return returnMe;
-}
-- (void) setPlayedOut:(BOOL)n	{
-	OSSpinLockLock(&atomicLock);
-	playedOut = n;
-	OSSpinLockUnlock(&atomicLock);
-}
-- (BOOL) playedOut	{
-	BOOL		returnMe = 0;
-	OSSpinLockLock(&atomicLock);
-	returnMe = playedOut;
 	OSSpinLockUnlock(&atomicLock);
 	return returnMe;
 }

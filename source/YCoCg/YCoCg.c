@@ -97,6 +97,33 @@ void ConvertCoCgAY8888ToBGRA( const uint8_t *src, uint8_t *dst, unsigned long wi
     ImageMath_MatrixMultiply8888(src, src_rowbytes, dst, dst_rowbytes, width, height, matrix, 1, pre_bias, NULL, allow_tile);
 }
 
+void ConvertARGBToCoCgAY8888( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile )
+{
+	const int32_t post_bias[4] = { 512, 512, 0, 0 };
+    
+    const int16_t matrix[16] = {
+         0,  0,  4,  0, // A
+         2, -1,  0,  1, // R
+         0,  2,  0,  2, // G
+        -2, -1,  0,  1  // B
+    };
+    
+    ImageMath_MatrixMultiply8888(src, src_rowbytes, dst, dst_rowbytes, width, height, matrix, 4, NULL, post_bias, allow_tile);
+}
+void ConvertCoCgAY8888ToARGB( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile )
+{
+	const int16_t pre_bias[4] = { -128, -128, 0, 0 };
+    
+    const int16_t matrix[16] = {
+         0,  1,  0, -1, // Co
+        -1,  1, -1, 0,  // Cg
+         0,  0,  0, 1,  // A
+         1,  1,  1,  0  // Y
+    };
+    
+    ImageMath_MatrixMultiply8888(src, src_rowbytes, dst, dst_rowbytes, width, height, matrix, 1, pre_bias, NULL, allow_tile);
+}
+
 void ConvertBGR_ToCoCg_Y8888( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile )
 {
     ConvertBGRAToCoCgAY8888(src, dst, width, height, src_rowbytes, dst_rowbytes, allow_tile);
@@ -115,6 +142,15 @@ void ConvertRGB_ToCoCg_Y8888( const uint8_t *src, uint8_t *dst, unsigned long wi
 void ConvertCoCg_Y8888ToRGB_( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile )
 {
     ConvertCoCgAY8888ToRGBA(src, dst, width, height, src_rowbytes, dst_rowbytes, allow_tile);
+}
+
+void ConvertARGB_ToCoCg_Y8888( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile )
+{
+	ConvertARGBToCoCgAY8888(src, dst, width, height, src_rowbytes, dst_rowbytes, allow_tile);
+}
+void ConvertCoCg_Y8888ToARGB( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile )
+{
+	ConvertCoCgAY8888ToARGB(src, dst, width, height, src_rowbytes, dst_rowbytes, allow_tile);
 }
 
 void ConvertRGBAToCoYCgA8888( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile )

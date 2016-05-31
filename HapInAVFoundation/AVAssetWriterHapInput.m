@@ -340,6 +340,7 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		switch (sourceFormat)	{
 		case k32BGRAPixelFormat:
 		case k32RGBAPixelFormat:
+		case k32ARGBPixelFormat:
 			break;
 		default:
 			FourCCLog(@"\t\tERR: can't append pixel buffer- required RGBA or BGRA pixel format, but supplied",sourceFormat);
@@ -439,6 +440,15 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 									encoderInputPxlFmtBytesPerRow[i],
 									0);
 							}
+							else if (sourceFormat == k32ARGBPixelFormat || sourceFormat == 0x20)	{
+								ConvertARGB_ToCoCg_Y8888((uint8_t *)sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
+									(uint8_t *)formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
+									(NSUInteger)exportImgSize.width,
+									(NSUInteger)thisSliceHeight,
+									sourceBufferBytesPerRow,
+									encoderInputPxlFmtBytesPerRow[i],
+									0);
+							}
 							else	{
 								ConvertRGB_ToCoCg_Y8888((uint8_t *)sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
 									(uint8_t *)formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
@@ -452,6 +462,35 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 						case k32RGBAPixelFormat:
 							if (sourceFormat == k32BGRAPixelFormat)	{
 								uint8_t			permuteMap[] = {2, 1, 0, 3};
+								ImageMath_Permute8888(sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
+									sourceBufferBytesPerRow,
+									formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
+									encoderInputPxlFmtBytesPerRow[i],
+									(NSUInteger)exportImgSize.width,
+									(NSUInteger)thisSliceHeight,
+									permuteMap,
+									0);
+							}
+							else if (sourceFormat == k32ARGBPixelFormat || sourceFormat == 0x20)	{
+								uint8_t			permuteMap[] = {1, 2, 3, 0};
+								ImageMath_Permute8888(sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
+									sourceBufferBytesPerRow,
+									formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
+									encoderInputPxlFmtBytesPerRow[i],
+									(NSUInteger)exportImgSize.width,
+									(NSUInteger)thisSliceHeight,
+									permuteMap,
+									0);
+							}
+							else	{
+								NSLog(@"\t\terr: unhandled, %s",__func__);
+								FourCCLog(@"\t\tsourceFormat is",sourceFormat);
+								FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmts[i]);
+							}
+							break;
+						case k32BGRAPixelFormat:
+							if (sourceFormat == k32ARGBPixelFormat || sourceFormat == 0x20)	{
+								uint8_t			permuteMap[] = {3, 2, 1, 0};
 								ImageMath_Permute8888(sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
 									sourceBufferBytesPerRow,
 									formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),

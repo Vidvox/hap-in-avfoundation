@@ -205,7 +205,9 @@
 - (void) renderCallback	{
 	@synchronized (self)	{
 		//	try to get a hap decoder frame- it returns a nil quickly if the player it's attached to doesn't have a hap track.
-		HapDecoderFrame			*dxtFrame = [hapOutput allocFrameClosestToTime:[hapOutput itemTimeForMachAbsoluteTime:mach_absolute_time()]];
+		CMTime					outputTime = [hapOutput itemTimeForMachAbsoluteTime:mach_absolute_time()];
+		HapDecoderFrame			*dxtFrame = [hapOutput allocFrameClosestToTime:outputTime];
+		//HapDecoderFrame			*dxtFrame = [hapOutput allocFrameForTime:outputTime];
 		if (dxtFrame!=nil)	{
 			//	if there's no hap texture, make one
 			if (hapTexture==nil)	{

@@ -80,6 +80,8 @@
 		1A97F5D31A38AC9800E0DC74 /* hap.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A97F5D11A38AC9800E0DC74 /* hap.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A97F5D61A38AD0700E0DC74 /* libsnappy.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */; };
 		1A97F5DB1A38AD3000E0DC74 /* libsnappy.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		1AAE52E01CFDDB8600BA5205 /* SquishRGTC1Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AAE52DF1CFDDB8600BA5205 /* SquishRGTC1Decoder.h */; };
+		1AAE52E21CFDDB8B00BA5205 /* SquishRGTC1Decoder.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AAE52E11CFDDB8B00BA5205 /* SquishRGTC1Decoder.c */; };
 		1AB1C9911A38CAFA00688AB4 /* HapCodecSubTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB1C97F1A38CAFA00688AB4 /* HapCodecSubTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AB1C9971A38CAFA00688AB4 /* HapPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB1C9851A38CAFA00688AB4 /* HapPlatform.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AB1C99F1A38CAFA00688AB4 /* Utility.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AB1C98D1A38CAFA00688AB4 /* Utility.c */; };
@@ -264,6 +266,8 @@
 		1A97F5C91A38AC8000E0DC74 /* snappy.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = snappy.xcodeproj; path = "external/snappy/snappy-mac/snappy.xcodeproj"; sourceTree = "<group>"; };
 		1A97F5D01A38AC9800E0DC74 /* hap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hap.c; path = external/hap/hap.c; sourceTree = "<group>"; };
 		1A97F5D11A38AC9800E0DC74 /* hap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hap.h; path = external/hap/hap.h; sourceTree = "<group>"; };
+		1AAE52DF1CFDDB8600BA5205 /* SquishRGTC1Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SquishRGTC1Decoder.h; path = source/SquishRGTC1Decoder.h; sourceTree = SOURCE_ROOT; };
+		1AAE52E11CFDDB8B00BA5205 /* SquishRGTC1Decoder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SquishRGTC1Decoder.c; path = source/SquishRGTC1Decoder.c; sourceTree = SOURCE_ROOT; };
 		1AB1C97F1A38CAFA00688AB4 /* HapCodecSubTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HapCodecSubTypes.h; path = source/HapCodecSubTypes.h; sourceTree = SOURCE_ROOT; };
 		1AB1C9851A38CAFA00688AB4 /* HapPlatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HapPlatform.h; path = source/HapPlatform.h; sourceTree = SOURCE_ROOT; };
 		1AB1C98D1A38CAFA00688AB4 /* Utility.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Utility.c; path = source/Utility.c; sourceTree = SOURCE_ROOT; };
@@ -521,6 +525,8 @@
 				1AB1C98E1A38CAFA00688AB4 /* Utility.h */,
 				1AB1C98D1A38CAFA00688AB4 /* Utility.c */,
 				1A0E542C1C85F809003EAED8 /* Utility.m */,
+				1AAE52DF1CFDDB8600BA5205 /* SquishRGTC1Decoder.h */,
+				1AAE52E11CFDDB8B00BA5205 /* SquishRGTC1Decoder.c */,
 				1A0536261A38CA61005B47BD /* YCoCg */,
 				1A97F5CF1A38AC8700E0DC74 /* Hap (and snappy) */,
 				1A0535F21A38C9CC005B47BD /* DXT (and squish) */,
@@ -585,6 +591,7 @@
 				1A0536141A38CA11005B47BD /* SquishEncoder.h in Headers */,
 				1A0536221A38CA5D005B47BD /* ImageMath.h in Headers */,
 				1A0536241A38CA5D005B47BD /* YCoCg.h in Headers */,
+				1AAE52E01CFDDB8600BA5205 /* SquishRGTC1Decoder.h in Headers */,
 				1A05360C1A38CA11005B47BD /* DXTBlocks.h in Headers */,
 				1A05360E1A38CA11005B47BD /* DXTEncoder.h in Headers */,
 				1A0536161A38CA11005B47BD /* YCoCgDXT.h in Headers */,
@@ -803,6 +810,7 @@
 				1AB26EC81A3B3AA4001360D7 /* AVPlayerItemHapDXTOutput.m in Sources */,
 				1AB26ECC1A3B3AE1001360D7 /* HapDecoderFrame.m in Sources */,
 				1A0535FA1A38C9FD005B47BD /* squish-c.cpp in Sources */,
+				1AAE52E21CFDDB8B00BA5205 /* SquishRGTC1Decoder.c in Sources */,
 				1A05360F1A38CA11005B47BD /* GLDXTEncoder.c in Sources */,
 				1A0536211A38CA5D005B47BD /* ImageMath.c in Sources */,
 				1A5A4DE51A54A047005C961F /* AVAssetAdditions.m in Sources */,

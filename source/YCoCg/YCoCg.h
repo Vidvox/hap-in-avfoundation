@@ -43,10 +43,14 @@ void ConvertRGBAToCoCgAY8888( const uint8_t *src, uint8_t *dst, unsigned long wi
 void ConvertCoCgAY8888ToRGBA( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
 void ConvertBGRAToCoCgAY8888( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
 void ConvertCoCgAY8888ToBGRA( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
+void ConvertARGBToCoCgAY8888( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
+void ConvertCoCgAY8888ToARGB( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
 void ConvertBGR_ToCoCg_Y8888( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
 void ConvertCoCg_Y8888ToBGR_( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
 void ConvertRGB_ToCoCg_Y8888( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
 void ConvertCoCg_Y8888ToRGB_( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
+void ConvertARGB_ToCoCg_Y8888( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
+void ConvertCoCg_Y8888ToARGB( const uint8_t *src, uint8_t *dst, unsigned long width, unsigned long height, size_t src_rowbytes, size_t dst_rowbytes, int allow_tile );
 
 /*
  RGB(A) and BGR(A) to and from CoYCg(A)
