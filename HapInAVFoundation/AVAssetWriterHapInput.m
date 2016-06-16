@@ -745,6 +745,11 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		//	if the format description is a match for the export type, just append it immediately
 		if (sampleFourCC==exportCodecType)	{
 			returnMe = [super appendSampleBuffer:n];
+			if (!returnMe)	{
+				CMSampleTimingInfo		sampleTimingInfo;
+				CMSampleBufferGetSampleTimingInfo(n, 0, &sampleTimingInfo);
+				NSLog(@"\t\tERR: %s, failed to append sampleBuffer at time %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.decodeTimeStamp) autorelease]);
+			}
 		}
 		//	else the format description isn't a match for the export type- try to get the image buffer and then append it
 		else	{
@@ -826,32 +831,44 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 	}
 	//	first of all, if there's only one sample and i'm waiting to finish- append the last sample and then i'm done (yay!)
 	else if (encoderWaitingToRunOut && [encoderProgressFrames count]<=1)	{
-		HapEncoderFrame			*lastFrame = ([encoderProgressFrames count]<1) ? nil : [encoderProgressFrames objectAtIndex:0];
+		HapEncoderFrame			*lastFrame = nil;
+		BOOL					markAsFinished = NO;
+		if ([encoderProgressFrames count]<1)
+			markAsFinished = YES;
+		else	{
+			lastFrame = [encoderProgressFrames objectAtIndex:0];
+			if (![lastFrame encoded])
+				lastFrame = nil;
+			else	{
+				[lastFrame retain];
+				[encoderProgressFrames removeObjectAtIndex:0];
+				markAsFinished = YES;
+			}
+		}
 		OSSpinLockUnlock(&encoderProgressLock);
 		
-		if (lastFrame!=nil && [lastFrame encoded])	{
-			//NSLog(@"\t\tone frame left and it's encoded, making a sample buffer and then appending it");
+		if (lastFrame != nil)	{
 			//	make a hap sample buffer, append it
 			CMSampleBufferRef	hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:[self lastEncodedDuration].value];
 			if (hapSampleBuffer==NULL)
 				NSLog(@"\t\terr: couldn't make sample buffer from frame duration, %s",__func__);
 			else	{
-				[super appendSampleBuffer:hapSampleBuffer];
+				if (![super appendSampleBuffer:hapSampleBuffer])	{
+					CMSampleTimingInfo		sampleTimingInfo;
+					CMSampleBufferGetSampleTimingInfo(hapSampleBuffer, 0, &sampleTimingInfo);
+					NSLog(@"\t\tERR: %s, failed to append sampleBuffer A at time %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.decodeTimeStamp) autorelease]);
+				}
 				CFRelease(hapSampleBuffer);
 			}
 			
-			OSSpinLockLock(&encoderProgressLock);
-			[encoderProgressFrames removeObjectAtIndex:0];
-			OSSpinLockUnlock(&encoderProgressLock);
-			
-			//	mark myself as finished either way
-			//NSLog(@"\t\tmarking super as finished in %s",__func__);
+			[lastFrame release];
+			lastFrame = nil;
+		}
+		
+		if (markAsFinished)	{
 			[super markAsFinished];
 		}
-		else if (lastFrame==nil)	{
-			//NSLog(@"\t\tno last frame, marking super as finished in %s",__func__);
-			[super markAsFinished];
-		}
+		
 	}
 	//	else i'm either not waiting to run out, or there's more than one frame in the array...
 	else	{
@@ -894,7 +911,9 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 				//NSLog(@"\t\tappending sample at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.presentationTimeStamp) autorelease]);
 				[self setLastEncodedDuration:sampleTimingInfo.duration];
 				
-				[super appendSampleBuffer:hapSampleBuffer];
+				if (![super appendSampleBuffer:hapSampleBuffer])	{
+					NSLog(@"\t\tERR: %s, failed to append sampleBuffer B at time %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.decodeTimeStamp) autorelease]);
+				}
 				
 				CFRelease(hapSampleBuffer);
 			}

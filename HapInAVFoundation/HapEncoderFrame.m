@@ -19,9 +19,8 @@
 		block = NULL;
 		length = 0;
 		format = NULL;
-		timing.duration = kCMTimeInvalid;
+		timing = kCMTimingInfoInvalid;
 		timing.presentationTimeStamp = t;
-		timing.decodeTimeStamp = kCMTimeInvalid;
 		encoded = NO;
 	}
 	return self;
