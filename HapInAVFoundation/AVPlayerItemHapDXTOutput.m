@@ -510,9 +510,9 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		if (cmErr != kCMBlockBufferNoErr)
 			NSLog(@"\t\terr %d at CMBlockBufferGetDataPointer() in %s",(int)cmErr,__func__);
 		else	{
-			if (dataBlockBufferAvailableData > (dxtDataSizes[0]+dxtDataSizes[1]))
-				NSLog(@"\t\terr: block buffer larger than allocated dxt data, %ld vs. (%ld + %ld), %s",dataBlockBufferAvailableData,dxtDataSizes[0],dxtDataSizes[1],__func__);
-			else	{
+			//if (dataBlockBufferAvailableData > (dxtDataSizes[0]+dxtDataSizes[1]))
+			//	NSLog(@"\t\terr: block buffer larger than allocated dxt data, %ld vs. (%ld + %ld), %s",dataBlockBufferAvailableData,dxtDataSizes[0],dxtDataSizes[1],__func__);
+			//else	{
 				unsigned int			hapErr = HapResult_No_Error;
 				unsigned int			hapTexCount = 0;
 				hapErr = HapGetFrameTextureCount(dataBuffer, dataBlockBufferAvailableData, &hapTexCount);
@@ -611,7 +611,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 					[n setDecoded:YES];
 				}
 				
-			}
+			//}
 		}
 	}
 	
