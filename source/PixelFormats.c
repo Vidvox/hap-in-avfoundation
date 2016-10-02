@@ -27,9 +27,6 @@
 
 #include "PixelFormats.h"
 #if defined(__APPLE__)
-#ifndef __LP64__
-#include <QuickTime/QuickTime.h>
-#endif	//	__LP64__
 #import <CoreVideo/CoreVideo.h>
 #define HAP_BZERO(x,y) bzero((x),(y))
 #else
