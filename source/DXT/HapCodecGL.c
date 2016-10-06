@@ -33,6 +33,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifndef MIN
+#define	MIN(a,b) (((a)<(b))?(a):(b))
+#endif
+
 static bool openGLFormatAndTypeForFormat(HapCodecGLPixelFormat pixel_format, GLenum *format_out, GLenum *type_out) __attribute__((nonnull(2,3)));
 static bool openGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension) __attribute__((nonnull(1,2)));
 

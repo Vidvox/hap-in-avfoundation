@@ -25,9 +25,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(__APPLE__)
-#include <QuickTime/QuickTime.h>
-#elif defined(_WIN32)
+#if defined(_WIN32)
 #include <ConditionalMacros.h>
 #include <ImageCodec.h>
 #include <Windows.h>
