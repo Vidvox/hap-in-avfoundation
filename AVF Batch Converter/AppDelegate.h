@@ -1,5 +1,11 @@
 #import <Cocoa/Cocoa.h>
 #import <VideoToolbox/VTProfessionalVideoWorkflow.h>
+#import <IOKit/pwr_mgt/IOPMLib.h>
+
+
+
+
+extern IOPMAssertionID		noSleepAssertionID;
 
 
 

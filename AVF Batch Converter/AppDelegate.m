@@ -8,6 +8,11 @@
 */
 
 
+IOPMAssertionID		noSleepAssertionID = 0;
+
+
+
+
 @implementation AppDelegate
 
 
@@ -40,12 +45,28 @@
 	}
 	//	update the actual prefs file
 	[def synchronize];
+	
+	//	make sure that the machine doesn't sleep while this app is running
+	CFStringRef			reasonForActivity = CFSTR("AVF Batch Exporter is running.");
+	IOReturn			success = IOPMAssertionCreateWithName(
+		kIOPMAssertionTypeNoDisplaySleep,
+		kIOPMAssertionLevelOn,
+		reasonForActivity,
+		&noSleepAssertionID);
+	if (success == kIOReturnSuccess)	{
+		//Add the work you need to do without
+		//  the system sleeping here.
+	}
+	else
+		NSLog(@"\t\terr %d making no-sleep assertion in %s",success,__func__);
 }
 - (void) appQuittingNotification:(NSNotification *)note	{
 	//NSLog(@"%s",__func__);
 }
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
-	// Insert code here to tear down your application
+	//	let the computer sleep again
+	IOReturn			success;
+	success = IOPMAssertionRelease(noSleepAssertionID);
 }
 - (IBAction) aboutWindowUsed:(id)sender	{
 	NSLog(@"%s",__func__);

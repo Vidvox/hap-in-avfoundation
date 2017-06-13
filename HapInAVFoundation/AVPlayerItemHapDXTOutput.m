@@ -199,6 +199,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			AVSampleCursor			*cursor = [track makeSampleCursorWithPresentationTimeStamp:n];
 			//	generate a sample buffer for the requested time.  this sample buffer contains a hap frame (compressed).
 			AVSampleBufferRequest	*request = [[AVSampleBufferRequest alloc] initWithStartCursor:cursor];
+			[request setMode:AVSampleBufferRequestModeImmediate];
 			CMSampleBufferRef		newSample = (gen==nil) ? nil : [gen createSampleBufferForRequest:request];
 			UNLOCK(&propertyLock);
 		
@@ -226,6 +227,116 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 - (void) _prepareDecodeFrameForCMSampleBuffer:(CMSampleBufferRef)n	{
 	//NSLog(@"%s ... %f",__func__,CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(n)));
 	//NSLog(@"%s ... %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault, CMSampleBufferGetPresentationTimeStamp(n)) autorelease]);
+	OSStatus				cmErr = noErr;
+	if (CMSampleBufferHasDataFailed(n, &cmErr))	{
+		NSLog(@"\t\terr: CMSampleBufferHasDataFailed in %s returns %d",__func__,cmErr);
+	}
+	else if (!CMSampleBufferIsValid(n))	{
+		NSLog(@"\t\terr: CMSampleBufferIsValid failed in %s",__func__);
+	}
+	
+	
+	
+	
+	/*	as of 10.13, the sample buffer we were passed may not be contiguous.  this is a problem 
+	because we expect to read directly from the block buffer during decompression, so if this is the 
+	case we have to create a contiguous sample buffer and go from there.			*/
+	CMBlockBufferRef		origBlockBuffer = CMSampleBufferGetDataBuffer(n);
+	if (origBlockBuffer == NULL)
+		return;
+	
+	//	make sure that the sample buffer's data is ready, because that's a problem too now in 10.13
+	while (!CMSampleBufferDataIsReady(n))	{
+		//NSLog(@"\t\tsleeping, sample buffer isn't ready yet in %s",__func__);
+		usleep(1000);
+	}
+	
+	//	if the orig block buffer is contiguous, then we already have a contiguous sample buffer- we can proceed
+	CMSampleBufferRef		contigSampleBuffer = NULL;
+	if (CMBlockBufferIsRangeContiguous(origBlockBuffer,0,0))	{
+		contigSampleBuffer = n;
+		CFRetain(contigSampleBuffer);
+	}
+	//	else the orig block buffer is *not* contiguous- we have to make a new block buffer, and then make a new sample buffer from that
+	else	{
+		//NSLog(@"\t\tblock buffer isn't contiguous, correcting...");
+		//	make a new contiguous block buffer
+		CMBlockBufferRef		contigBlockBuffer = NULL;
+		cmErr = CMBlockBufferCreateContiguous(
+			_HIAVFMemPoolAllocator,	//	structure allocator
+			origBlockBuffer,	//	source buffer
+			_HIAVFMemPoolAllocator,	//	block allocator
+			NULL,	//	custom block source
+			0,	//	offset to data
+			0, 	//	data length
+			kCMBlockBufferAssureMemoryNowFlag | kCMBlockBufferAlwaysCopyDataFlag,	//	flags
+			&contigBlockBuffer);
+		if (cmErr!=noErr || contigBlockBuffer==NULL)	{
+			NSLog(@"\t\terr: %d creating contiguous block buffer in %s",(int)cmErr,__func__);
+		}
+		else	{
+			//	get the sample timing info array
+			CMItemCount				timingInfoCount = 0;
+			cmErr = CMSampleBufferGetSampleTimingInfoArray(n, 0, NULL, &timingInfoCount);
+			CMSampleTimingInfo		*timingInfoArray = NULL;
+			if (timingInfoCount > 0)	{
+				timingInfoArray = malloc(sizeof(CMSampleTimingInfo)*timingInfoCount);
+				cmErr = CMSampleBufferGetSampleTimingInfoArray(n, timingInfoCount, timingInfoArray, &timingInfoCount);
+			}
+			//	get the sample size array
+			CMItemCount				sampleSizeCount = 0;
+			cmErr = CMSampleBufferGetSampleSizeArray(n, 0, NULL, &sampleSizeCount);
+			size_t					*sampleSizeArray = NULL;
+			if (sampleSizeCount > 0)	{
+				sampleSizeArray = malloc(sizeof(size_t)*sampleSizeCount);
+				cmErr = CMSampleBufferGetSampleSizeArray(n, sampleSizeCount, sampleSizeArray, &sampleSizeCount);
+			}
+			
+			
+			//	make a new sample buffer
+			cmErr = CMSampleBufferCreateReady(
+				_HIAVFMemPoolAllocator,	//	allocator
+				contigBlockBuffer,	//	data buffer- must not be NULL
+				CMSampleBufferGetFormatDescription(n),	//	format description
+				CMSampleBufferGetNumSamples(n),	//	number of samples
+				timingInfoCount,	//	number of sample timing entries
+				timingInfoArray,	//	array of CMSampleTimingInfo structs
+				sampleSizeCount,	//	number of sample sizes
+				sampleSizeArray,	//	array of sample size entries, one per sample
+				&contigSampleBuffer);
+			if (cmErr!=noErr || contigBlockBuffer==NULL)	{
+				NSLog(@"\t\terr: %d creating sample buffer in %s",(int)cmErr,__func__);
+			}
+			else	{
+				//NSLog(@"\t\tlooks like we successfully created a contiguous buffer?");
+			}
+			
+			
+			//	release the sample size array we allocated locally
+			if (sampleSizeArray != NULL)	{
+				free(sampleSizeArray);
+				sampleSizeArray = NULL;
+			}
+			//	release the timing info array we allocated locally
+			if (timingInfoArray != NULL)	{
+				free(timingInfoArray);
+				timingInfoArray = NULL;
+			}
+			//	release the block buffer
+			CFRelease(contigBlockBuffer);
+			contigBlockBuffer = NULL;
+		}
+		
+	}
+	
+	
+	if (contigSampleBuffer == NULL)	{
+		NSLog(@"\t\terr: couldn't create a contiguous sample buffer in %s for %@",__func__,n);
+		return;
+	}
+	//	...at this point we've established a contiguous sample buffer with the data that we need to decompress.
+	
+	
 	HapDecoderFrameAllocBlock		localAllocFrameBlock = nil;
 	
 	LOCK(&propertyLock);
@@ -236,7 +347,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	
 	
 	//	make a sample decoder frame from the sample buffer- this calculates various minimum buffer sizes
-	HapDecoderFrame		*sampleDecoderFrame = [[HapDecoderFrame alloc] initEmptyWithHapSampleBuffer:n];
+	HapDecoderFrame		*sampleDecoderFrame = [[HapDecoderFrame alloc] initEmptyWithHapSampleBuffer:contigSampleBuffer];
 	size_t				*dxtMinDataSizes = [sampleDecoderFrame dxtMinDataSizes];
 	size_t				rgbMinDataSize = [sampleDecoderFrame rgbMinDataSize];
 	//	make sure that the buffer pools are sized appropriately.  don't know if i'll be using them or not, but make sure they're sized properly regardless.
@@ -249,7 +360,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	//	allocate a decoder frame- this data structure holds all the values needed to decode the hap frame into a blob of memory (actually a DXT frame).  if there's a custom frame allocator block, use that- otherwise, just make a CFData and decode into that.
 	HapDecoderFrame			*newDecoderFrame = nil;
 	if (localAllocFrameBlock!=nil)	{
-		newDecoderFrame = localAllocFrameBlock(n);
+		newDecoderFrame = localAllocFrameBlock(contigSampleBuffer);
 	}
 	if (newDecoderFrame==nil)	{
 		//	make an empty frame (i can just retain & use the sample frame i made earlier to size the pools)
@@ -316,6 +427,11 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	
 	if (localAllocFrameBlock!=nil)
 		[localAllocFrameBlock release];
+	
+	if (contigSampleBuffer != NULL)	{
+		CFRelease(contigSampleBuffer);
+		contigSampleBuffer = NULL;
+	}
 }
 //	you should only call this method from the 'decodeQueue'!  does nothing if you haven't already prepared a decode frame!  pulls the appropriate frame from 'decodeFrames', moves it to 'decodingFrames', starts decoding it, moves it to 'decodedFrames' when complete
 - (void) _beginDecodingFrameForTime:(CMTime)n	{
@@ -390,7 +506,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	
 	//	find a frame to decode
 	HapDecoderFrame		*frameToDecode = nil;
-	LOCK(&propertyLock);
 	frameToDecode = (decodeFrames==nil || [decodeFrames count]<1) ? nil : [[decodeFrames objectAtIndex:0] retain];
 	if (frameToDecode == nil)	{
 		//NSLog(@"\t\terr: frameToDecode nil in %s",__func__);
@@ -491,127 +606,129 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	void				**dxtDatas = [n dxtDatas];
 	size_t				*dxtDataSizes = [n dxtDataSizes];
 	CMSampleBufferRef	hapSampleBuffer = [n hapSampleBuffer];
+	OSStatus			cmErr = noErr;
+	
 	CMBlockBufferRef	dataBlockBuffer = (hapSampleBuffer==nil) ? nil : CMSampleBufferGetDataBuffer(hapSampleBuffer);
-	if (dxtDatas[0]==NULL || dataBlockBuffer==NULL)
+	if (dxtDatas[0]==NULL || dataBlockBuffer==NULL)	{
 		NSLog(@"\t\terr:dxtData or dataBlockBuffer null in %s",__func__);
+	}
 	else	{
-		OSStatus				cmErr = kCMBlockBufferNoErr;
 		size_t					dataBlockBufferAvailableData = 0;
-		size_t					dataBlockBufferTotalDataSize = 0;
+		//size_t					dataBlockBufferTotalDataSize = 0;
+		dataBlockBufferAvailableData = CMBlockBufferGetDataLength(dataBlockBuffer);
+		//NSLog(@"\t\tdataBlockBufferTotalDataSize is %ld",dataBlockBufferAvailableData);
 		enum HapTextureFormat	*dxtTextureFormats = [n dxtTextureFormats];
 		dxtTextureFormats[0] = 0;
 		dxtTextureFormats[1] = 0;
 		char					*dataBuffer = nil;
 		cmErr = CMBlockBufferGetDataPointer(dataBlockBuffer,
 			0,
-			&dataBlockBufferAvailableData,
-			&dataBlockBufferTotalDataSize,
+			NULL,
+			NULL,
 			&dataBuffer);
 		if (cmErr != kCMBlockBufferNoErr)
 			NSLog(@"\t\terr %d at CMBlockBufferGetDataPointer() in %s",(int)cmErr,__func__);
 		else	{
-			//if (dataBlockBufferAvailableData > (dxtDataSizes[0]+dxtDataSizes[1]))
-			//	NSLog(@"\t\terr: block buffer larger than allocated dxt data, %ld vs. (%ld + %ld), %s",dataBlockBufferAvailableData,dxtDataSizes[0],dxtDataSizes[1],__func__);
-			//else	{
-				unsigned int			hapErr = HapResult_No_Error;
-				unsigned int			hapTexCount = 0;
-				hapErr = HapGetFrameTextureCount(dataBuffer, dataBlockBufferAvailableData, &hapTexCount);
-				if (hapErr != HapResult_No_Error)
-					NSLog(@"\t\terr: %d at HapGetFrameTextureCount() in %s",hapErr,__func__);
-				else	{
+			unsigned int			hapErr = HapResult_No_Error;
+			unsigned int			hapTexCount = 0;
+			hapErr = HapGetFrameTextureCount(dataBuffer, dataBlockBufferAvailableData, &hapTexCount);
+			if (hapErr != HapResult_No_Error)
+				NSLog(@"\t\terr: %d at HapGetFrameTextureCount() in %s",hapErr,__func__);
+			else	{
+				
+				hapErr = HapDecode(dataBuffer, dataBlockBufferAvailableData,
+					0,
+					(HapDecodeCallback)HapMTDecode,
+					NULL,
+					dxtDatas[0],
+					dxtDataSizes[0],
+					NULL,
+					&(dxtTextureFormats[0]));
+				if (hapErr != HapResult_No_Error)	{
+					NSLog(@"\t\terr: %d at HapDecode() with index 0 in %s",hapErr,__func__);
+				}
+				
+				if (hapTexCount>1)	{
 					hapErr = HapDecode(dataBuffer, dataBlockBufferAvailableData,
-						0,
+						1,
 						(HapDecodeCallback)HapMTDecode,
 						NULL,
-						dxtDatas[0],
-						dxtDataSizes[0],
+						dxtDatas[1],
+						dxtDataSizes[1],
 						NULL,
-						&(dxtTextureFormats[0]));
+						&(dxtTextureFormats[1]));
 					if (hapErr != HapResult_No_Error)	{
-						NSLog(@"\t\terr: %d at HapDecode() with index 0 in %s",hapErr,__func__);
-					}
-					if (hapTexCount>1)	{
-						hapErr = HapDecode(dataBuffer, dataBlockBufferAvailableData,
-							1,
-							(HapDecodeCallback)HapMTDecode,
-							NULL,
-							dxtDatas[1],
-							dxtDataSizes[1],
-							NULL,
-							&(dxtTextureFormats[1]));
-						if (hapErr != HapResult_No_Error)	{
-							NSLog(@"\t\terr: %d at HapDecode() with index 1 in %s",hapErr,__func__);
-						}
+						NSLog(@"\t\terr: %d at HapDecode() with index 1 in %s",hapErr,__func__);
 					}
 				}
-				
-				if (hapErr == HapResult_No_Error)	{
-					//	if the decoder frame has a buffer for rgb data, convert the DXT data into rgb data of some sort
-					void			*rgbData = [n rgbData];
-					size_t			rgbDataSize = [n rgbDataSize];
-					OSType			rgbPixelFormat = [n rgbPixelFormat];
-					if (rgbData!=nil)	{
-						//	if the DXT data is a YCoCg texture format
-						if (dxtTextureFormats[0] == HapTextureFormat_YCoCg_DXT5)	{
-							//	convert the YCoCg/DXT5 data to just plain ol' DXT5 data in a conversion buffer
-							size_t			convMinDataSize = (NSUInteger)dxtImgSize.width * (NSUInteger)dxtImgSize.height * 32 / 8;
-							if (convMinDataSize!=convPoolLength)
-								convPoolLength = convMinDataSize;
-							void			*convMem = CFAllocatorAllocate(_HIAVFMemPoolAllocator, convPoolLength, 0);
-							DeCompressYCoCgDXT5((const byte *)dxtDatas[0], (byte *)convMem, imgSize.width, imgSize.height, dxtImgSize.width*4);
-							//	convert the DXT5 data in the conversion buffer to either RGBA or BGRA data in the rgb buffer
-							if (rgbPixelFormat == k32RGBAPixelFormat)	{
-								ConvertCoCg_Y8888ToRGB_((uint8_t *)convMem, (uint8_t *)rgbData, imgSize.width, imgSize.height, dxtImgSize.width * 4, rgbDataSize/(NSUInteger)dxtImgSize.height, 1);
-							}
-							else	{
-								ConvertCoCg_Y8888ToBGR_((uint8_t *)convMem, (uint8_t *)rgbData, imgSize.width, imgSize.height, dxtImgSize.width * 4, rgbDataSize/(NSUInteger)dxtImgSize.height, 1);
-							}
-							
-							if (convMem!=nil)	{
-								CFAllocatorDeallocate(_HIAVFMemPoolAllocator, convMem);
-								convMem = nil;
-							}
-						}
-						//	else it's a "normal" (non-YCoCg) DXT texture format, use the GL decoder
-						else if (dxtTextureFormats[0]==HapTextureFormat_RGB_DXT1 || dxtTextureFormats[0]==HapTextureFormat_RGBA_DXT5)	{
-							//	make a GL decoder
-							void			*glDecoder = HapCodecGLCreateDecoder(imgSize.width, imgSize.height, dxtTextureFormats[0]);
-							if (glDecoder != NULL)	{
-								//	decode the DXT data into the rgb buffer
-								//NSLog(@"\t\tcalling %ld with userInfo %@",rgbDataSize/(NSUInteger)dxtImgSize.height,[n userInfo]);
-								hapErr = HapCodecGLDecode(glDecoder,
-									(unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height),
-									(rgbPixelFormat==kCVPixelFormatType_32BGRA) ? HapCodecGLPixelFormat_BGRA8 : HapCodecGLPixelFormat_RGBA8,
-									dxtDatas[0],
-									rgbData);
-								if (hapErr!=HapResult_No_Error)
-									NSLog(@"\t\terr %d at HapCodecGLDecoder() in %s",hapErr,__func__);
-								else	{
-									//NSLog(@"\t\tsuccessfully decoded to RGB data!");
-								}
-								
-								//	free the GL decoder
-								HapCodecGLDestroy(glDecoder);
-								glDecoder = NULL;
-							}
-							
+			}
+		
+			if (hapErr == HapResult_No_Error)	{
+				//	if the decoder frame has a buffer for rgb data, convert the DXT data into rgb data of some sort
+				void			*rgbData = [n rgbData];
+				size_t			rgbDataSize = [n rgbDataSize];
+				OSType			rgbPixelFormat = [n rgbPixelFormat];
+				if (rgbData!=nil)	{
+					//	if the DXT data is a YCoCg texture format
+					if (dxtTextureFormats[0] == HapTextureFormat_YCoCg_DXT5)	{
+						//	convert the YCoCg/DXT5 data to just plain ol' DXT5 data in a conversion buffer
+						size_t			convMinDataSize = (NSUInteger)dxtImgSize.width * (NSUInteger)dxtImgSize.height * 32 / 8;
+						if (convMinDataSize!=convPoolLength)
+							convPoolLength = convMinDataSize;
+						void			*convMem = CFAllocatorAllocate(_HIAVFMemPoolAllocator, convPoolLength, 0);
+						DeCompressYCoCgDXT5((const byte *)dxtDatas[0], (byte *)convMem, imgSize.width, imgSize.height, dxtImgSize.width*4);
+						//	convert the DXT5 data in the conversion buffer to either RGBA or BGRA data in the rgb buffer
+						if (rgbPixelFormat == k32RGBAPixelFormat)	{
+							ConvertCoCg_Y8888ToRGB_((uint8_t *)convMem, (uint8_t *)rgbData, imgSize.width, imgSize.height, dxtImgSize.width * 4, rgbDataSize/(NSUInteger)dxtImgSize.height, 1);
 						}
 						else	{
-							NSLog(@"\t\terr: unrecognized text formats %X/%x in %s",dxtTextureFormats[0],dxtTextureFormats[1],__func__);
+							ConvertCoCg_Y8888ToBGR_((uint8_t *)convMem, (uint8_t *)rgbData, imgSize.width, imgSize.height, dxtImgSize.width * 4, rgbDataSize/(NSUInteger)dxtImgSize.height, 1);
 						}
-						
-						//	if there's an alpha plane, decode it and apply it to the rgbData
-						if (dxtTextureFormats[1] == HapTextureFormat_A_RGTC1)	{
-							unsigned int		bytesPerRow = (unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height);
-							HapCodecSquishRGTC1Decode(dxtDatas[1], rgbData, bytesPerRow, dxtImgSize.width, dxtImgSize.height);
+					
+						if (convMem!=nil)	{
+							CFAllocatorDeallocate(_HIAVFMemPoolAllocator, convMem);
+							convMem = nil;
 						}
 					}
+					//	else it's a "normal" (non-YCoCg) DXT texture format, use the GL decoder
+					else if (dxtTextureFormats[0]==HapTextureFormat_RGB_DXT1 || dxtTextureFormats[0]==HapTextureFormat_RGBA_DXT5)	{
+						//	make a GL decoder
+						void			*glDecoder = HapCodecGLCreateDecoder(imgSize.width, imgSize.height, dxtTextureFormats[0]);
+						if (glDecoder != NULL)	{
+							//	decode the DXT data into the rgb buffer
+							//NSLog(@"\t\tcalling %ld with userInfo %@",rgbDataSize/(NSUInteger)dxtImgSize.height,[n userInfo]);
+							hapErr = HapCodecGLDecode(glDecoder,
+								(unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height),
+								(rgbPixelFormat==kCVPixelFormatType_32BGRA) ? HapCodecGLPixelFormat_BGRA8 : HapCodecGLPixelFormat_RGBA8,
+								dxtDatas[0],
+								rgbData);
+							if (hapErr!=HapResult_No_Error)
+								NSLog(@"\t\terr %d at HapCodecGLDecoder() in %s",hapErr,__func__);
+							else	{
+								//NSLog(@"\t\tsuccessfully decoded to RGB data!");
+							}
+						
+							//	free the GL decoder
+							HapCodecGLDestroy(glDecoder);
+							glDecoder = NULL;
+						}
 					
-					//	mark the frame as decoded so it can be displayed
-					[n setDecoded:YES];
-				}
+					}
+					else	{
+						NSLog(@"\t\terr: unrecognized text formats %X/%x in %s",dxtTextureFormats[0],dxtTextureFormats[1],__func__);
+					}
 				
-			//}
+					//	if there's an alpha plane, decode it and apply it to the rgbData
+					if (dxtTextureFormats[1] == HapTextureFormat_A_RGTC1)	{
+						unsigned int		bytesPerRow = (unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height);
+						HapCodecSquishRGTC1Decode(dxtDatas[1], rgbData, bytesPerRow, dxtImgSize.width, dxtImgSize.height);
+					}
+				}
+			
+				//	mark the frame as decoded so it can be displayed
+				[n setDecoded:YES];
+			}
+		
 		}
 	}
 	
