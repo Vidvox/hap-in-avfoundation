@@ -416,9 +416,11 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	if (newDecoderFrame==nil)
 		NSLog(@"\t\terr: decoder frame nil, %s",__func__);
 	else	{
+        LOCK(&propertyLock);
 		[decodeFrames addObject:newDecoderFrame];
 		while ([decodeFrames count] > MAXDECODEFRAMES)
 			[decodeFrames removeObjectAtIndex:0];
+        UNLOCK(&propertyLock);
 		
 		[newDecoderFrame release];
 		newDecoderFrame = nil;
@@ -505,6 +507,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	}
 	
 	//	find a frame to decode
+    LOCK(&propertyLock);
 	HapDecoderFrame		*frameToDecode = nil;
 	frameToDecode = (decodeFrames==nil || [decodeFrames count]<1) ? nil : [[decodeFrames objectAtIndex:0] retain];
 	if (frameToDecode == nil)	{
