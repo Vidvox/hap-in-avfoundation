@@ -96,8 +96,10 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		//CGSize			tmpSize = CMVideoFormatDescriptionGetPresentationDimensions(desc, true, false);
 		//imgSize = NSMakeSize(tmpSize.width, tmpSize.height);
 		dxtImgSize = NSMakeSize(roundUpToMultipleOf4(imgSize.width), roundUpToMultipleOf4(imgSize.height));
-		rgbDataSize = 32 * imgSize.width * imgSize.height / 8;
-		rgbImgSize = imgSize;
+		//rgbDataSize = 32 * imgSize.width * imgSize.height / 8;
+		rgbDataSize = 32 * dxtImgSize.width * dxtImgSize.height / 8;
+		//rgbImgSize = imgSize;
+		rgbImgSize = dxtImgSize;
 		//NSLog(@"\t\timgSize is %f x %f",imgSize.width,imgSize.height);
 		//NSLog(@"\t\tdxtImgSize is %f x %f",dxtImgSize.width,dxtImgSize.height);
 		codecSubType = CMFormatDescriptionGetMediaSubType(desc);

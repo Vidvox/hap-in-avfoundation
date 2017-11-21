@@ -696,7 +696,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 					//	else it's a "normal" (non-YCoCg) DXT texture format, use the GL decoder
 					else if (dxtTextureFormats[0]==HapTextureFormat_RGB_DXT1 || dxtTextureFormats[0]==HapTextureFormat_RGBA_DXT5)	{
 						//	make a GL decoder
-						void			*glDecoder = HapCodecGLCreateDecoder(imgSize.width, imgSize.height, dxtTextureFormats[0]);
+						void			*glDecoder = HapCodecGLCreateDecoder(dxtImgSize.width, dxtImgSize.height, dxtTextureFormats[0]);
 						if (glDecoder != NULL)	{
 							//	decode the DXT data into the rgb buffer
 							//NSLog(@"\t\tcalling %ld with userInfo %@",rgbDataSize/(NSUInteger)dxtImgSize.height,[n userInfo]);
