@@ -393,8 +393,14 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 				?	NULL
 				:	CFDataCreateWithBytesNoCopy(NULL, rgbMem, rgbPoolLength, _HIAVFMemPoolAllocator);
 			[newDecoderFrame setUserInfo:[NSArray arrayWithObjects:(NSData *)dxtDataRef, (dxtAlphaDataRef==NULL)?(id)[NSNull null]:(NSData *)dxtAlphaDataRef, (rgbDataRef==NULL)?[NSNull null]:(NSData *)rgbDataRef, nil]];
-			CFRelease(dxtDataRef);
-			CFRelease(rgbDataRef);
+			if (dxtDataRef != NULL)	{
+				CFRelease(dxtDataRef);
+				dxtDataRef = NULL;
+			}
+			if (rgbDataRef != NULL)	{
+				CFRelease(rgbDataRef);
+				rgbDataRef = NULL;
+			}
 		}
 		else	{
 			CFDataRef		dxtDataRef = CFDataCreateWithBytesNoCopy(NULL, dxtMem[0], dxtPoolLengths[0], _HIAVFMemPoolAllocator);

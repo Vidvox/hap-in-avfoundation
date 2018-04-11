@@ -58,6 +58,10 @@
 		1A401D6D1A41FF79003B6E0A /* AVAssetWriterHapInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */; };
 		1A4A76AF1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A4A76B01A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */; };
+		1A4D2CDD207E499A003FE56B /* ImageMath.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A05361D1A38CA5D005B47BD /* ImageMath.c */; };
+		1A4D2CDE207E499A003FE56B /* ImageMath.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A05361E1A38CA5D005B47BD /* ImageMath.h */; };
+		1A4D2CDF207E499A003FE56B /* YCoCg.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A05361F1A38CA5D005B47BD /* YCoCg.c */; };
+		1A4D2CE0207E499A003FE56B /* YCoCg.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0536201A38CA5D005B47BD /* YCoCg.h */; };
 		1A5A4DE41A54A047005C961F /* AVAssetAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5A4DE21A54A047005C961F /* AVAssetAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A5A4DE51A54A047005C961F /* AVAssetAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5A4DE31A54A047005C961F /* AVAssetAdditions.m */; };
 		1A60606C1A38D812008E693F /* PixelFormats.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A60606B1A38D812008E693F /* PixelFormats.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -73,6 +77,59 @@
 		1A642D1D1A652CF000E2152D /* HapInAVFoundation.framework in copy frameworks */ = {isa = PBXBuildFile; fileRef = 1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1A680E241A39CFFF007678E5 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E231A39CFFF007678E5 /* AVFoundation.framework */; };
 		1A680E2A1A39F67E007678E5 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E291A39F67E007678E5 /* CoreMedia.framework */; };
+		1A6D0E3E207E49AD005CCB1A /* HapInAVFoundation.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A97F5B01A38ABBF00E0DC74 /* HapInAVFoundation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E41207E49B1005CCB1A /* AVPlayerItemHapDXTOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB26EC51A3B3AA4001360D7 /* AVPlayerItemHapDXTOutput.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E42207E49B1005CCB1A /* AVPlayerItemHapDXTOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AB26EC61A3B3AA4001360D7 /* AVPlayerItemHapDXTOutput.m */; };
+		1A6D0E43207E49B1005CCB1A /* AVAssetReaderHapTrackOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E44207E49B1005CCB1A /* AVAssetReaderHapTrackOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */; };
+		1A6D0E45207E49B1005CCB1A /* HapDecoderFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB26EC91A3B3AE1001360D7 /* HapDecoderFrame.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E46207E49B1005CCB1A /* HapDecoderFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AB26ECA1A3B3AE1001360D7 /* HapDecoderFrame.m */; };
+		1A6D0E47207E49B1005CCB1A /* AVPlayerItemAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB26EF31A3B59D5001360D7 /* AVPlayerItemAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E48207E49B1005CCB1A /* AVPlayerItemAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AB26EF41A3B59D5001360D7 /* AVPlayerItemAdditions.m */; };
+		1A6D0E49207E49B1005CCB1A /* AVAssetAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5A4DE21A54A047005C961F /* AVAssetAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E4A207E49B1005CCB1A /* AVAssetAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5A4DE31A54A047005C961F /* AVAssetAdditions.m */; };
+		1A6D0E4B207E49B3005CCB1A /* AVAssetWriterHapInput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A401D681A41FF79003B6E0A /* AVAssetWriterHapInput.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E4C207E49B3005CCB1A /* AVAssetWriterHapInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */; };
+		1A6D0E4D207E49B7005CCB1A /* HapCodecSubTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB1C97F1A38CAFA00688AB4 /* HapCodecSubTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E4E207E49B7005CCB1A /* PixelFormats.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A60606B1A38D812008E693F /* PixelFormats.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E4F207E49B7005CCB1A /* PixelFormats.c in Sources */ = {isa = PBXBuildFile; fileRef = 1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */; };
+		1A6D0E50207E49B7005CCB1A /* HapPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB1C9851A38CAFA00688AB4 /* HapPlatform.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E51207E49B7005CCB1A /* HapEncoderFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AC0CA171A437C2A00A9BC2C /* HapEncoderFrame.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E52207E49B7005CCB1A /* HapEncoderFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */; };
+		1A6D0E53207E49B7005CCB1A /* CMBlockBufferPool.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A628E761A422EAD003736AC /* CMBlockBufferPool.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E54207E49B7005CCB1A /* CMBlockBufferPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A628E771A422EAD003736AC /* CMBlockBufferPool.m */; };
+		1A6D0E55207E49B7005CCB1A /* Utility.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB1C98E1A38CAFA00688AB4 /* Utility.h */; };
+		1A6D0E56207E49B7005CCB1A /* Utility.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AB1C98D1A38CAFA00688AB4 /* Utility.c */; };
+		1A6D0E57207E49B7005CCB1A /* Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A0E542C1C85F809003EAED8 /* Utility.m */; };
+		1A6D0E58207E49B7005CCB1A /* SquishRGTC1Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AAE52DF1CFDDB8600BA5205 /* SquishRGTC1Decoder.h */; };
+		1A6D0E59207E49B7005CCB1A /* SquishRGTC1Decoder.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AAE52E11CFDDB8B00BA5205 /* SquishRGTC1Decoder.c */; };
+		1A6D0E5A207E49C1005CCB1A /* hap.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A97F5D01A38AC9800E0DC74 /* hap.c */; };
+		1A6D0E5B207E49C1005CCB1A /* hap.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A97F5D11A38AC9800E0DC74 /* hap.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A6D0E5C207E49C9005CCB1A /* DXTBlocks.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A0535FD1A38CA11005B47BD /* DXTBlocks.c */; };
+		1A6D0E5D207E49C9005CCB1A /* DXTBlocks.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0535FE1A38CA11005B47BD /* DXTBlocks.h */; };
+		1A6D0E5E207E49C9005CCB1A /* DXTBlocksSSSE3.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A0535FF1A38CA11005B47BD /* DXTBlocksSSSE3.c */; };
+		1A6D0E5F207E49C9005CCB1A /* DXTEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0536001A38CA11005B47BD /* DXTEncoder.h */; };
+		1A6D0E60207E49C9005CCB1A /* GLDXTEncoder.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A0536011A38CA11005B47BD /* GLDXTEncoder.c */; };
+		1A6D0E61207E49C9005CCB1A /* GLDXTEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0536021A38CA11005B47BD /* GLDXTEncoder.h */; };
+		1A6D0E62207E49C9005CCB1A /* HapCodecGL.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A0536031A38CA11005B47BD /* HapCodecGL.c */; };
+		1A6D0E63207E49C9005CCB1A /* HapCodecGL.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0536041A38CA11005B47BD /* HapCodecGL.h */; };
+		1A6D0E64207E49C9005CCB1A /* SquishEncoder.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A0536051A38CA11005B47BD /* SquishEncoder.c */; };
+		1A6D0E65207E49C9005CCB1A /* SquishEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0536061A38CA11005B47BD /* SquishEncoder.h */; };
+		1A6D0E66207E49C9005CCB1A /* YCoCgDXT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A0536071A38CA11005B47BD /* YCoCgDXT.cpp */; };
+		1A6D0E67207E49C9005CCB1A /* YCoCgDXT.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0536081A38CA11005B47BD /* YCoCgDXT.h */; };
+		1A6D0E68207E49C9005CCB1A /* YCoCgDXTEncoder.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A0536091A38CA11005B47BD /* YCoCgDXTEncoder.c */; };
+		1A6D0E69207E49C9005CCB1A /* YCoCgDXTEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A05360A1A38CA11005B47BD /* YCoCgDXTEncoder.h */; };
+		1A6D0E6A207E49D3005CCB1A /* squish-c.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A0535F91A38C9FD005B47BD /* squish-c.h */; };
+		1A6D0E6B207E49D3005CCB1A /* squish-c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A0535F81A38C9FD005B47BD /* squish-c.cpp */; };
+		1A6D0E70207E4AC1005CCB1A /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E291A39F67E007678E5 /* CoreMedia.framework */; };
+		1A6D0E71207E4AC6005CCB1A /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E231A39CFFF007678E5 /* AVFoundation.framework */; };
+		1A6D0E72207E4ACF005CCB1A /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
+		1A6D0E73207E4AE3005CCB1A /* libsquish.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CDB207E47CD003FE56B /* libsquish.a */; };
+		1A6D0E74207E4AE6005CCB1A /* libsnappy.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CD8207E47CD003FE56B /* libsnappy.a */; };
+		1A6D0E75207E4AED005CCB1A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606D1A38D8D9008E693F /* OpenGL.framework */; };
+		1A6D0E76207E4AF2005CCB1A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606F1A38D8DE008E693F /* Accelerate.framework */; };
+		1A6D0E77207E4AF9005CCB1A /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A6060741A38D929008E693F /* Carbon.framework */; };
+		1A6D0E78207E4BA9005CCB1A /* HapInAVFoundation_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 1A6060721A38D91A008E693F /* HapInAVFoundation_Prefix.pch */; };
 		1A8904FD1A38D25400A6CE71 /* libsquish.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0535F11A38C9C4005B47BD /* libsquish.dylib */; };
 		1A8904FE1A38D25A00A6CE71 /* libsquish.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A0535F11A38C9C4005B47BD /* libsquish.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		1A97F5B11A38ABBF00E0DC74 /* HapInAVFoundation.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A97F5B01A38ABBF00E0DC74 /* HapInAVFoundation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -80,6 +137,12 @@
 		1A97F5D31A38AC9800E0DC74 /* hap.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A97F5D11A38AC9800E0DC74 /* hap.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A97F5D61A38AD0700E0DC74 /* libsnappy.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */; };
 		1A97F5DB1A38AD3000E0DC74 /* libsnappy.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		1AA70B14207E6B72005AC524 /* VVAVFTranscoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2F1A6524100065403A /* VVAVFTranscoder.m */; };
+		1AA70B15207E6B7A005AC524 /* VVAVFExportBasicSettingsCtrlr.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2C1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.m */; };
+		1AA70B18207E6BDE005AC524 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606F1A38D8DE008E693F /* Accelerate.framework */; };
+		1AA70B19207E6CD8005AC524 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E231A39CFFF007678E5 /* AVFoundation.framework */; };
+		1AABDE8D207E544000D8F504 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1AABDE8C207E544000D8F504 /* main.mm */; };
+		1AABDE93207E54FD00D8F504 /* libHapInAVFoundation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CCE207E47CD003FE56B /* libHapInAVFoundation.a */; };
 		1AAE52E01CFDDB8600BA5205 /* SquishRGTC1Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AAE52DF1CFDDB8600BA5205 /* SquishRGTC1Decoder.h */; };
 		1AAE52E21CFDDB8B00BA5205 /* SquishRGTC1Decoder.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AAE52E11CFDDB8B00BA5205 /* SquishRGTC1Decoder.c */; };
 		1AB1C9911A38CAFA00688AB4 /* HapCodecSubTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB1C97F1A38CAFA00688AB4 /* HapCodecSubTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -115,12 +178,40 @@
 			remoteGlobalIDString = E25D562517E0E02B008DD459;
 			remoteInfo = squish;
 		};
+		1A4D2CD7207E47CD003FE56B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A97F5C91A38AC8000E0DC74 /* snappy.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1A724729207E442C0099ED5A;
+			remoteInfo = "snappy-static";
+		};
+		1A4D2CDA207E47CD003FE56B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A0535EC1A38C9C4005B47BD /* squish.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1AF9A2EA207E468300C87889;
+			remoteInfo = "squish-static";
+		};
 		1A642D1A1A652CE400E2152D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1A97F5A21A38ABBF00E0DC74 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 1A97F5AA1A38ABBF00E0DC74;
 			remoteInfo = HapInAVFoundation;
+		};
+		1A6D0E6C207E4AB3005CCB1A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A97F5C91A38AC8000E0DC74 /* snappy.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A724728207E442C0099ED5A;
+			remoteInfo = "snappy-static";
+		};
+		1A6D0E6E207E4AB3005CCB1A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A0535EC1A38C9C4005B47BD /* squish.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 1AF9A2E9207E468300C87889;
+			remoteInfo = "squish-static";
 		};
 		1A8904FA1A38D25000A6CE71 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -142,6 +233,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = E2830FC917E0C43A005E72C3;
 			remoteInfo = snappy;
+		};
+		1AABDE91207E54E700D8F504 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A97F5A21A38ABBF00E0DC74 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A4D2CCD207E47CD003FE56B;
+			remoteInfo = "HapInAVFoundation-static";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -177,6 +275,15 @@
 				1A97F5DB1A38AD3000E0DC74 /* libsnappy.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1AABDE88207E544000D8F504 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -249,6 +356,7 @@
 		1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetWriterHapInput.m; sourceTree = "<group>"; };
 		1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetReaderHapTrackOutput.h; sourceTree = "<group>"; };
 		1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetReaderHapTrackOutput.m; sourceTree = "<group>"; };
+		1A4D2CCE207E47CD003FE56B /* libHapInAVFoundation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libHapInAVFoundation.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A5A4DE21A54A047005C961F /* AVAssetAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetAdditions.h; sourceTree = "<group>"; };
 		1A5A4DE31A54A047005C961F /* AVAssetAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetAdditions.m; sourceTree = "<group>"; };
 		1A60606B1A38D812008E693F /* PixelFormats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PixelFormats.h; path = source/PixelFormats.h; sourceTree = SOURCE_ROOT; };
@@ -266,6 +374,8 @@
 		1A97F5C91A38AC8000E0DC74 /* snappy.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = snappy.xcodeproj; path = "external/snappy/snappy-mac/snappy.xcodeproj"; sourceTree = "<group>"; };
 		1A97F5D01A38AC9800E0DC74 /* hap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hap.c; path = external/hap/hap.c; sourceTree = "<group>"; };
 		1A97F5D11A38AC9800E0DC74 /* hap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hap.h; path = external/hap/hap.h; sourceTree = "<group>"; };
+		1AABDE8A207E544000D8F504 /* AVFtoHap */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AVFtoHap; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AABDE8C207E544000D8F504 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		1AAE52DF1CFDDB8600BA5205 /* SquishRGTC1Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SquishRGTC1Decoder.h; path = source/SquishRGTC1Decoder.h; sourceTree = SOURCE_ROOT; };
 		1AAE52E11CFDDB8B00BA5205 /* SquishRGTC1Decoder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SquishRGTC1Decoder.c; path = source/SquishRGTC1Decoder.c; sourceTree = SOURCE_ROOT; };
 		1AB1C97F1A38CAFA00688AB4 /* HapCodecSubTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HapCodecSubTypes.h; path = source/HapCodecSubTypes.h; sourceTree = SOURCE_ROOT; };
@@ -306,6 +416,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A4D2CCB207E47CD003FE56B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A6D0E70207E4AC1005CCB1A /* CoreMedia.framework in Frameworks */,
+				1A6D0E71207E4AC6005CCB1A /* AVFoundation.framework in Frameworks */,
+				1A6D0E77207E4AF9005CCB1A /* Carbon.framework in Frameworks */,
+				1A6D0E76207E4AF2005CCB1A /* Accelerate.framework in Frameworks */,
+				1A6D0E75207E4AED005CCB1A /* OpenGL.framework in Frameworks */,
+				1A6D0E73207E4AE3005CCB1A /* libsquish.a in Frameworks */,
+				1A6D0E74207E4AE6005CCB1A /* libsnappy.a in Frameworks */,
+				1A6D0E72207E4ACF005CCB1A /* CoreVideo.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1A97F5A71A38ABBF00E0DC74 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -321,6 +446,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1AABDE87207E544000D8F504 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1AA70B19207E6CD8005AC524 /* AVFoundation.framework in Frameworks */,
+				1AA70B18207E6BDE005AC524 /* Accelerate.framework in Frameworks */,
+				1AABDE93207E54FD00D8F504 /* libHapInAVFoundation.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -328,6 +463,7 @@
 			isa = PBXGroup;
 			children = (
 				1A0535F11A38C9C4005B47BD /* libsquish.dylib */,
+				1A4D2CDB207E47CD003FE56B /* libsquish.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -493,6 +629,7 @@
 				1A97F5AD1A38ABBF00E0DC74 /* HapInAVFoundation framework */,
 				1A3230151A3BA14000DDB2E0 /* HapInAVF Test App */,
 				1A3BABFE1A65239D0065403A /* AVF Batch Converter */,
+				1AABDE8B207E544000D8F504 /* AVFtoHap */,
 				1A6060711A38D8F5008E693F /* Frameworks */,
 				1A97F5AC1A38ABBF00E0DC74 /* Products */,
 			);
@@ -504,6 +641,8 @@
 				1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */,
 				1A3230141A3BA14000DDB2E0 /* HapInAVF Test App.app */,
 				1A3BABFD1A65239C0065403A /* AVF Batch Converter.app */,
+				1A4D2CCE207E47CD003FE56B /* libHapInAVFoundation.a */,
+				1AABDE8A207E544000D8F504 /* AVFtoHap */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -549,6 +688,7 @@
 			isa = PBXGroup;
 			children = (
 				1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */,
+				1A4D2CD8207E47CD003FE56B /* libsnappy.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -564,9 +704,50 @@
 			path = ..;
 			sourceTree = "<group>";
 		};
+		1AABDE8B207E544000D8F504 /* AVFtoHap */ = {
+			isa = PBXGroup;
+			children = (
+				1AABDE8C207E544000D8F504 /* main.mm */,
+			);
+			path = AVFtoHap;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		1A4D2CCC207E47CD003FE56B /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A6D0E3E207E49AD005CCB1A /* HapInAVFoundation.h in Headers */,
+				1A6D0E41207E49B1005CCB1A /* AVPlayerItemHapDXTOutput.h in Headers */,
+				1A6D0E43207E49B1005CCB1A /* AVAssetReaderHapTrackOutput.h in Headers */,
+				1A6D0E45207E49B1005CCB1A /* HapDecoderFrame.h in Headers */,
+				1A6D0E47207E49B1005CCB1A /* AVPlayerItemAdditions.h in Headers */,
+				1A6D0E49207E49B1005CCB1A /* AVAssetAdditions.h in Headers */,
+				1A6D0E4D207E49B7005CCB1A /* HapCodecSubTypes.h in Headers */,
+				1A6D0E4E207E49B7005CCB1A /* PixelFormats.h in Headers */,
+				1A6D0E50207E49B7005CCB1A /* HapPlatform.h in Headers */,
+				1A6D0E53207E49B7005CCB1A /* CMBlockBufferPool.h in Headers */,
+				1A6D0E4B207E49B3005CCB1A /* AVAssetWriterHapInput.h in Headers */,
+				1A6D0E51207E49B7005CCB1A /* HapEncoderFrame.h in Headers */,
+				1A6D0E5B207E49C1005CCB1A /* hap.h in Headers */,
+				1A6D0E6A207E49D3005CCB1A /* squish-c.h in Headers */,
+				1A6D0E78207E4BA9005CCB1A /* HapInAVFoundation_Prefix.pch in Headers */,
+				1A6D0E55207E49B7005CCB1A /* Utility.h in Headers */,
+				1A6D0E69207E49C9005CCB1A /* YCoCgDXTEncoder.h in Headers */,
+				1A6D0E65207E49C9005CCB1A /* SquishEncoder.h in Headers */,
+				1A4D2CDE207E499A003FE56B /* ImageMath.h in Headers */,
+				1A4D2CE0207E499A003FE56B /* YCoCg.h in Headers */,
+				1A6D0E58207E49B7005CCB1A /* SquishRGTC1Decoder.h in Headers */,
+				1A6D0E5D207E49C9005CCB1A /* DXTBlocks.h in Headers */,
+				1A6D0E5F207E49C9005CCB1A /* DXTEncoder.h in Headers */,
+				1A6D0E67207E49C9005CCB1A /* YCoCgDXT.h in Headers */,
+				1A6D0E61207E49C9005CCB1A /* GLDXTEncoder.h in Headers */,
+				1A6D0E63207E49C9005CCB1A /* HapCodecGL.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1A97F5A81A38ABBF00E0DC74 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -641,6 +822,25 @@
 			productReference = 1A3BABFD1A65239C0065403A /* AVF Batch Converter.app */;
 			productType = "com.apple.product-type.application";
 		};
+		1A4D2CCD207E47CD003FE56B /* HapInAVFoundation-static */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A4D2CDC207E47CD003FE56B /* Build configuration list for PBXNativeTarget "HapInAVFoundation-static" */;
+			buildPhases = (
+				1A4D2CCA207E47CD003FE56B /* Sources */,
+				1A4D2CCB207E47CD003FE56B /* Frameworks */,
+				1A4D2CCC207E47CD003FE56B /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1A6D0E6D207E4AB3005CCB1A /* PBXTargetDependency */,
+				1A6D0E6F207E4AB3005CCB1A /* PBXTargetDependency */,
+			);
+			name = "HapInAVFoundation-static";
+			productName = "HapInAVFoundation-static";
+			productReference = 1A4D2CCE207E47CD003FE56B /* libHapInAVFoundation.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		1A97F5AA1A38ABBF00E0DC74 /* HapInAVFoundation */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1A97F5C11A38ABBF00E0DC74 /* Build configuration list for PBXNativeTarget "HapInAVFoundation" */;
@@ -662,6 +862,24 @@
 			productReference = 1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		1AABDE89207E544000D8F504 /* AVFtoHap */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1AABDE90207E544000D8F504 /* Build configuration list for PBXNativeTarget "AVFtoHap" */;
+			buildPhases = (
+				1AABDE86207E544000D8F504 /* Sources */,
+				1AABDE87207E544000D8F504 /* Frameworks */,
+				1AABDE88207E544000D8F504 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1AABDE92207E54E700D8F504 /* PBXTargetDependency */,
+			);
+			name = AVFtoHap;
+			productName = AVFtoHap;
+			productReference = 1AABDE8A207E544000D8F504 /* AVFtoHap */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -677,8 +895,15 @@
 					1A3BABFC1A65239C0065403A = {
 						CreatedOnToolsVersion = 6.1;
 					};
+					1A4D2CCD207E47CD003FE56B = {
+						CreatedOnToolsVersion = 9.2;
+					};
 					1A97F5AA1A38ABBF00E0DC74 = {
 						CreatedOnToolsVersion = 6.1;
+					};
+					1AABDE89207E544000D8F504 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -706,8 +931,10 @@
 			projectRoot = "";
 			targets = (
 				1A97F5AA1A38ABBF00E0DC74 /* HapInAVFoundation */,
+				1A4D2CCD207E47CD003FE56B /* HapInAVFoundation-static */,
 				1A3230131A3BA14000DDB2E0 /* HapInAVF Test App */,
 				1A3BABFC1A65239C0065403A /* AVF Batch Converter */,
+				1AABDE89207E544000D8F504 /* AVFtoHap */,
 			);
 		};
 /* End PBXProject section */
@@ -718,6 +945,20 @@
 			fileType = "compiled.mach-o.dylib";
 			path = libsquish.dylib;
 			remoteRef = 1A0535F01A38C9C4005B47BD /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1A4D2CD8207E47CD003FE56B /* libsnappy.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libsnappy.a;
+			remoteRef = 1A4D2CD7207E47CD003FE56B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1A4D2CDB207E47CD003FE56B /* libsquish.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libsquish.a;
+			remoteRef = 1A4D2CDA207E47CD003FE56B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */ = {
@@ -792,6 +1033,36 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A4D2CCA207E47CD003FE56B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A6D0E64207E49C9005CCB1A /* SquishEncoder.c in Sources */,
+				1A6D0E54207E49B7005CCB1A /* CMBlockBufferPool.m in Sources */,
+				1A6D0E5E207E49C9005CCB1A /* DXTBlocksSSSE3.c in Sources */,
+				1A6D0E66207E49C9005CCB1A /* YCoCgDXT.cpp in Sources */,
+				1A6D0E52207E49B7005CCB1A /* HapEncoderFrame.m in Sources */,
+				1A6D0E56207E49B7005CCB1A /* Utility.c in Sources */,
+				1A6D0E48207E49B1005CCB1A /* AVPlayerItemAdditions.m in Sources */,
+				1A6D0E68207E49C9005CCB1A /* YCoCgDXTEncoder.c in Sources */,
+				1A6D0E44207E49B1005CCB1A /* AVAssetReaderHapTrackOutput.m in Sources */,
+				1A6D0E5C207E49C9005CCB1A /* DXTBlocks.c in Sources */,
+				1A6D0E4F207E49B7005CCB1A /* PixelFormats.c in Sources */,
+				1A6D0E42207E49B1005CCB1A /* AVPlayerItemHapDXTOutput.m in Sources */,
+				1A6D0E46207E49B1005CCB1A /* HapDecoderFrame.m in Sources */,
+				1A6D0E6B207E49D3005CCB1A /* squish-c.cpp in Sources */,
+				1A6D0E59207E49B7005CCB1A /* SquishRGTC1Decoder.c in Sources */,
+				1A6D0E60207E49C9005CCB1A /* GLDXTEncoder.c in Sources */,
+				1A4D2CDD207E499A003FE56B /* ImageMath.c in Sources */,
+				1A6D0E4A207E49B1005CCB1A /* AVAssetAdditions.m in Sources */,
+				1A6D0E5A207E49C1005CCB1A /* hap.c in Sources */,
+				1A6D0E57207E49B7005CCB1A /* Utility.m in Sources */,
+				1A6D0E62207E49C9005CCB1A /* HapCodecGL.c in Sources */,
+				1A4D2CDF207E499A003FE56B /* YCoCg.c in Sources */,
+				1A6D0E4C207E49B3005CCB1A /* AVAssetWriterHapInput.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1A97F5A61A38ABBF00E0DC74 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -822,6 +1093,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1AABDE86207E544000D8F504 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1AA70B14207E6B72005AC524 /* VVAVFTranscoder.m in Sources */,
+				1AABDE8D207E544000D8F504 /* main.mm in Sources */,
+				1AA70B15207E6B7A005AC524 /* VVAVFExportBasicSettingsCtrlr.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -835,6 +1116,16 @@
 			target = 1A97F5AA1A38ABBF00E0DC74 /* HapInAVFoundation */;
 			targetProxy = 1A642D1A1A652CE400E2152D /* PBXContainerItemProxy */;
 		};
+		1A6D0E6D207E4AB3005CCB1A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "snappy-static";
+			targetProxy = 1A6D0E6C207E4AB3005CCB1A /* PBXContainerItemProxy */;
+		};
+		1A6D0E6F207E4AB3005CCB1A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "squish-static";
+			targetProxy = 1A6D0E6E207E4AB3005CCB1A /* PBXContainerItemProxy */;
+		};
 		1A8904FB1A38D25000A6CE71 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = squish;
@@ -844,6 +1135,11 @@
 			isa = PBXTargetDependency;
 			name = snappy;
 			targetProxy = 1A97F5D41A38AD0100E0DC74 /* PBXContainerItemProxy */;
+		};
+		1AABDE92207E54E700D8F504 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A4D2CCD207E47CD003FE56B /* HapInAVFoundation-static */;
+			targetProxy = 1AABDE91207E54E700D8F504 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1006,6 +1302,55 @@
 			};
 			name = Release;
 		};
+		1A4D2CD4207E47CD003FE56B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_X86_VECTOR_INSTRUCTIONS = sse3;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				EXECUTABLE_PREFIX = lib;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = source/HapInAVFoundation_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(TARGET_BUILD_DIR)/usr/local/include\"",
+					"\"$(DSTROOT)/usr/local/include\"",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = HapInAVFoundation;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		1A4D2CD5207E47CD003FE56B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_X86_VECTOR_INSTRUCTIONS = sse3;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				EXECUTABLE_PREFIX = lib;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = source/HapInAVFoundation_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"\"$(TARGET_BUILD_DIR)/usr/local/include\"",
+					"\"$(DSTROOT)/usr/local/include\"",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = HapInAVFoundation;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		1A97F5BF1A38ABBF00E0DC74 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1147,6 +1492,61 @@
 			};
 			name = Release;
 		};
+		1AABDE8E207E544000D8F504 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		1AABDE8F207E544000D8F504 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1168,6 +1568,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		1A4D2CDC207E47CD003FE56B /* Build configuration list for PBXNativeTarget "HapInAVFoundation-static" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A4D2CD4207E47CD003FE56B /* Debug */,
+				1A4D2CD5207E47CD003FE56B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		1A97F5A51A38ABBF00E0DC74 /* Build configuration list for PBXProject "HapInAVFoundation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1182,6 +1591,15 @@
 			buildConfigurations = (
 				1A97F5C21A38ABBF00E0DC74 /* Debug */,
 				1A97F5C31A38ABBF00E0DC74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1AABDE90207E544000D8F504 /* Build configuration list for PBXNativeTarget "AVFtoHap" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1AABDE8E207E544000D8F504 /* Debug */,
+				1AABDE8F207E544000D8F504 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

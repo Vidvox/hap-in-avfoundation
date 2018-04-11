@@ -7,6 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1AF9A2F3207E46B600C87889 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D562E17E0E06E008DD459 /* clusterfit.cpp */; };
+		1AF9A2F4207E46B600C87889 /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D562F17E0E06E008DD459 /* colourblock.cpp */; };
+		1AF9A2F5207E46B600C87889 /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D563017E0E06E008DD459 /* colourfit.cpp */; };
+		1AF9A2F6207E46B600C87889 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D563117E0E06E008DD459 /* rangefit.cpp */; };
+		1AF9A2F7207E46B600C87889 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D563217E0E06E008DD459 /* singlecolourfit.cpp */; };
+		1AF9A2F8207E46B600C87889 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D563317E0E06E008DD459 /* squish.cpp */; };
+		1AF9A2F9207E46B600C87889 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D563417E0E06E008DD459 /* alpha.cpp */; };
+		1AF9A2FA207E46B600C87889 /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D563517E0E06E008DD459 /* colourset.cpp */; };
+		1AF9A2FB207E46B600C87889 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D563617E0E06E008DD459 /* maths.cpp */; };
+		1AF9A2FC207E46BA00C87889 /* clusterfit.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564117E0E0A4008DD459 /* clusterfit.h */; };
+		1AF9A2FD207E46BA00C87889 /* colourblock.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564217E0E0A4008DD459 /* colourblock.h */; };
+		1AF9A2FE207E46BA00C87889 /* colourfit.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564317E0E0A4008DD459 /* colourfit.h */; };
+		1AF9A2FF207E46BA00C87889 /* rangefit.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564417E0E0A4008DD459 /* rangefit.h */; };
+		1AF9A300207E46BA00C87889 /* singlecolourfit.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564517E0E0A4008DD459 /* singlecolourfit.h */; };
+		1AF9A301207E46BA00C87889 /* alpha.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564617E0E0A4008DD459 /* alpha.h */; };
+		1AF9A302207E46BA00C87889 /* colourset.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564717E0E0A4008DD459 /* colourset.h */; };
+		1AF9A303207E46BA00C87889 /* config.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564817E0E0A4008DD459 /* config.h */; };
+		1AF9A304207E46BA00C87889 /* maths.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564917E0E0A4008DD459 /* maths.h */; };
+		1AF9A305207E46BA00C87889 /* simd_float.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564A17E0E0A4008DD459 /* simd_float.h */; };
+		1AF9A306207E46BA00C87889 /* simd_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564B17E0E0A4008DD459 /* simd_sse.h */; };
+		1AF9A307207E46BA00C87889 /* simd_ve.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564C17E0E0A4008DD459 /* simd_ve.h */; };
+		1AF9A308207E46BA00C87889 /* simd.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564D17E0E0A4008DD459 /* simd.h */; };
+		1AF9A309207E46BA00C87889 /* squish.h in Headers */ = {isa = PBXBuildFile; fileRef = E25D564E17E0E0A4008DD459 /* squish.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E25D563817E0E06E008DD459 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D562E17E0E06E008DD459 /* clusterfit.cpp */; };
 		E25D563917E0E06E008DD459 /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D562F17E0E06E008DD459 /* colourblock.cpp */; };
 		E25D563A17E0E06E008DD459 /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E25D563017E0E06E008DD459 /* colourfit.cpp */; };
@@ -33,6 +56,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1AF9A2EA207E468300C87889 /* libsquish.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsquish.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E25D562517E0E02B008DD459 /* libsquish.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libsquish.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E25D562E17E0E06E008DD459 /* clusterfit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = clusterfit.cpp; path = "squish-source/clusterfit.cpp"; sourceTree = "<group>"; };
 		E25D562F17E0E06E008DD459 /* colourblock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = colourblock.cpp; path = "squish-source/colourblock.cpp"; sourceTree = "<group>"; };
@@ -61,6 +85,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1AF9A2E7207E468300C87889 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E25D562217E0E02B008DD459 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -84,6 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				E25D562517E0E02B008DD459 /* libsquish.dylib */,
+				1AF9A2EA207E468300C87889 /* libsquish.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -129,6 +161,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		1AF9A2E8207E468300C87889 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1AF9A309207E46BA00C87889 /* squish.h in Headers */,
+				1AF9A308207E46BA00C87889 /* simd.h in Headers */,
+				1AF9A305207E46BA00C87889 /* simd_float.h in Headers */,
+				1AF9A300207E46BA00C87889 /* singlecolourfit.h in Headers */,
+				1AF9A2FF207E46BA00C87889 /* rangefit.h in Headers */,
+				1AF9A2FE207E46BA00C87889 /* colourfit.h in Headers */,
+				1AF9A301207E46BA00C87889 /* alpha.h in Headers */,
+				1AF9A303207E46BA00C87889 /* config.h in Headers */,
+				1AF9A302207E46BA00C87889 /* colourset.h in Headers */,
+				1AF9A304207E46BA00C87889 /* maths.h in Headers */,
+				1AF9A2FD207E46BA00C87889 /* colourblock.h in Headers */,
+				1AF9A2FC207E46BA00C87889 /* clusterfit.h in Headers */,
+				1AF9A307207E46BA00C87889 /* simd_ve.h in Headers */,
+				1AF9A306207E46BA00C87889 /* simd_sse.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E25D562317E0E02B008DD459 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -153,6 +206,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		1AF9A2E9207E468300C87889 /* squish-static */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1AF9A2F0207E468300C87889 /* Build configuration list for PBXNativeTarget "squish-static" */;
+			buildPhases = (
+				1AF9A2E6207E468300C87889 /* Sources */,
+				1AF9A2E7207E468300C87889 /* Frameworks */,
+				1AF9A2E8207E468300C87889 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "squish-static";
+			productName = "squish-static";
+			productReference = 1AF9A2EA207E468300C87889 /* libsquish.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		E25D562417E0E02B008DD459 /* squish */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E25D562917E0E02B008DD459 /* Build configuration list for PBXNativeTarget "squish" */;
@@ -178,6 +248,11 @@
 			attributes = {
 				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = Vidvox;
+				TargetAttributes = {
+					1AF9A2E9207E468300C87889 = {
+						CreatedOnToolsVersion = 9.2;
+					};
+				};
 			};
 			buildConfigurationList = E25D562017E0E02B008DD459 /* Build configuration list for PBXProject "squish" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -192,11 +267,28 @@
 			projectRoot = "";
 			targets = (
 				E25D562417E0E02B008DD459 /* squish */,
+				1AF9A2E9207E468300C87889 /* squish-static */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1AF9A2E6207E468300C87889 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1AF9A2FB207E46B600C87889 /* maths.cpp in Sources */,
+				1AF9A2F7207E46B600C87889 /* singlecolourfit.cpp in Sources */,
+				1AF9A2F9207E46B600C87889 /* alpha.cpp in Sources */,
+				1AF9A2F3207E46B600C87889 /* clusterfit.cpp in Sources */,
+				1AF9A2F8207E46B600C87889 /* squish.cpp in Sources */,
+				1AF9A2F6207E46B600C87889 /* rangefit.cpp in Sources */,
+				1AF9A2F4207E46B600C87889 /* colourblock.cpp in Sources */,
+				1AF9A2FA207E46B600C87889 /* colourset.cpp in Sources */,
+				1AF9A2F5207E46B600C87889 /* colourfit.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E25D562117E0E02B008DD459 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -216,6 +308,32 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		1AF9A2F1207E468300C87889 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = squish;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		1AF9A2F2207E468300C87889 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = squish;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		E25D562717E0E02B008DD459 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -321,7 +439,7 @@
 				EXECUTABLE_PREFIX = lib;
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = squish;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -333,7 +451,7 @@
 				EXECUTABLE_PREFIX = lib;
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = squish;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
@@ -341,6 +459,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1AF9A2F0207E468300C87889 /* Build configuration list for PBXNativeTarget "squish-static" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1AF9A2F1207E468300C87889 /* Debug */,
+				1AF9A2F2207E468300C87889 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E25D562017E0E02B008DD459 /* Build configuration list for PBXProject "squish" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
