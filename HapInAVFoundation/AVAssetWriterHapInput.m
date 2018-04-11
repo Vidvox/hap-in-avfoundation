@@ -375,7 +375,7 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 	
 	
 	//	assemble a block that will encode the passed pixel buffer- i'll either be dispatching this block (via GCD) or executing it immediately...
-	void			(^encodeBlock)() = ^(){
+    void			(^encodeBlock)(void) = ^(){
 		//NSLog(@"%s",__func__);
 		//	if there's a pixel buffer to encode, let's take care of that first
 		if (pb!=NULL)	{
