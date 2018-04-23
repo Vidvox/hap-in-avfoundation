@@ -36,8 +36,8 @@ This class is the main interface for using AVFoundation to encode and output vid
 	NSSize			exportDXTImgSize;	//	'exportImgSize' rounded up to a multiple of 4
 	unsigned int	exportChunkCounts[2];
 	BOOL			exportHighQualityFlag;	//	NO by default, YES if the quality slider is > .8 in hap or hap alpha codecs
-	size_t			exportSliceCount;
-	size_t			exportSliceHeight;
+	size_t			exportSliceCount;	//	1 by default/if slicing is disabled.  if slicing is enabled, this is the # of slices.
+	size_t			exportSliceHeight;	//	calculated using image height + slice count.  the number of rows of pixels in a slice.
 	
 	OSType			encoderInputPxlFmts[2];	//	the encoder wants pixels of a particular format.  this is the format they want.
 	uint32_t		encoderInputPxlFmtBytesPerRow[2];	//	the number of bytes per row in the buffers created to convert to 'encoderInputPxlFmts'

@@ -251,6 +251,21 @@
 						NSString			*exportCodecString = [baseVideoExportSettings objectForKey:AVVideoCodecKey];
 						//OSType				exportCodec = (exportCodecString==nil) ? 0 : VVPackFourCC_fromChar((char *)[exportCodecString UTF8String]);
 						//OSType				trackCodec = CMFormatDescriptionGetMediaSubType(trackFmt);
+						
+						//	if the export settings specify a resolution, and that resolution doesn't match this track's resolution, we need to perform the transcode step
+						CMFormatDescriptionRef	trackFmt = (CMFormatDescriptionRef)[formatDescriptions objectAtIndex:0];
+						NSNumber			*tmpNum = nil;
+						NSSize				exportSize = NSMakeSize(-1,-1);
+						CMVideoDimensions		vidDims = CMVideoFormatDescriptionGetDimensions(trackFmt);
+						NSSize				trackSize = NSMakeSize(vidDims.width, vidDims.height);
+						tmpNum = [baseVideoExportSettings objectForKey:AVVideoWidthKey];
+						exportSize.width = [tmpNum doubleValue];
+						tmpNum = [baseVideoExportSettings objectForKey:AVVideoHeightKey];
+						exportSize.height = [tmpNum doubleValue];
+						if (exportSize.width>0 && exportSize.height>0 && !NSEqualSizes(exportSize,trackSize))	{
+							transcodeThisTrack = YES;
+						}
+						
 						//	if the export settings don't specify a codec, skip the transcode on the track
 						if (exportCodecString==nil)	{
 							//NSLog(@"\t\texport directions explicitly state to skip transcode on track %@",trackPtr);

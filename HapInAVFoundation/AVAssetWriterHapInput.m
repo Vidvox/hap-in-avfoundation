@@ -1,4 +1,5 @@
 #import "AVAssetWriterHapInput.h"
+#import <Accelerate/Accelerate.h>
 #include "HapPlatform.h"
 #import "HapCodecSubTypes.h"
 #import "PixelFormats.h"
@@ -379,22 +380,58 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		//NSLog(@"%s",__func__);
 		//	if there's a pixel buffer to encode, let's take care of that first
 		if (pb!=NULL)	{
-			//	lock the base address of the pixel buffer, get a ptr to the raw pixel data- i'll either be converting it or encoding it
+			//	lock the base address of the pixel buffer
 			CVPixelBufferLockBaseAddress(pb,kHapCodecCVPixelBufferLockFlags);
 			
+			//	get the size of the image in the cvpixelbuffer, we need to compare it to the export size to determine if we need to do a resize...
+			NSSize			pbSize = NSMakeSize(CVPixelBufferGetWidth(pb),CVPixelBufferGetHeight(pb));
+			
+			//	get a ptr to the raw pixel data- i'll either be resizing/converting it or encoding this ptr.
 			void			*sourceBuffer = CVPixelBufferGetBaseAddress(pb);
 			size_t			sourceBufferBytesPerRow = CVPixelBufferGetBytesPerRow(pb);
+			
+			//	allocate the resize buffer if i need it
+			void			*resizeBuffer = nil;
+			if (!NSEqualSizes(pbSize, exportImgSize))	{
+				//	make a vImage struct for the pixel buffer we were passed
+				vImage_Buffer		pbImage = {
+					.data = sourceBuffer,
+					.height = pbSize.height,
+					.width = pbSize.width,
+					.rowBytes = sourceBufferBytesPerRow
+				};
+				//	make the resize buffer
+				size_t			resizeBufferSize = encoderInputPxlFmtBytesPerRow[0] * exportImgSize.height;
+				resizeBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, resizeBufferSize, 0);
+				//	make a vImage struct for the resize buffer we just allocated
+				vImage_Buffer		resizeImage = {
+					.data = resizeBuffer,
+					.height = exportImgSize.height,
+					.width = exportImgSize.width,
+					.rowBytes = encoderInputPxlFmtBytesPerRow[0]
+				};
+				//	scale the pixel buffer's vImage to the resize buffer's vImage
+				vImage_Error		vErr = vImageScale_ARGB8888(&pbImage, &resizeImage, NULL, kvImageHighQualityResampling | kvImageDoNotTile);
+				if (vErr != kvImageNoError)
+					NSLog(@"\t\terr %ld scaling image in %s",vErr,__func__);
+				else	{
+					//	update the sourceBuffer- we just resized the buffer we were passed, so it should have the same pixel format
+					sourceBuffer = resizeImage.data;
+					sourceBufferBytesPerRow = resizeImage.rowBytes;
+				}
+			}
+			
+			//	allocate any format conversion buffers i may need
 			void			*_formatConvertBuffers[2];
 			_formatConvertBuffers[0] = nil;
 			_formatConvertBuffers[1] = nil;
 			void			**formatConvertBuffers = _formatConvertBuffers;	//	this exists because we can't refer to arrays on the stack from within blocks
-			
-			//	allocate any format conversion buffers i may need
 			for (int i=0; i<exportPixelFormatsCount; ++i)	{
 				if (sourceFormat != encoderInputPxlFmts[i])	{
 					formatConvertBuffers[i] = CFAllocatorAllocate(_HIAVFMemPoolAllocator, formatConvertPoolLengths[i], 0);
 				}
 			}
+			
 			//	allocate the DXT buffer (or buffers) i'll be creating
 			void			*dxtBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtBufferPoolLengths[0], 0);
 			void			*dxtAlphaBuffer = NULL;
@@ -690,6 +727,10 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 			if (dxtAlphaBuffer!=nil)	{
 				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, dxtAlphaBuffer);
 				dxtAlphaBuffer = nil;
+			}
+			if (resizeBuffer != nil)	{
+				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, resizeBuffer);
+				resizeBuffer = nil;
 			}
 			if (formatConvertBuffers[0]!=nil)	{
 				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, formatConvertBuffers[0]);
