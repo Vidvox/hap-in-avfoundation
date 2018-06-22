@@ -363,7 +363,7 @@
 			}
 			//	else if there's an output but it's an nsnull, add it (i'm stripping this track instead of copying or transcoding it)
 			else if (newOutput==(AVAssetReaderOutput *)nsnull)	{
-				//[readerOutputs addObject:nsnull];
+				[readerOutputs addObject:nsnull];
 			}
 			else	{
 				//	if the reader couldn't add the output, add a null ptr and log the problem
@@ -561,7 +561,19 @@
 									{
 										[readerOutputs removeObjectAtIndex:[readerOutputs indexOfObjectIdenticalTo:localOutput]];
 										[writerInputs removeObjectAtIndex:[writerInputs indexOfObjectIdenticalTo:localInput]];
-										if ([readerOutputs count]==0 || [writerInputs count]==0)	{
+										
+										int			readerOutputsCount = 0;
+										int			writerInputsCount = 0;
+										for (id output in readerOutputs)	{
+											if (output!=nil && output!=nsnull)
+												++readerOutputsCount;
+										}
+										for (id input in writerInputs)	{
+											if (input!=nil && input!=nsnull)
+												++writerInputsCount;
+										}
+										
+										if (readerOutputsCount==0 || writerInputsCount==0)	{
 											[writer finishWritingWithCompletionHandler:^{
 												[bss _finishWritingAndCleanUpShop];
 											}];
