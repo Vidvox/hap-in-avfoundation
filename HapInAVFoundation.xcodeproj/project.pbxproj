@@ -39,6 +39,8 @@
 		1A32301C1A3BA14000DDB2E0 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A32301B1A3BA14000DDB2E0 /* main.m */; };
 		1A32301E1A3BA14000DDB2E0 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A32301D1A3BA14000DDB2E0 /* Images.xcassets */; };
 		1A3230211A3BA14000DDB2E0 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1A32301F1A3BA14000DDB2E0 /* MainMenu.xib */; };
+		1A38F87520E64AFA00F47ACA /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A38F87420E64AFA00F47ACA /* Sparkle.framework */; };
+		1A38F87620E64B0400F47ACA /* Sparkle.framework in copy frameworks */ = {isa = PBXBuildFile; fileRef = 1A38F87420E64AFA00F47ACA /* Sparkle.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1A3BAC031A65239D0065403A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC021A65239D0065403A /* AppDelegate.m */; };
 		1A3BAC051A65239D0065403A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC041A65239D0065403A /* main.m */; };
 		1A3BAC071A65239D0065403A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A3BAC061A65239D0065403A /* Images.xcassets */; };
@@ -261,6 +263,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				1A642D1D1A652CF000E2152D /* HapInAVFoundation.framework in copy frameworks */,
+				1A38F87620E64B0400F47ACA /* Sparkle.framework in copy frameworks */,
 			);
 			name = "copy frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -324,6 +327,7 @@
 		1A32301B1A3BA14000DDB2E0 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		1A32301D1A3BA14000DDB2E0 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1A3230201A3BA14000DDB2E0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		1A38F87420E64AFA00F47ACA /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = external/Sparkle.framework; sourceTree = "<group>"; };
 		1A3BABFD1A65239C0065403A /* AVF Batch Converter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AVF Batch Converter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A3BAC001A65239D0065403A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1A3BAC011A65239D0065403A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -411,6 +415,7 @@
 			files = (
 				1AE092DC1AFE96F4004E866B /* VideoToolbox.framework in Frameworks */,
 				1A642D1C1A652CE900E2152D /* HapInAVFoundation.framework in Frameworks */,
+				1A38F87520E64AFA00F47ACA /* Sparkle.framework in Frameworks */,
 				1A642D181A65245900E2152D /* AVFoundation.framework in Frameworks */,
 				1A642D171A65245600E2152D /* CoreMedia.framework in Frameworks */,
 			);
@@ -586,6 +591,7 @@
 		1A6060711A38D8F5008E693F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1A38F87420E64AFA00F47ACA /* Sparkle.framework */,
 				1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */,
 				1A680E291A39F67E007678E5 /* CoreMedia.framework */,
 				1A680E231A39CFFF007678E5 /* AVFoundation.framework */,
@@ -1249,9 +1255,14 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Developer ID Application: Vidvox, LLC (KH97KZU7A7)";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/external",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -1286,11 +1297,16 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Developer ID Application: Vidvox, LLC (KH97KZU7A7)";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/external",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1445,6 +1461,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_X86_VECTOR_INSTRUCTIONS = ssse3;
+				CODE_SIGN_IDENTITY = "Developer ID Application: Vidvox, LLC (KH97KZU7A7)";
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
@@ -1471,6 +1488,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_X86_VECTOR_INSTRUCTIONS = ssse3;
+				CODE_SIGN_IDENTITY = "Developer ID Application: Vidvox, LLC (KH97KZU7A7)";
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
