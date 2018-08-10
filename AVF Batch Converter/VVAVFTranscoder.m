@@ -39,6 +39,7 @@
 		audioExportSettings = nil;
 		durationInSeconds = 0.0;
 		normalizedProgress = 0.0;
+		unexpectedErr = NO;
 		delegate = nil;
 		srcPath = nil;
 		dstPath = nil;
@@ -183,6 +184,7 @@
 		srcAsset = [newSrcAsset retain];
 		durationInSeconds = CMTimeGetSeconds([srcAsset duration]);
 		normalizedProgress = 0.0;
+		unexpectedErr = NO;
 		
 		if (reader!=nil)
 			[reader release];
@@ -197,6 +199,7 @@
 		//	these dicts describe the standard reader output format if i need to transcode video or audio
 		NSDictionary	*videoReadNormalizedOutputSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 			//[NSNumber numberWithInteger:kCVPixelFormatType_32BGRA], kCVPixelBufferPixelFormatTypeKey,	//	BGRA/RGBA stops working sometime at or before 8k resolution!
+			//[NSNumber numberWithInteger:kCVPixelFormatType_32RGBA], kCVPixelBufferPixelFormatTypeKey,
 			[NSNumber numberWithInteger:kCVPixelFormatType_32ARGB], kCVPixelBufferPixelFormatTypeKey,
 			nil];
 		NSDictionary	*audioReadNormalizedOutputSettings = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -212,6 +215,7 @@
 			//XXX, kLinearPCMFormatFlagsSampleFractionShift,
 			//XXX, kLinearPCMFormatFlagsSampleFractionMask,
 			nil];
+		
 		//	these are NSNumber/BOOLs, if YES the corresponding track needs to be transcoded.  populated when i make the track reader outputs.
 		NSMutableArray	*trackTranscodeFlags = [NSMutableArray arrayWithCapacity:0];
 		NSNumber		*stripVideoNum = [baseVideoExportSettings objectForKey:VVAVStripMediaKey];
@@ -258,10 +262,14 @@
 						NSSize				exportSize = NSMakeSize(-1,-1);
 						CMVideoDimensions		vidDims = CMVideoFormatDescriptionGetDimensions(trackFmt);
 						NSSize				trackSize = NSMakeSize(vidDims.width, vidDims.height);
+						
 						tmpNum = [baseVideoExportSettings objectForKey:AVVideoWidthKey];
-						exportSize.width = [tmpNum doubleValue];
+						if (tmpNum != nil)
+							exportSize.width = [tmpNum doubleValue];
 						tmpNum = [baseVideoExportSettings objectForKey:AVVideoHeightKey];
-						exportSize.height = [tmpNum doubleValue];
+						if (tmpNum != nil)
+							exportSize.height = [tmpNum doubleValue];
+						
 						if (exportSize.width>0 && exportSize.height>0 && !NSEqualSizes(exportSize,trackSize))	{
 							transcodeThisTrack = YES;
 						}
@@ -528,6 +536,7 @@
 				//	THIS IS ONLY NECESSARY BECAUSE OF HapInAVFoundation, WHICH DOESN'T PLAY NICE WITH respondToEachPassDescriptionOnQueue:usingBlock:
 				if (!baseVideoMultiPassExport)	{
 					__block NSUInteger		skippedBufferCount = 0;
+					__block NSUInteger		renderedVideoFrameCount = 0;
 					[localInput requestMediaDataWhenReadyOnQueue:writerQueue usingBlock:^{
 						//NSLog(@"%s-requestMediaDataWhenReadyOnQueue:",__func__);
 						//pthread_mutex_lock(&theLock);
@@ -536,17 +545,31 @@
 						//if (localPaused)
 						//	return;
 						NSUInteger				runCount = 0;	//	if we don't limit the # of frames we write, this loop will actually write every frame, which prevents cancel or pause from working
+						BOOL					isVideoTrack = ([localInput mediaType]==AVMediaTypeVideo) ? YES : NO;
 						while ([localInput isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting && runCount<5)	{
-							CMSampleBufferRef		newRef = [localOutput copyNextSampleBuffer];
-							if (newRef!=NULL)	{
+							CMSampleBufferRef		newRef = ([reader status]!=AVAssetReaderStatusReading) ? NULL : [localOutput copyNextSampleBuffer];
+							//	prior to 10.14, really large images don't fail or error out, the asset reader just pretends everything's okay-
+							//	we have to work around this by looking explicitly for an image and making sure it exists and is valid
+							BOOL					imgBufferIsFineOrIrrelevant = YES;
+							if (isVideoTrack)	{
+								CVImageBufferRef		tmpImgBuffer = (newRef==NULL) ? NULL : CMSampleBufferGetImageBuffer(newRef);
+								if (tmpImgBuffer == NULL)
+									imgBufferIsFineOrIrrelevant = NO;
+							}
+							
+							if (newRef!=NULL && imgBufferIsFineOrIrrelevant)	{
 								//NSLog(@"\t\tcopied buffer at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault,CMSampleBufferGetPresentationTimeStamp(newRef)) autorelease]);
 								pthread_mutex_lock(&theLock);
-								normalizedProgress = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(newRef))/durationInSeconds;
+								CMTime				tmpTime = CMSampleBufferGetPresentationTimeStamp(newRef);
+								if (CMTIME_IS_VALID(tmpTime))
+									normalizedProgress = CMTimeGetSeconds(tmpTime)/durationInSeconds;
 								if (normalizedProgress>=1.0)
 									normalizedProgress = 0.99;
 								//NSLog(@"\t\tnormalizedProgress now %0.3f",normalizedProgress);
 								pthread_mutex_unlock(&theLock);
 								skippedBufferCount = 0;
+								if (isVideoTrack)
+									++renderedVideoFrameCount;
 								[localInput appendSampleBuffer:newRef];
 								CFRelease(newRef);
 								newRef = NULL;
@@ -559,17 +582,25 @@
 									[localInput markAsFinished];
 									pthread_mutex_lock(&theLock);
 									{
+										//	if this was a video track, and it didn't render any video frames, and the img buffer wasn't fine- something went wrong!
+										if (isVideoTrack && renderedVideoFrameCount==0 && !imgBufferIsFineOrIrrelevant)	{
+											unexpectedErr = YES;
+											if (errorString != nil)
+												[errorString release];
+											errorString = [@"Problem retrieving image buffer from AVFoundation" retain];
+										}
+										
 										[readerOutputs removeObjectAtIndex:[readerOutputs indexOfObjectIdenticalTo:localOutput]];
 										[writerInputs removeObjectAtIndex:[writerInputs indexOfObjectIdenticalTo:localInput]];
 										
 										int			readerOutputsCount = 0;
 										int			writerInputsCount = 0;
-										for (id output in readerOutputs)	{
-											if (output!=nil && output!=nsnull)
+										for (id tmpOutput in readerOutputs)	{
+											if (tmpOutput!=nil && tmpOutput!=nsnull)
 												++readerOutputsCount;
 										}
-										for (id input in writerInputs)	{
-											if (input!=nil && input!=nsnull)
+										for (id tmpInput in writerInputs)	{
+											if (tmpInput!=nil && tmpInput!=nsnull)
 												++writerInputsCount;
 										}
 										
@@ -593,10 +624,9 @@
 					[localInput respondToEachPassDescriptionOnQueue:writerQueue usingBlock:^{
 						//NSLog(@"%s-respondToEachPassDescriptionOnQueue:usingBlock:, input type is %@",__func__,[localInput mediaType]);
 						__block NSUInteger						skippedBufferCount = 0;
+						__block NSUInteger						renderedVideoFrameCount = 0;
 						AVAssetWriterInputPassDescription		*tmpDesc = [localInput currentPassDescription];
 						//NSLog(@"\t\tcurrent pass description is %@",tmpDesc);
-						if ([writer status]!=AVAssetWriterStatusWriting)
-							return;
 						//	if there's no pass description, mark the input as being finished and remove them
 						if (tmpDesc==nil)	{
 							//NSLog(@"\t\tno pass description, marking input as finished");
@@ -617,7 +647,6 @@
 						//	else there's a pass description, which means i need to do reading/writing/probably encoding
 						else	{
 							//NSLog(@"\t\tthere's a pass description, inputPassIndex is %lu",(unsigned long)inputPassIndex);
-							//NSLog(@"\t\ttracksLeftToConvert are %ld, tracksThatNeedConverting are %ld",tracksLeftToConvert,tracksThatNeedConverting);
 							
 							//	if this isn't the first pass, before proceeding we need to reset the reader output to the time range of the pass description
 							if (inputPassIndex>0)	{
@@ -660,18 +689,33 @@
 									//if (localPaused)
 									//	return;
 									NSUInteger				runCount = 0;	//	if we don't limit the # of frames we write, this loop will actually write every frame, which prevents cancel or pause from working
+									BOOL					isVideoTrack = ([localInput mediaType]==AVMediaTypeVideo) ? YES : NO;
 									while ([localInput isReadyForMoreMediaData] && [writer status]==AVAssetWriterStatusWriting && runCount<5)	{
 										CMSampleBufferRef		newRef = [localOutput copyNextSampleBuffer];
-										if (newRef!=NULL)	{
+										//	prior to 10.14, really large images don't fail or error out, the asset reader just pretends everything's okay-
+										//	we have to work around this by looking explicitly for an image and making sure it exists and is valid
+										BOOL					imgBufferIsFineOrIrrelevant = YES;
+										if (isVideoTrack)	{
+											CVImageBufferRef		tmpImgBuffer = (newRef==NULL) ? NULL : CMSampleBufferGetImageBuffer(newRef);
+											if (tmpImgBuffer == NULL)
+												imgBufferIsFineOrIrrelevant = NO;
+										}
+										
+										if (newRef!=NULL && imgBufferIsFineOrIrrelevant)	{
 											//NSLog(@"\t\tcopied buffer at time %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault,CMSampleBufferGetPresentationTimeStamp(newRef)) autorelease]);
 											pthread_mutex_lock(&theLock);
-											double		tmpProgress = (CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(newRef))/durationInSeconds)/2.0;
+											CMTime		tmpTime = CMSampleBufferGetPresentationTimeStamp(newRef);
+											double		tmpProgress = 0.0;
+											if (CMTIME_IS_VALID(tmpTime))
+												tmpProgress = (CMTimeGetSeconds(tmpTime)/durationInSeconds)/2.0;
 											normalizedProgress = (inputPassIndex==1) ? tmpProgress : 0.5+tmpProgress;
 											if (normalizedProgress>=1.0)
 												normalizedProgress = 0.99;
 											//NSLog(@"\t\ttmpProgress for input %p is %0.3f, passIndex is %ld, normalizedProgress now %0.3f",localInput,tmpProgress,inputPassIndex,normalizedProgress);
 											pthread_mutex_unlock(&theLock);
 											skippedBufferCount = 0;
+											if (isVideoTrack)
+												++renderedVideoFrameCount;
 											[localInput appendSampleBuffer:newRef];
 											CFRelease(newRef);
 											newRef = NULL;
@@ -681,6 +725,14 @@
 											//NSLog(@"\t\tunable to copy the buffer, skippedBufferCount is now %ld",skippedBufferCount);
 											if (skippedBufferCount>4)	{
 												[localInput markCurrentPassAsFinished];
+												
+												//	if this was a video track, and it didn't render any video frames, and the img buffer wasn't fine- something went wrong!
+												if (isVideoTrack && renderedVideoFrameCount==0 && !imgBufferIsFineOrIrrelevant)	{
+													unexpectedErr = YES;
+													if (errorString != nil)
+														[errorString release];
+													errorString = [@"Problem retrieving image buffer from AVFoundation" retain];
+												}
 											}
 											break;
 										}
@@ -747,9 +799,17 @@
 		[srcAsset release];
 		srcAsset = nil;
 	}
-	normalizedProgress = 1.0;
+	normalizedProgress = (unexpectedErr) ? 0.0 : 1.0;
 	//NSLog(@"\t\tnormalizedProgress now %0.3f",normalizedProgress);
 	pthread_mutex_unlock(&theLock);
+	
+	//	if there was an unexpected error, move the file at "dstPath" (if it exists) to the trash
+	if (unexpectedErr)	{
+		NSFileManager		*fm = [NSFileManager defaultManager];
+		if ([fm fileExistsAtPath:dstPath])	{
+			[fm trashItemAtURL:[NSURL fileURLWithPath:dstPath] resultingItemURL:nil error:nil];
+		}
+	}
 	
 	if (localDelegate!=nil)
 		[localDelegate finishedTranscoding:self];
@@ -774,7 +834,7 @@
 		srcAsset = nil;
 	}
 	
-	normalizedProgress = 1.0;
+	normalizedProgress = 0.0;
 	//NSLog(@"\t\tnormalizedProgress now %0.3f",normalizedProgress);
 	pthread_mutex_unlock(&theLock);
 	

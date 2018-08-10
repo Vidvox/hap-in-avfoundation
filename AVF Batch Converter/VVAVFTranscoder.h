@@ -28,6 +28,7 @@
 	
 	double					durationInSeconds;	//	duration of the asset being transcoded, in seconds.  used to calculate progress.
 	double					normalizedProgress;
+	BOOL					unexpectedErr;
 	
 	id<VVAVFTranscoderDelegate>		delegate;	//	NOT retained
 	
