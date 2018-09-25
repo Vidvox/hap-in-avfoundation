@@ -673,9 +673,19 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 							else	{
 								//	make a CMFormatDescriptionRef that will describe the frame i'm supplying
 								CMFormatDescriptionRef		desc = NULL;
+                                int depth;
+                                switch (exportCodecType) {
+                                    case kHapAlphaCodecSubType:
+                                    case kHapYCoCgACodecSubType:
+                                        depth = 32;
+                                        break;
+                                    default:
+                                        depth = 24;
+                                        break;
+                                }
 								NSDictionary				*bufferExtensions = [NSDictionary dictionaryWithObjectsAndKeys:
 									[NSNumber numberWithDouble:2.199996948242188], kCMFormatDescriptionExtension_GammaLevel,
-									[NSNumber numberWithInt:((exportCodecType==kHapAlphaCodecSubType)?32:24)],kCMFormatDescriptionExtension_Depth,
+									[NSNumber numberWithInt:depth],kCMFormatDescriptionExtension_Depth,
 									@"Hap",kCMFormatDescriptionExtension_FormatName,
 									[NSNumber numberWithInt:2], kCMFormatDescriptionExtension_RevisionLevel,
 									[NSNumber numberWithInt:512], kCMFormatDescriptionExtension_SpatialQuality,
