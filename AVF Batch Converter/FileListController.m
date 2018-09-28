@@ -465,9 +465,9 @@
 		FileHolder		*filePtr = [fileArray objectAtIndex:row];
 		NSCell			*returnMe = [tc dataCellForRow:row];
 		if ([filePtr srcFileExists])
-			[(NSTextFieldCell *)returnMe setTextColor:[NSColor blackColor]];
+			[(NSTextFieldCell *)returnMe setTextColor:[NSColor textColor]];
 		else
-			[(NSTextFieldCell *)returnMe setTextColor:[NSColor lightGrayColor]];
+			[(NSTextFieldCell *)returnMe setTextColor:[NSColor disabledControlTextColor]];
 	}
 	//	if this is the destination table view, i'll be returning one of a number of cells
 	else if (tv == dstTableView)	{
