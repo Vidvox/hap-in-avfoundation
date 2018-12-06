@@ -33,6 +33,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 NSString *const			AVVideoCodecHapQAlpha = @"HapM";
 NSString *const			AVVideoCodecHapAlphaOnly = @"HapA";
 NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
+NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 
 #define FourCCLog(n,f) NSLog(@"%@, %c%c%c%c",n,(int)((f>>24)&0xFF),(int)((f>>16)&0xFF),(int)((f>>8)&0xFF),(int)((f>>0)&0xFF))
 
@@ -176,6 +177,9 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		exportChunkCounts[0] = (chunkNum==nil) ? 1 : [chunkNum intValue];
 		exportChunkCounts[0] = fmaxl(fminl(exportChunkCounts[0], HAPQMAXCHUNKS), 1);
 		exportChunkCounts[1] = exportChunkCounts[0];
+		//	if there's a default FPS key, use it
+		NSNumber		*fallbackFPSNum = (propertiesDict==nil) ? nil : [n objectForKey:AVFallbackFPSKey];
+		fallbackFPS = (fallbackFPSNum==nil) ? 0.0 : [fallbackFPSNum doubleValue];
 		
 		//	figure out the max dxt frame size in bytes
 		NSUInteger		dxtFrameSizeInBytes[2];
@@ -900,7 +904,24 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		
 		if (lastFrame != nil)	{
 			//	make a hap sample buffer, append it
-			CMSampleBufferRef	hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:[self lastEncodedDuration].value];
+			CMSampleBufferRef	hapSampleBuffer = NULL;
+			CMTime				tmpTime = [self lastEncodedDuration];
+			//	if there's no 'lastEncodedDuration'...
+			if (tmpTime.value == 0)	{
+				//	try to use the fallback FPS- if there isn't one, just use a value of 1...
+				if (fallbackFPS <= 0.0)	{
+					hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:1];
+				}
+				//	else there's a fallback FPS- calculate an appropriate time value given the fallback FPS and the last frame's timescale
+				else	{
+					hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:(int)round((1.0/fallbackFPS) / (1.0/(double)[lastFrame presentationTime].timescale))];
+				}
+			}
+			//	else there's a 'lastEncodedDuration'- use it...
+			else	{
+				hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:tmpTime.value];
+			}
+			
 			if (hapSampleBuffer==NULL)
 				NSLog(@"\t\terr: couldn't make sample buffer from frame duration, %s",__func__);
 			else	{

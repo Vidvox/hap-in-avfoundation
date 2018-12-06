@@ -57,6 +57,7 @@ This class is the main interface for using AVFoundation to encode and output vid
 	BOOL				encoderWaitingToRunOut;	//	set to YES when the user marks this input as finished (the frames that are "in flight" via GCD need to finish up)
 	
 	CMTime				lastEncodedDuration;
+	double				fallbackFPS;	//	one-frame movies are unable to calculate 'lastEncodeDuration', and will fall back to inserting a single frame at this framerate.
 }
 
 /**
