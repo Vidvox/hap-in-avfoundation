@@ -16,8 +16,10 @@ extern NSString *const			AVVideoCodecHapQAlpha;
 extern NSString *const			AVVideoCodecHapAlphaOnly;
 //	the hapQ codec offers the ability to create "chunked" files- this string is the key in the compression properties dict (AVVideoCompressionPropertiesKey) at which the # of chunks is stored.  if the value at this key is nil or < 1, it is assumed to be 1.
 extern NSString *const			AVHapVideoChunkCountKey;
+//	the value associated with this key is expected to be a double: this key-value pair is expected to be stored in the top level of the properties dict.  this value is only used if you create a single-frame movie.  if you're creating single-frame movies then the framework won't be able to accurately calculate the duration of the frame, and will fall back to inserting a single frame with the appropriate duration.  if you export a single-frame movie and do not provide this value, the duration of the frame will be 1/timescale.
+extern NSString *const			AVFallbackFPSKey;
 
-#define				HAPQMAXCHUNKS 8
+#define				HAPQMAXCHUNKS 16
 
 
 
