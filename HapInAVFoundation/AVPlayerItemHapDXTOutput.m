@@ -1009,6 +1009,33 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	return [self allocFrameForTime:CMSampleBufferGetPresentationTimeStamp(n)];
 }
 
+- (HapDecoderFrame *) findFrameClosestToTime:(CMTime)n    {
+    HapDecoderFrame            *returnMe = nil;
+    LOCK(&propertyLock);
+    if (track==nil || gen==nil)    {
+        UNLOCK(&propertyLock);
+        return returnMe;
+    }
+    for (HapDecoderFrame *frame in playedOutFrames)    {
+        if ([frame containsTime:n])    {
+            returnMe = [frame retain];
+            returnMe = [frame autorelease];
+            UNLOCK(&propertyLock);
+            return returnMe;
+        }
+    }
+    for (HapDecoderFrame *frame in decodedFrames)    {
+        if ([frame containsTime:n])    {
+            returnMe = [frame retain];
+            returnMe = [frame autorelease];
+            UNLOCK(&propertyLock);
+            return returnMe;
+        }
+    }
+    UNLOCK(&propertyLock);
+    return returnMe;
+}
+
 #pragma mark -
 
 - (void) setAllocFrameBlock:(HapDecoderFrameAllocBlock)n	{

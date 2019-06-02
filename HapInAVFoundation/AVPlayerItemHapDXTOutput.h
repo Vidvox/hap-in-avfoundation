@@ -68,6 +68,8 @@ This method immediately decodes the passed sample.  Like allocFrameForTime:, thi
 */
 - (HapDecoderFrame *) allocFrameForHapSampleBuffer:(CMSampleBufferRef)n;
 
+- (HapDecoderFrame *) findFrameClosestToTime:(CMTime)n;
+
 /**
 Use this if you want to provide a custom block that allocates and configures a HapDecoderFrame instance- if you want to pool resources or manually provide the memory into which the decoded data will be written, you need to provide a custom alloc block.
 @param n This HapDecoderFrameAllocBlock must be threadsafe, and should avoid retaining the instance of this class that "owns" the block to prevent a retain loop.
