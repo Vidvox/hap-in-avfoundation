@@ -1472,8 +1472,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"\"$(TARGET_BUILD_DIR)/usr/local/include\"",
-					"\"$(DSTROOT)/usr/local/include\"",
+					"\"$(BUILT_PRODUCTS_DIR)/include/snappy\"",
+					"\"$(BUILT_PRODUCTS_DIR)/include/squish\"",
 				);
 				INFOPLIST_FILE = HapInAVFoundation/Info.plist;
 				INSTALL_PATH = "@rpath";
@@ -1499,8 +1499,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"\"$(TARGET_BUILD_DIR)/usr/local/include\"",
-					"\"$(DSTROOT)/usr/local/include\"",
+					"\"$(BUILT_PRODUCTS_DIR)/include/snappy\"",
+					"\"$(BUILT_PRODUCTS_DIR)/include/squish\"",
 				);
 				INFOPLIST_FILE = HapInAVFoundation/Info.plist;
 				INSTALL_PATH = "@rpath";
