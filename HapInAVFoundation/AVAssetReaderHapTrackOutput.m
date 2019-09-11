@@ -82,4 +82,18 @@
 }
 
 
+- (BOOL) outputAsRGB	{
+	OSSpinLockLock(&hapLock);
+	BOOL		returnMe = (hapDXTOutput==nil) ? NO : [hapDXTOutput outputAsRGB];
+	OSSpinLockUnlock(&hapLock);
+	return returnMe;
+}
+- (void) setOutputAsRGB:(BOOL)n	{
+	OSSpinLockLock(&hapLock);
+	if (hapDXTOutput != nil)
+		[hapDXTOutput setOutputAsRGB:n];
+	OSSpinLockUnlock(&hapLock);
+}
+
+
 @end

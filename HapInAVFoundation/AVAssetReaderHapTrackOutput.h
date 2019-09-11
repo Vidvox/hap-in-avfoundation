@@ -13,4 +13,7 @@ This subclass of AVAssetReaderTrackOutput works just like its super- you call "c
 	CMTime							lastCopiedBufferTime;	//	my super sometimes vends samples with identical presentation times- this var exists so i can avoid adding buffers with duplicate time stamps
 }
 
+- (BOOL) outputAsRGB;
+- (void) setOutputAsRGB:(BOOL)n;
+
 @end
