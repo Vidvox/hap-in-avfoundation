@@ -69,6 +69,13 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 		_HIAVFMemPoolAllocator = CMMemoryPoolGetAllocator(_HIAVFMemPool);
 	OSSpinLockUnlock(&_HIAVFMemPoolLock);
 }
+- (id) initWithMediaType:(AVMediaType)mediaType outputSettings:(NSDictionary<NSString *,id> *)outputSettings	{
+	NSLog(@"**** ERR: DO NOT USE THIS INIT METHOD (%s)",__func__);
+	NSLog(@"AVFoundation does not officially recognize the Hap codec");
+	NSLog(@"Please use -[AVAssetWriterHapInput initWithOutputSettings:] instead");
+	[self release];
+	return nil;
+}
 - (id) initWithOutputSettings:(NSDictionary *)n	{
 	self = [super initWithMediaType:AVMediaTypeVideo outputSettings:nil];
 	if (self!=nil)	{
