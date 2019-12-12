@@ -29,12 +29,12 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 
 + (void) initialize	{
 	//	make sure the CMMemoryPool used by this framework exists
-	OSSpinLockLock(&_HIAVFMemPoolLock);
+	os_unfair_lock_lock(&_HIAVFMemPoolLock);
 	if (_HIAVFMemPool==NULL)
 		_HIAVFMemPool = CMMemoryPoolCreate(NULL);
 	if (_HIAVFMemPoolAllocator==NULL)
 		_HIAVFMemPoolAllocator = CMMemoryPoolGetAllocator(_HIAVFMemPool);
-	OSSpinLockUnlock(&_HIAVFMemPoolLock);
+	os_unfair_lock_unlock(&_HIAVFMemPoolLock);
 }
 - (id) initWithHapSampleBuffer:(CMSampleBufferRef)sb	{
 	self = [self initEmptyWithHapSampleBuffer:sb];
@@ -70,7 +70,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		rgbDataSize = 0;
 		rgbPixelFormat = kCVPixelFormatType_32BGRA;
 		rgbImgSize = NSMakeSize(0,0);
-		atomicLock = OS_SPINLOCK_INIT;
+		atomicLock = OS_UNFAIR_LOCK_INIT;
 		userInfo = nil;
 		decoded = NO;
 		age = 0;
@@ -344,7 +344,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 
 
 - (void) setUserInfo:(id)n	{
-	OSSpinLockLock(&atomicLock);
+	os_unfair_lock_lock(&atomicLock);
 	if (n!=userInfo)	{
 		if (userInfo!=nil)
 			[userInfo release];
@@ -352,37 +352,37 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		if (userInfo!=nil)
 			[userInfo retain];
 	}
-	OSSpinLockUnlock(&atomicLock);
+	os_unfair_lock_unlock(&atomicLock);
 }
 - (id) userInfo	{
 	id		returnMe = nil;
-	OSSpinLockLock(&atomicLock);
+	os_unfair_lock_lock(&atomicLock);
 	returnMe = userInfo;
-	OSSpinLockUnlock(&atomicLock);
+	os_unfair_lock_unlock(&atomicLock);
 	return returnMe;
 }
 - (void) setDecoded:(BOOL)n	{
-	OSSpinLockLock(&atomicLock);
+	os_unfair_lock_lock(&atomicLock);
 	decoded = n;
-	OSSpinLockUnlock(&atomicLock);
+	os_unfair_lock_unlock(&atomicLock);
 }
 - (BOOL) decoded	{
 	BOOL		returnMe = NO;
-	OSSpinLockLock(&atomicLock);
+	os_unfair_lock_lock(&atomicLock);
 	returnMe = decoded;
-	OSSpinLockUnlock(&atomicLock);
+	os_unfair_lock_unlock(&atomicLock);
 	return returnMe;
 }
 - (void) incrementAge	{
-	OSSpinLockLock(&atomicLock);
+	os_unfair_lock_lock(&atomicLock);
 	++age;
-	OSSpinLockUnlock(&atomicLock);
+	os_unfair_lock_unlock(&atomicLock);
 }
 - (int) age	{
 	int		returnMe = 0;
-	OSSpinLockLock(&atomicLock);
+	os_unfair_lock_lock(&atomicLock);
 	returnMe = age;
-	OSSpinLockUnlock(&atomicLock);
+	os_unfair_lock_unlock(&atomicLock);
 	return returnMe;
 }
 

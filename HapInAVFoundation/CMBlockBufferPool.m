@@ -5,7 +5,7 @@
 
 CMMemoryPoolRef		_HIAVFMemPool = NULL;
 CFAllocatorRef		_HIAVFMemPoolAllocator = NULL;
-OSSpinLock			_HIAVFMemPoolLock = OS_SPINLOCK_INIT;
+os_unfair_lock	_HIAVFMemPoolLock = OS_UNFAIR_LOCK_INIT;
 
 
 

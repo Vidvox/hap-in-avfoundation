@@ -49,10 +49,10 @@ This class is the main interface for using AVFoundation to encode and output vid
 	size_t			dxtBufferBytesPerRow[2];
 	size_t			hapBufferPoolLength;	//	the size of the buffers i need to create to hold hap frames
 	
-	OSSpinLock			encoderLock;	//	used to lock glDXTEncoder
+	os_unfair_lock	encoderLock;	//	used to lock glDXTEncoder
 	void				*glDXTEncoder;	//	actually a 'HapCodecDXTEncoderRef'.  only non-NULL when using the GL encoder (creating/destroying GL-based encoders is so much slower that there's a perf benefit to creating a single and caching it)
 	
-	OSSpinLock			encoderProgressLock;	//	locks 'encoderProgressFrames' and 'encoderWaitingToRunOut'
+	os_unfair_lock	encoderProgressLock;	//	locks 'encoderProgressFrames' and 'encoderWaitingToRunOut'
 	__block NSMutableArray		*encoderProgressFrames;	//	array of HapEncoderFrame instances.  the frames are made when you append a pixel buffer, and are flagged as encoded and appended (as an encoded sample buffer) in the GCD-driven block that did the encoding
 	BOOL				encoderWaitingToRunOut;	//	set to YES when the user marks this input as finished (the frames that are "in flight" via GCD need to finish up)
 	

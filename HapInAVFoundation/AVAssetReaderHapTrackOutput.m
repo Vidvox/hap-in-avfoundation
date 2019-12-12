@@ -11,7 +11,7 @@
 	//NSLog(@"%s ... %p",__func__,self);
 	self = [super initWithTrack:trackPtr outputSettings:nil];
 	if (self!=nil)	{
-		hapLock = OS_SPINLOCK_INIT;
+		hapLock = OS_UNFAIR_LOCK_INIT;
 		hapDXTOutput = nil;
 		lastCopiedBufferTime = kCMTimeInvalid;
 		if (![trackPtr isHapTrack])	{
@@ -27,12 +27,12 @@
 }
 - (void) dealloc	{
 	//NSLog(@"%s ... %p",__func__,self);
-	OSSpinLockLock(&hapLock);
+	os_unfair_lock_lock(&hapLock);
 	if (hapDXTOutput!=nil)	{
 		[hapDXTOutput release];
 		hapDXTOutput = nil;
 	}
-	OSSpinLockUnlock(&hapLock);
+	os_unfair_lock_unlock(&hapLock);
 	[super dealloc];
 }
 - (CMSampleBufferRef) copyNextSampleBuffer	{
@@ -83,16 +83,16 @@
 
 
 - (BOOL) outputAsRGB	{
-	OSSpinLockLock(&hapLock);
+	os_unfair_lock_lock(&hapLock);
 	BOOL		returnMe = (hapDXTOutput==nil) ? NO : [hapDXTOutput outputAsRGB];
-	OSSpinLockUnlock(&hapLock);
+	os_unfair_lock_unlock(&hapLock);
 	return returnMe;
 }
 - (void) setOutputAsRGB:(BOOL)n	{
-	OSSpinLockLock(&hapLock);
+	os_unfair_lock_lock(&hapLock);
 	if (hapDXTOutput != nil)
 		[hapDXTOutput setOutputAsRGB:n];
-	OSSpinLockUnlock(&hapLock);
+	os_unfair_lock_unlock(&hapLock);
 }
 
 

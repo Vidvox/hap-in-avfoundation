@@ -19,8 +19,8 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	});
 }
 #define FourCCLog(n,f) NSLog(@"%@, %c%c%c%c",n,(int)((f>>24)&0xFF),(int)((f>>16)&0xFF),(int)((f>>8)&0xFF),(int)((f>>0)&0xFF))
-#define LOCK OSSpinLockLock
-#define UNLOCK OSSpinLockUnlock
+#define LOCK os_unfair_lock_lock
+#define UNLOCK os_unfair_lock_unlock
 #define MAXDECODETIMES 6
 #define MAXDECODEFRAMES 3
 #define MAXDECODINGFRAMES 3
@@ -86,7 +86,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 - (id) init	{
 	self = [super init];
 	if (self!=nil)	{
-		propertyLock = OS_SPINLOCK_INIT;
+		propertyLock = OS_UNFAIR_LOCK_INIT;
 		decodeQueue = NULL;
 		track = nil;
 		gen = nil;

@@ -18,7 +18,7 @@ typedef void (^AVFHapDXTPostDecodeBlock)(HapDecoderFrame *decodedFrame);
 /**
 This class is the main interface for decoding hap video from AVFoundation.  You create an instance of this class and add it to an AVPlayerItem as you would with any other AVPlayerItemOutput subclass.  You retrieve frame data from this output by calling one of the allocFrame\* methods, depending on what you want to decode and whether your want it to be decoded asynchronously or not.  While it was written to be used in the AVPlayer* ecosystem, instances of this class can also be created outside AVPlayers and used to decode arbitrary frames of video (for more info, see initWithHapAssetTrack:).		*/
 @interface AVPlayerItemHapDXTOutput : AVPlayerItemOutput	{
-	OSSpinLock					propertyLock;	//	used to lock access to everything but the pools
+	os_unfair_lock			propertyLock;	//	used to lock access to everything but the pools
 	
 	dispatch_queue_t			decodeQueue;	//	decoding is performed on this queue (if you use them, the allocFrameBlock and postDecodeBlock are also executed on this queue)
 	AVAssetTrack				*track;	//	RETAINED
