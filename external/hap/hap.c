@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h> // For memcpy for uncompressed frames
-#include "snappy-c.h"
+#include <snappy-c.h>
 
 #define kHapUInt24Max 0x00FFFFFF
 

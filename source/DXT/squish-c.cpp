@@ -6,7 +6,7 @@
 //
 
 #include "squish-c.h"
-#include "squish.h"
+#include <squish.h>
 
 extern "C" {
 

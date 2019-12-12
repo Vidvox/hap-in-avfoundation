@@ -11,28 +11,51 @@
 		1ACD310C207E45FC00EA8ADF /* snappy-sinksource.cc in Sources */ = {isa = PBXBuildFile; fileRef = E2830FD417E0C58E005E72C3 /* snappy-sinksource.cc */; };
 		1ACD310D207E45FE00EA8ADF /* snappy-stubs-internal.cc in Sources */ = {isa = PBXBuildFile; fileRef = E2830FD517E0C58E005E72C3 /* snappy-stubs-internal.cc */; };
 		1ACD310E207E460000EA8ADF /* snappy.cc in Sources */ = {isa = PBXBuildFile; fileRef = E2830FD717E0C58E005E72C3 /* snappy.cc */; };
-		1ACD310F207E461A00EA8ADF /* snappy.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE917E0C6EB005E72C3 /* snappy.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1ACD3110207E461E00EA8ADF /* snappy-stubs-public.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE317E0C5AC005E72C3 /* snappy-stubs-public.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1ACD3111207E462300EA8ADF /* snappy-c.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FDF17E0C5AC005E72C3 /* snappy-c.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1ACD3112207E462A00EA8ADF /* snappy-sinksource.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE117E0C5AC005E72C3 /* snappy-sinksource.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1ACD3113207E463700EA8ADF /* snappy-stubs-internal.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE217E0C5AC005E72C3 /* snappy-stubs-internal.h */; };
-		1ACD3114207E463B00EA8ADF /* snappy-internal.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE017E0C5AC005E72C3 /* snappy-internal.h */; };
-		1ACD3115207E464100EA8ADF /* config.h in Headers */ = {isa = PBXBuildFile; fileRef = E2D2440A17E1E9A9004D0C23 /* config.h */; };
 		E2830FD917E0C58E005E72C3 /* snappy-c.cc in Sources */ = {isa = PBXBuildFile; fileRef = E2830FD317E0C58E005E72C3 /* snappy-c.cc */; };
 		E2830FDA17E0C58E005E72C3 /* snappy-sinksource.cc in Sources */ = {isa = PBXBuildFile; fileRef = E2830FD417E0C58E005E72C3 /* snappy-sinksource.cc */; };
 		E2830FDB17E0C58E005E72C3 /* snappy-stubs-internal.cc in Sources */ = {isa = PBXBuildFile; fileRef = E2830FD517E0C58E005E72C3 /* snappy-stubs-internal.cc */; };
 		E2830FDD17E0C58E005E72C3 /* snappy.cc in Sources */ = {isa = PBXBuildFile; fileRef = E2830FD717E0C58E005E72C3 /* snappy.cc */; };
-		E2830FE417E0C5AC005E72C3 /* snappy-c.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FDF17E0C5AC005E72C3 /* snappy-c.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E2830FE517E0C5AC005E72C3 /* snappy-internal.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE017E0C5AC005E72C3 /* snappy-internal.h */; };
-		E2830FE617E0C5AC005E72C3 /* snappy-sinksource.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE117E0C5AC005E72C3 /* snappy-sinksource.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E2830FE717E0C5AC005E72C3 /* snappy-stubs-internal.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE217E0C5AC005E72C3 /* snappy-stubs-internal.h */; };
-		E2830FE817E0C5AC005E72C3 /* snappy-stubs-public.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE317E0C5AC005E72C3 /* snappy-stubs-public.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E2830FEA17E0C6EB005E72C3 /* snappy.h in Headers */ = {isa = PBXBuildFile; fileRef = E2830FE917E0C6EB005E72C3 /* snappy.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E2D2440B17E1E9A9004D0C23 /* config.h in Headers */ = {isa = PBXBuildFile; fileRef = E2D2440A17E1E9A9004D0C23 /* config.h */; };
+		E2BF306A2326911E0098A022 /* snappy.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = E2830FE917E0C6EB005E72C3 /* snappy.h */; };
+		E2BF306B2326911E0098A022 /* snappy-c.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = E2830FDF17E0C5AC005E72C3 /* snappy-c.h */; };
+		E2BF306C232691250098A022 /* snappy-sinksource.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = E2830FE117E0C5AC005E72C3 /* snappy-sinksource.h */; };
+		E2BF306D232691250098A022 /* snappy-stubs-public.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = E2830FE317E0C5AC005E72C3 /* snappy-stubs-public.h */; };
+		E2BF306F232691B90098A022 /* snappy.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = E2830FE917E0C6EB005E72C3 /* snappy.h */; };
+		E2BF3070232691B90098A022 /* snappy-c.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = E2830FDF17E0C5AC005E72C3 /* snappy-c.h */; };
+		E2BF3071232691B90098A022 /* snappy-sinksource.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = E2830FE117E0C5AC005E72C3 /* snappy-sinksource.h */; };
+		E2BF3072232691B90098A022 /* snappy-stubs-public.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = E2830FE317E0C5AC005E72C3 /* snappy-stubs-public.h */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		E2BF30692326910B0098A022 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = include/snappy;
+			dstSubfolderSpec = 16;
+			files = (
+				E2BF306C232691250098A022 /* snappy-sinksource.h in CopyFiles */,
+				E2BF306D232691250098A022 /* snappy-stubs-public.h in CopyFiles */,
+				E2BF306A2326911E0098A022 /* snappy.h in CopyFiles */,
+				E2BF306B2326911E0098A022 /* snappy-c.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E2BF306E232691AC0098A022 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = include/snappy;
+			dstSubfolderSpec = 16;
+			files = (
+				E2BF306F232691B90098A022 /* snappy.h in CopyFiles */,
+				E2BF3070232691B90098A022 /* snappy-c.h in CopyFiles */,
+				E2BF3071232691B90098A022 /* snappy-sinksource.h in CopyFiles */,
+				E2BF3072232691B90098A022 /* snappy-stubs-public.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		1A724729207E442C0099ED5A /* libsnappy.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsnappy.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A724729207E442C0099ED5A /* lib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = lib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2830FCA17E0C43A005E72C3 /* libsnappy.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libsnappy.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2830FD317E0C58E005E72C3 /* snappy-c.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "snappy-c.cc"; path = "../snappy-source/snappy-c.cc"; sourceTree = "<group>"; };
 		E2830FD417E0C58E005E72C3 /* snappy-sinksource.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "snappy-sinksource.cc"; path = "../snappy-source/snappy-sinksource.cc"; sourceTree = "<group>"; };
@@ -110,37 +133,6 @@
 		};
 /* End PBXGroup section */
 
-/* Begin PBXHeadersBuildPhase section */
-		1A724727207E442C0099ED5A /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				1ACD310F207E461A00EA8ADF /* snappy.h in Headers */,
-				1ACD3110207E461E00EA8ADF /* snappy-stubs-public.h in Headers */,
-				1ACD3111207E462300EA8ADF /* snappy-c.h in Headers */,
-				1ACD3112207E462A00EA8ADF /* snappy-sinksource.h in Headers */,
-				1ACD3113207E463700EA8ADF /* snappy-stubs-internal.h in Headers */,
-				1ACD3114207E463B00EA8ADF /* snappy-internal.h in Headers */,
-				1ACD3115207E464100EA8ADF /* config.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E2830FC817E0C43A005E72C3 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E2830FEA17E0C6EB005E72C3 /* snappy.h in Headers */,
-				E2830FE817E0C5AC005E72C3 /* snappy-stubs-public.h in Headers */,
-				E2830FE417E0C5AC005E72C3 /* snappy-c.h in Headers */,
-				E2830FE617E0C5AC005E72C3 /* snappy-sinksource.h in Headers */,
-				E2830FE717E0C5AC005E72C3 /* snappy-stubs-internal.h in Headers */,
-				E2830FE517E0C5AC005E72C3 /* snappy-internal.h in Headers */,
-				E2D2440B17E1E9A9004D0C23 /* config.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
-
 /* Begin PBXNativeTarget section */
 		1A724728207E442C0099ED5A /* snappy-static */ = {
 			isa = PBXNativeTarget;
@@ -148,7 +140,7 @@
 			buildPhases = (
 				1A724725207E442C0099ED5A /* Sources */,
 				1A724726207E442C0099ED5A /* Frameworks */,
-				1A724727207E442C0099ED5A /* Headers */,
+				E2BF306E232691AC0098A022 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -156,7 +148,7 @@
 			);
 			name = "snappy-static";
 			productName = "snappy-static";
-			productReference = 1A724729207E442C0099ED5A /* libsnappy.a */;
+			productReference = 1A724729207E442C0099ED5A /* lib.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		E2830FC917E0C43A005E72C3 /* snappy */ = {
@@ -165,7 +157,7 @@
 			buildPhases = (
 				E2830FC617E0C43A005E72C3 /* Sources */,
 				E2830FC717E0C43A005E72C3 /* Frameworks */,
-				E2830FC817E0C43A005E72C3 /* Headers */,
+				E2BF30692326910B0098A022 /* CopyFiles */,
 			);
 			buildRules = (
 			);
