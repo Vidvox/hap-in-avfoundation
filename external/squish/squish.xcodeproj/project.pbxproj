@@ -208,10 +208,11 @@
 			};
 			buildConfigurationList = E25D562017E0E02B008DD459 /* Build configuration list for PBXProject "squish" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = E25D561C17E0E02B008DD459;
 			productRefGroup = E25D562617E0E02B008DD459 /* Products */;

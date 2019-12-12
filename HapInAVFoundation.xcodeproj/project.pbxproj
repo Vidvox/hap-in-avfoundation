@@ -127,7 +127,7 @@
 		1A6D0E71207E4AC6005CCB1A /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E231A39CFFF007678E5 /* AVFoundation.framework */; };
 		1A6D0E72207E4ACF005CCB1A /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
 		1A6D0E73207E4AE3005CCB1A /* libsquish.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CDB207E47CD003FE56B /* libsquish.a */; };
-		1A6D0E74207E4AE6005CCB1A /* libsnappy.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CD8207E47CD003FE56B /* libsnappy.a */; };
+		1A6D0E74207E4AE6005CCB1A /* lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CD8207E47CD003FE56B /* lib.a */; };
 		1A6D0E75207E4AED005CCB1A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606D1A38D8D9008E693F /* OpenGL.framework */; };
 		1A6D0E76207E4AF2005CCB1A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606F1A38D8DE008E693F /* Accelerate.framework */; };
 		1A6D0E77207E4AF9005CCB1A /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A6060741A38D929008E693F /* Carbon.framework */; };
@@ -431,7 +431,7 @@
 				1A6D0E76207E4AF2005CCB1A /* Accelerate.framework in Frameworks */,
 				1A6D0E75207E4AED005CCB1A /* OpenGL.framework in Frameworks */,
 				1A6D0E73207E4AE3005CCB1A /* libsquish.a in Frameworks */,
-				1A6D0E74207E4AE6005CCB1A /* libsnappy.a in Frameworks */,
+				1A6D0E74207E4AE6005CCB1A /* lib.a in Frameworks */,
 				1A6D0E72207E4ACF005CCB1A /* CoreVideo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -694,7 +694,7 @@
 			isa = PBXGroup;
 			children = (
 				1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */,
-				1A4D2CD8207E47CD003FE56B /* libsnappy.a */,
+				1A4D2CD8207E47CD003FE56B /* lib.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -893,7 +893,7 @@
 		1A97F5A21A38ABBF00E0DC74 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1000;
+				LastUpgradeCheck = 1030;
 				ORGANIZATIONNAME = Vidvox;
 				TargetAttributes = {
 					1A3230131A3BA14000DDB2E0 = {
@@ -918,7 +918,7 @@
 			};
 			buildConfigurationList = 1A97F5A51A38ABBF00E0DC74 /* Build configuration list for PBXProject "HapInAVFoundation" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -956,9 +956,10 @@
 			remoteRef = 1A0535F01A38C9C4005B47BD /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1A4D2CD8207E47CD003FE56B /* libsnappy.a */ = {
+		1A4D2CD8207E47CD003FE56B /* lib.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
+			name = lib.a;
 			path = libsnappy.a;
 			remoteRef = 1A4D2CD7207E47CD003FE56B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -1358,8 +1359,8 @@
 				GCC_PREFIX_HEADER = source/HapInAVFoundation_Prefix.pch;
 				HEADER_SEARCH_PATHS = (
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"\"$(TARGET_BUILD_DIR)/usr/local/include\"",
-					"\"$(DSTROOT)/usr/local/include\"",
+					"\"$(BUILT_PRODUCTS_DIR)/include/squish\"",
+					"\"$(BUILT_PRODUCTS_DIR)/include/snappy\"",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = HapInAVFoundation;
@@ -1383,8 +1384,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"\"$(TARGET_BUILD_DIR)/usr/local/include\"",
-					"\"$(DSTROOT)/usr/local/include\"",
+					"\"$(BUILT_PRODUCTS_DIR)/include/squish\"",
+					"\"$(BUILT_PRODUCTS_DIR)/include/snappy\"",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = HapInAVFoundation;
@@ -1561,7 +1562,6 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1590,7 +1590,6 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
