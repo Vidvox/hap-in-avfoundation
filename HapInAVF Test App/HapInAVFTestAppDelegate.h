@@ -4,6 +4,8 @@
 #import <HapInAVFoundation/HapInAVFoundation.h>
 #import "GLView.h"
 #import "HapPixelBufferTexture.h"
+#import "MetalImageView.h"
+#import "MetalHapDisplayer.h"
 
 
 
@@ -26,6 +28,9 @@
 	
 	HapPixelBufferTexture		*hapTexture;	//	this class uploads the DXT data in a decoded instance of HapDecoderFrame into a GL texture.  this is also where the shader that draws YCoCg DXT data as RGB is loaded.  this class was copied from the hap/quicktime sample app
 	AVPlayerItemHapDXTOutput	*hapOutput;	//	works similarly to "nativeAVFOutput"- it's a subclass of AVPlayerItemOutput, you add it to a player item and ask it for new frames (instances of HapDecoderFrame)
+
+    IBOutlet MetalImageView     *metalView;
+    MetalHapDisplayer           *metalHapDisplayer;
 }
 
 - (void) loadFileAtPath:(NSString *)n;
