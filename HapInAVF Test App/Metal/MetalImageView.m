@@ -64,15 +64,23 @@
     if( frameRatio < viewportRatio )
     {
         const int allowedWidthForRatio = frameRatio * viewHeight;
-        const float freeWidthSpace = (viewWidth - allowedWidthForRatio);
-        return (MTLViewport){freeWidthSpace, 0.0, (viewWidth-freeWidthSpace)*2, viewHeight*2, -1.0, 1.0 };
+        const float freeWidthSpace = (viewWidth - allowedWidthForRatio)/2.0;
+        NSScreen		*thisScreen = [[self window] screen];
+        NSRect			tmpRect = NSMakeRect(freeWidthSpace, 0.0, viewWidth-(2.0*freeWidthSpace), viewHeight);
+        tmpRect = [thisScreen convertRectToBacking:tmpRect];
+        MTLViewport		returnMe = { tmpRect.origin.x, tmpRect.origin.y, tmpRect.size.width, tmpRect.size.height, -1.0, 1.0 };
+        return returnMe;
     }
     // if view ratio smaller = taller = black bars on top/bottom = maximum width and centered height
     else if ( viewportRatio < frameRatio )
     {
         const float allowedHeightForRatio = viewWidth / frameRatio;
-        const float freeHeightSpace = (viewHeight - allowedHeightForRatio);
-        return (MTLViewport){0.0, freeHeightSpace, viewWidth*2, (viewHeight-freeHeightSpace)*2, -1.0, 1.0 };
+        const float freeHeightSpace = (viewHeight - allowedHeightForRatio)/2.0;
+        NSScreen		*thisScreen = [[self window] screen];
+        NSRect			tmpRect = NSMakeRect(0.0, freeHeightSpace, viewWidth, viewHeight-(2.0*freeHeightSpace));
+        tmpRect = [thisScreen convertRectToBacking:tmpRect];
+        MTLViewport		returnMe = { tmpRect.origin.x, tmpRect.origin.y, tmpRect.size.width, tmpRect.size.height, -1.0, 1.0 };
+        return returnMe;
     }
     // perfect equality
     else

@@ -303,7 +303,9 @@
                         NSImage				*newImg = [[NSImage alloc] initWithSize:imgSize];
                         [newImg addRepresentation:bitmapRep];
                         //	draw the NSImage in the view
-                        [imgView setImage:newImg];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+							[imgView setImage:newImg];
+                        });
                         
                         [newImg release];
                         newImg = nil;
