@@ -11,7 +11,6 @@
 		1A05185F1A3E17CF00FC80D2 /* HapPixelBufferTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A05185D1A3E17CF00FC80D2 /* HapPixelBufferTexture.m */; };
 		1A0518621A3E17DC00FC80D2 /* HapInAVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */; };
 		1A0518641A3E17F000FC80D2 /* HapInAVFoundation.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1A0518681A3E1DAB00FC80D2 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
 		1A05186B1A3E228700FC80D2 /* ScaledCoCgYToRGBA.frag in Resources */ = {isa = PBXBuildFile; fileRef = 1A0518691A3E228700FC80D2 /* ScaledCoCgYToRGBA.frag */; };
 		1A05186C1A3E228700FC80D2 /* ScaledCoCgYToRGBA.vert in Resources */ = {isa = PBXBuildFile; fileRef = 1A05186A1A3E228700FC80D2 /* ScaledCoCgYToRGBA.vert */; };
 		1A0535FA1A38C9FD005B47BD /* squish-c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A0535F81A38C9FD005B47BD /* squish-c.cpp */; };
@@ -163,6 +162,13 @@
 		1ACF5DEC1A3E4127005DDF19 /* PixelFormats.c in Sources */ = {isa = PBXBuildFile; fileRef = 1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */; };
 		1ACF5DED1A3E41FF005DDF19 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
 		1AE092DC1AFE96F4004E866B /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */; };
+		840B32C72417D9DD007CA678 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 840B32C62417D9DD007CA678 /* Metal.framework */; };
+		840B32CC2417E796007CA678 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 840B32CB2417E796007CA678 /* MetalKit.framework */; };
+		84C83733242A79B000734A42 /* TextureRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C83726242A79B000734A42 /* TextureRenderer.m */; };
+		84C83734242A79B000734A42 /* MetalImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C83728242A79B000734A42 /* MetalImageView.m */; };
+		84C83736242A79B000734A42 /* HapMetalPixelBufferTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C8372B242A79B000734A42 /* HapMetalPixelBufferTexture.m */; };
+		84C83737242A79B000734A42 /* MetalHapDisplayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C8372C242A79B000734A42 /* MetalHapDisplayer.m */; };
+		84C83738242A79B000734A42 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 84C8372D242A79B000734A42 /* Shaders.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -397,6 +403,19 @@
 		1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapEncoderFrame.m; sourceTree = "<group>"; };
 		1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = PixelFormats.c; path = source/PixelFormats.c; sourceTree = SOURCE_ROOT; };
 		1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = ../../../../System/Library/Frameworks/VideoToolbox.framework; sourceTree = "<group>"; };
+		840B32C62417D9DD007CA678 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		840B32CB2417E796007CA678 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		84C83726242A79B000734A42 /* TextureRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextureRenderer.m; sourceTree = "<group>"; };
+		84C83727242A79B000734A42 /* MetalShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalShaderTypes.h; sourceTree = "<group>"; };
+		84C83728242A79B000734A42 /* MetalImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalImageView.m; sourceTree = "<group>"; };
+		84C8372B242A79B000734A42 /* HapMetalPixelBufferTexture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapMetalPixelBufferTexture.m; sourceTree = "<group>"; };
+		84C8372C242A79B000734A42 /* MetalHapDisplayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalHapDisplayer.m; sourceTree = "<group>"; };
+		84C8372D242A79B000734A42 /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		84C8372E242A79B000734A42 /* MetalImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalImageView.h; sourceTree = "<group>"; };
+		84C8372F242A79B000734A42 /* TextureRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureRenderer.h; sourceTree = "<group>"; };
+		84C83731242A79B000734A42 /* MetalHapDisplayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalHapDisplayer.h; sourceTree = "<group>"; };
+		84C83732242A79B000734A42 /* HapMetalPixelBufferTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HapMetalPixelBufferTexture.h; sourceTree = "<group>"; };
+		84F6F9362418F9D600E1C63D /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -404,7 +423,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1A0518681A3E1DAB00FC80D2 /* CoreVideo.framework in Frameworks */,
+				840B32CC2417E796007CA678 /* MetalKit.framework in Frameworks */,
+				840B32C72417D9DD007CA678 /* Metal.framework in Frameworks */,
 				1A0518621A3E17DC00FC80D2 /* HapInAVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -521,6 +541,7 @@
 		1A3230151A3BA14000DDB2E0 /* HapInAVF Test App */ = {
 			isa = PBXGroup;
 			children = (
+				84C83725242A79B000734A42 /* Metal */,
 				1A3230181A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.h */,
 				1A3230191A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.m */,
 				1A05185A1A3E17CF00FC80D2 /* GLView.h */,
@@ -591,6 +612,9 @@
 		1A6060711A38D8F5008E693F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				84F6F9362418F9D600E1C63D /* CoreImage.framework */,
+				840B32CB2417E796007CA678 /* MetalKit.framework */,
+				840B32C62417D9DD007CA678 /* Metal.framework */,
 				1A38F87420E64AFA00F47ACA /* Sparkle.framework */,
 				1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */,
 				1A680E291A39F67E007678E5 /* CoreMedia.framework */,
@@ -716,6 +740,23 @@
 				1AABDE8C207E544000D8F504 /* main.mm */,
 			);
 			path = AVFtoHap;
+			sourceTree = "<group>";
+		};
+		84C83725242A79B000734A42 /* Metal */ = {
+			isa = PBXGroup;
+			children = (
+				84C8372E242A79B000734A42 /* MetalImageView.h */,
+				84C83728242A79B000734A42 /* MetalImageView.m */,
+				84C8372F242A79B000734A42 /* TextureRenderer.h */,
+				84C83726242A79B000734A42 /* TextureRenderer.m */,
+				84C83731242A79B000734A42 /* MetalHapDisplayer.h */,
+				84C8372C242A79B000734A42 /* MetalHapDisplayer.m */,
+				84C83732242A79B000734A42 /* HapMetalPixelBufferTexture.h */,
+				84C8372B242A79B000734A42 /* HapMetalPixelBufferTexture.m */,
+				84C83727242A79B000734A42 /* MetalShaderTypes.h */,
+				84C8372D242A79B000734A42 /* Shaders.metal */,
+			);
+			path = Metal;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1034,9 +1075,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84C83736242A79B000734A42 /* HapMetalPixelBufferTexture.m in Sources */,
 				1A05185F1A3E17CF00FC80D2 /* HapPixelBufferTexture.m in Sources */,
 				1A32301C1A3BA14000DDB2E0 /* main.m in Sources */,
+				84C83734242A79B000734A42 /* MetalImageView.m in Sources */,
+				84C83738242A79B000734A42 /* Shaders.metal in Sources */,
 				1A32301A1A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.m in Sources */,
+				84C83737242A79B000734A42 /* MetalHapDisplayer.m in Sources */,
+				84C83733242A79B000734A42 /* TextureRenderer.m in Sources */,
 				1A05185E1A3E17CF00FC80D2 /* GLView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1221,6 +1267,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "HapInAVF Test App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1254,6 +1301,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "HapInAVF Test App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

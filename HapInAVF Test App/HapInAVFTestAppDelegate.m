@@ -5,6 +5,13 @@
 
 
 @implementation HapInAVFTestAppDelegate
+{
+    /** tabIndex is stored here because it's bad behaviour to fetch
+     * it when not in main thread and we need it in the renderCallback
+     **/
+    NSInteger selectedTabIndex;
+    CVMetalTextureCacheRef metalTextureCache;
+}
 
 
 - (id) init	{
@@ -21,7 +28,8 @@
 		nativeAVFOutput = nil;
 		hapTexture = nil;
 		hapOutput = nil;
-		
+        metalHapDisplayer = [MetalHapDisplayer new];
+
 		CVReturn		err = CVOpenGLTextureCacheCreate(kCFAllocatorDefault,
 			NULL,
 			[texCacheContext CGLContextObj],
@@ -66,6 +74,7 @@
 	
 	//	i want to be the tab view's delegate, so i can respond to tab view changes (and tell the output to enable/disable RGB output)
 	[tabView setDelegate:self];
+    selectedTabIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
 }
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
 	
@@ -158,7 +167,7 @@
 			hapOutput = [[AVPlayerItemHapDXTOutput alloc] init];
 			[hapOutput setSuppressesPlayerRendering:YES];
 			//	if the user's displaying the the NSImage/CPU tab, we want this output to output as RGB
-			if ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]==1)
+			if (selectedTabIndex==1)
 				[hapOutput setOutputAsRGB:YES];
 		}
 		
@@ -195,11 +204,14 @@
 //	this is called when you change the tabs in the tab view
 - (void) tabView:(NSTabView *)tv didSelectTabViewItem:(NSTabViewItem *)item	{
 	NSInteger		selIndex = [tv indexOfTabViewItem:item];
+    selectedTabIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
 	//	if the user's displaying the the NSImage/CPU tab, we want this output to output as RGB
 	if (selIndex==1)
 		[hapOutput setOutputAsRGB:YES];
-	else
+	else if (selIndex==0)
 		[hapOutput setOutputAsRGB:NO];
+    else if (selIndex==2) // METAL
+        [hapOutput setOutputAsRGB:NO];
 }
 //	this is called by the displaylink's C callback- this drives rendering
 - (void) renderCallback	{
@@ -225,82 +237,88 @@
 			
 			NSSize					imgSize = [dxtFrame imgSize];
 			NSSize					dxtImgSize = [dxtFrame dxtImgSize];
-			if (hapTexture!=nil)	{
-				//	pass the decoded frame to the hap texture
-				[hapTexture setDecodedFrame:dxtFrame];
-				//	draw the texture in the GL view
-				NSSize					dxtTexSize;
-				// On NVIDIA hardware there is a massive slowdown if DXT textures aren't POT-dimensioned, so we use POT-dimensioned backing
-				//	NOTE: NEEDS TESTING. this used to be the case- but this API is only available on 10.10+, so this may have been fixed.
-				int						tmpInt;
-				tmpInt = 1;
-				while (tmpInt < dxtImgSize.width)
-					tmpInt = tmpInt<<1;
-				dxtTexSize.width = tmpInt;
-				tmpInt = 1;
-				while (tmpInt < dxtImgSize.height)
-					tmpInt = tmpInt<<1;
-				dxtTexSize.height = tmpInt;
-				
-				if ([hapTexture textureCount]>1)	{
-					[glView
-						drawTexture:[hapTexture textureNames][0]
-						target:GL_TEXTURE_2D
-						alphaTexture:[hapTexture textureNames][1]
-						alphaTarget:GL_TEXTURE_2D
-						imageSize:imgSize
-						textureSize:dxtTexSize
-						flipped:YES
-						usingShader:[hapTexture shaderProgramObject]];
-				}
-				else	{
-					[glView
-						drawTexture:[hapTexture textureNames][0]
-						target:GL_TEXTURE_2D
-						imageSize:imgSize
-						textureSize:dxtTexSize
-						flipped:YES
-						usingShader:[hapTexture shaderProgramObject]];
-				}
-			}
-			
-			//	if the frame has RGB data attached to it, make an NSBitmapImageRep & NSImage from the data, then draw it in the NSImageView
-			void				*rgbData = [dxtFrame rgbData];
-			size_t				rgbDataSize = [dxtFrame rgbDataSize];
-			if (rgbData==nil)	{
-				//NSLog(@"\t\terr: rgb data nil in %s",__func__);
-			}
-			else	{
-				NSBitmapImageRep	*bitmapRep = [[NSBitmapImageRep alloc]
-					initWithBitmapDataPlanes:NULL
-					pixelsWide:(NSUInteger)imgSize.width
-					pixelsHigh:(NSUInteger)imgSize.height
-					bitsPerSample:8
-					samplesPerPixel:4
-					hasAlpha:YES
-					isPlanar:NO
-					colorSpaceName:NSCalibratedRGBColorSpace
-					bitmapFormat:0
-					bytesPerRow:rgbDataSize/(NSUInteger)imgSize.height
-					bitsPerPixel:32];
-				if (bitmapRep==nil)
-					NSLog(@"\t\terr: bitmap rep nil, %s",__func__);
-				else	{
-					memcpy([bitmapRep bitmapData], rgbData, rgbDataSize);
-					NSImage				*newImg = [[NSImage alloc] initWithSize:imgSize];
-					[newImg addRepresentation:bitmapRep];
-					//	draw the NSImage in the view
-					[imgView setImage:newImg];
-					
-					[newImg release];
-					newImg = nil;
-					[bitmapRep release];
-					bitmapRep = nil;
-				}
-			}
+            if (selectedTabIndex==0 || selectedTabIndex==1)     {
+                if (hapTexture!=nil)	{
+                    //	pass the decoded frame to the hap texture
+                    [hapTexture setDecodedFrame:dxtFrame];
+                    //	draw the texture in the GL view
+                    NSSize					dxtTexSize;
+                    // On NVIDIA hardware there is a massive slowdown if DXT textures aren't POT-dimensioned, so we use POT-dimensioned backing
+                    //	NOTE: NEEDS TESTING. this used to be the case- but this API is only available on 10.10+, so this may have been fixed.
+                    int						tmpInt;
+                    tmpInt = 1;
+                    while (tmpInt < dxtImgSize.width)
+                        tmpInt = tmpInt<<1;
+                    dxtTexSize.width = tmpInt;
+                    tmpInt = 1;
+                    while (tmpInt < dxtImgSize.height)
+                        tmpInt = tmpInt<<1;
+                    dxtTexSize.height = tmpInt;
+                    
+                    if ([hapTexture textureCount]>1)	{
+                        [glView
+                            drawTexture:[hapTexture textureNames][0]
+                            target:GL_TEXTURE_2D
+                            alphaTexture:[hapTexture textureNames][1]
+                            alphaTarget:GL_TEXTURE_2D
+                            imageSize:imgSize
+                            textureSize:dxtTexSize
+                            flipped:YES
+                            usingShader:[hapTexture shaderProgramObject]];
+                    }
+                    else	{
+                        [glView
+                            drawTexture:[hapTexture textureNames][0]
+                            target:GL_TEXTURE_2D
+                            imageSize:imgSize
+                            textureSize:dxtTexSize
+                            flipped:YES
+                            usingShader:[hapTexture shaderProgramObject]];
+                    }
+                }
+                
+                //	if the frame has RGB data attached to it, make an NSBitmapImageRep & NSImage from the data, then draw it in the NSImageView
+                void				*rgbData = [dxtFrame rgbData];
+                size_t				rgbDataSize = [dxtFrame rgbDataSize];
+                if (rgbData==nil)	{
+                    //NSLog(@"\t\terr: rgb data nil in %s",__func__);
+                }
+                else	{
+                    NSBitmapImageRep	*bitmapRep = [[NSBitmapImageRep alloc]
+                        initWithBitmapDataPlanes:NULL
+                        pixelsWide:(NSUInteger)imgSize.width
+                        pixelsHigh:(NSUInteger)imgSize.height
+                        bitsPerSample:8
+                        samplesPerPixel:4
+                        hasAlpha:YES
+                        isPlanar:NO
+                        colorSpaceName:NSCalibratedRGBColorSpace
+                        bitmapFormat:0
+                        bytesPerRow:rgbDataSize/(NSUInteger)imgSize.height
+                        bitsPerPixel:32];
+                    if (bitmapRep==nil)
+                        NSLog(@"\t\terr: bitmap rep nil, %s",__func__);
+                    else	{
+                        memcpy([bitmapRep bitmapData], rgbData, rgbDataSize);
+                        NSImage				*newImg = [[NSImage alloc] initWithSize:imgSize];
+                        [newImg addRepresentation:bitmapRep];
+                        //	draw the NSImage in the view
+                        [imgView setImage:newImg];
+                        
+                        [newImg release];
+                        newImg = nil;
+                        [bitmapRep release];
+                        bitmapRep = nil;
+                    }
+                }
+            } else if(selectedTabIndex==2)    {
+                metalView.flip = NO;
+                [metalHapDisplayer displayFrame:dxtFrame inView:metalView];
+            }
 			
 			[dxtFrame release];
 		}
+
 		//	try to get a CV pixel buffer (returns immediately if we're not using the native AVF output side of things)
 		CMTime					frameTime = [nativeAVFOutput itemTimeForMachAbsoluteTime:mach_absolute_time()];
 		if (nativeAVFOutput!=nil && [nativeAVFOutput hasNewPixelBufferForItemTime:frameTime])	{
@@ -310,7 +328,7 @@
 				NSLog(@"\t\tERR: unable to copy pixel buffer from nativeAVFOutput");
 			else	{
 				//	if we want to use opengl to display the buffer...
-				if ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]==0)	{
+				if (selectedTabIndex==0)	{
 					//	make a CV GL texture from the pixel buffer
 					CVOpenGLTextureRef		newTex = NULL;
 					CVReturn				err = CVOpenGLTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
@@ -332,7 +350,7 @@
 						NSLog(@"\t\terr %d at CVOpenGLTextureCacheCreateTextureFromImage()",err);
 				}
 				//	else we want to use NSImage to display the buffer...
-				else	{
+				else if (selectedTabIndex==1)	{
 					size_t				pbBytesPerRow = CVPixelBufferGetBytesPerRow(pb);
 					NSSize				imgSize = NSMakeSize(CVPixelBufferGetWidth(pb), CVPixelBufferGetHeight(pb));
 					NSBitmapImageRep	*bitmapRep = [[NSBitmapImageRep alloc]
@@ -374,6 +392,47 @@
 					}
 					
 				}
+                // Metal
+                else if (selectedTabIndex==2)    {
+                    // Lazy Init
+                    if (metalTextureCache==NULL)
+                    {
+                        CVReturn cvReturn = CVMetalTextureCacheCreate(
+                                                          kCFAllocatorDefault,
+                                                          nil,
+                                                          metalView.device,
+                                                          nil,
+                                                          &metalTextureCache);
+                        if (cvReturn != kCVReturnSuccess)
+                        {
+                             NSLog(@"\t\terr %d at CVMetalTextureCacheCreate(). Abort render.",cvReturn);
+                            return;
+                        }
+                    }
+                    CVMetalTextureRef metalTextureRef;
+                    CGSize textureSize = CVImageBufferGetEncodedSize(pb);
+                    CVReturn cvReturn = CVMetalTextureCacheCreateTextureFromImage(
+                                                                                  kCFAllocatorDefault,
+                                                                                  metalTextureCache,
+                                                                                  pb, nil,
+                                                                                  metalView.colorPixelFormat,
+                                                                                  textureSize.width, textureSize.height,
+                                                                                  0,
+                                                                                  &metalTextureRef);
+                    if (cvReturn == kCVReturnSuccess)
+                    {
+                        // draw the CV Metal texture in the Metal view
+                        id<MTLTexture> unsafeTexture = CVMetalTextureGetTexture(metalTextureRef);
+                        metalView.flip = YES;
+                        [metalView setUnsafeImage:unsafeTexture];
+                        unsafeTexture = nil;
+                        CVBufferRelease(metalTextureRef);
+                    }
+                    else
+                    {
+                        NSLog(@"\t\terr %d at CVMetalTextureCacheCreateTextureFromImage()",cvReturn);
+                    }
+                }
 				
 				CVPixelBufferRelease(pb);
 			}

@@ -15,6 +15,7 @@
             <connections>
                 <outlet property="glView" destination="31I-59-1lg" id="vVW-AH-0vN"/>
                 <outlet property="imgView" destination="0yA-2Z-CCI" id="8hU-jI-25O"/>
+                <outlet property="metalView" destination="6om-VZ-axy" id="l6U-f2-k0s"/>
                 <outlet property="statusField" destination="G7c-WL-ZDS" id="sFI-8j-MNj"/>
                 <outlet property="tabView" destination="onX-rk-MSh" id="vjk-m5-tla"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
@@ -670,7 +671,7 @@
                 </menuItem>
             </items>
         </menu>
-        <window title="HapInAVF Test App" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
+        <window title="HapInAVF Test App" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
             <rect key="contentRect" x="77" y="538" width="400" height="380"/>
@@ -716,6 +717,18 @@
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="pdj-Vy-E1N"/>
                                         </imageView>
+                                    </subviews>
+                                </view>
+                            </tabViewItem>
+                            <tabViewItem label="Metal (GPU)" identifier="" id="CwH-8H-CAg">
+                                <view key="view" id="iAH-a6-HRZ">
+                                    <rect key="frame" x="10" y="33" width="354" height="260"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <customView id="6om-VZ-axy" customClass="MetalImageView">
+                                            <rect key="frame" x="17" y="17" width="320" height="240"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        </customView>
                                     </subviews>
                                 </view>
                             </tabViewItem>
