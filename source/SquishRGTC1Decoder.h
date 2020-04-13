@@ -32,3 +32,9 @@ void HapCodecSquishRGTC1Decode(const void *src,
                                unsigned int dst_bytes_per_row,
                                unsigned int width,
                                unsigned int height);
+
+void HapCodecSquishRGTC1DecodeAsAlphaOnly(const void *src,
+                                          void *dst,
+                                          unsigned int dst_bytes_per_row,
+                                          unsigned int width,
+                                          unsigned int height);

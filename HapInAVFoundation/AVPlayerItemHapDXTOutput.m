@@ -723,6 +723,10 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 						}
 					
 					}
+                    else if (dxtTextureFormats[0] == HapTextureFormat_A_RGTC1)    {
+                        unsigned int        bytesPerRow = (unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height);
+                        HapCodecSquishRGTC1DecodeAsAlphaOnly(dxtDatas[0], rgbData, bytesPerRow, dxtImgSize.width, dxtImgSize.height);
+                    }
 					else	{
 						NSLog(@"\t\terr: unrecognized text formats %X/%x in %s",dxtTextureFormats[0],dxtTextureFormats[1],__func__);
 					}

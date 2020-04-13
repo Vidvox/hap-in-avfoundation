@@ -32,6 +32,38 @@
 #include <string.h>
 #include "squish-c.h"
 
+
+
+typedef void (*WriteBlockFunction)(const uint8_t *copy_src, uint8_t *copy_dst, unsigned int dst_bytes_per_row);
+
+
+void genericHapCodecSquishRGTC1Decode(const void *src,
+                                      void *dst,
+                                      unsigned int dst_bytes_per_row,
+                                      unsigned int width,
+                                      unsigned int height,
+                                      WriteBlockFunction writeBlockFunction)
+{
+    unsigned int y,x;
+    uint8_t *src_block = (uint8_t *)src;
+    
+    // TODO: SSE3 version if needed
+    
+    for (y = 0; y < height; y+= 4)
+    {
+        for (x = 0; x < width; x += 4)
+        {
+            HAP_ALIGN_16 uint8_t block_rgba[16*4];
+            uint8_t *dst_base = ((uint8_t *)dst) + (dst_bytes_per_row * y) + (4 * x);
+            SquishDecompress(block_rgba, src_block, kRgtc1A);
+            writeBlockFunction(block_rgba, dst_base, dst_bytes_per_row);
+            src_block += 8;
+        }
+    }
+}
+
+
+
 static HAP_INLINE void HapCodecDXTWriteAlphaBlockXXXA(const uint8_t *copy_src, uint8_t *copy_dst, unsigned int dst_bytes_per_row)
 {
     int i, j;
@@ -51,20 +83,39 @@ void HapCodecSquishRGTC1Decode(const void *src,
                                unsigned int width,
                                unsigned int height)
 {
-    unsigned int y,x;
-    uint8_t *src_block = (uint8_t *)src;
+    genericHapCodecSquishRGTC1Decode(src, dst, dst_bytes_per_row, width, height, HapCodecDXTWriteAlphaBlockXXXA);
+}
 
-    // TODO: SSE3 version if needed
 
-    for (y = 0; y < height; y+= 4)
-    {
-        for (x = 0; x < width; x += 4)
-        {
-            HAP_ALIGN_16 uint8_t block_rgba[16*4];
-            uint8_t *dst_base = ((uint8_t *)dst) + (dst_bytes_per_row * y) + (4 * x);
-            SquishDecompress(block_rgba, src_block, kRgtc1A);
-            HapCodecDXTWriteAlphaBlockXXXA(block_rgba, dst_base, dst_bytes_per_row);
-            src_block += 8;
+
+
+
+
+
+static HAP_INLINE void HapCodecDXTWriteAlphaBlockXXXAAsAlphaOnly(const uint8_t *copy_src, uint8_t *copy_dst, unsigned int dst_bytes_per_row)
+{
+    int i, j;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            copy_dst[0] = copy_src[3];
+            copy_dst[1] = 0;
+            copy_dst[2] = 0;
+            copy_dst[3] = 255;
+            copy_dst += 4;
+            copy_src += 4;
         }
+        copy_dst += dst_bytes_per_row - 16;
     }
 }
+
+void HapCodecSquishRGTC1DecodeAsAlphaOnly(const void *src,
+                                          void *dst,
+                                          unsigned int dst_bytes_per_row,
+                                          unsigned int width,
+                                          unsigned int height)
+{
+    genericHapCodecSquishRGTC1Decode(src, dst, dst_bytes_per_row, width, height, HapCodecDXTWriteAlphaBlockXXXAAsAlphaOnly);
+}
+
+
+
