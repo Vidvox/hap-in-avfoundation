@@ -46,6 +46,7 @@
 #define kHapFormatRGBADXT5 0xE
 #define kHapFormatYCoCgDXT5 0xF
 #define kHapFormatARGTC1 0x1
+#define kHapFormatRGBABC7 0xC
 
 /*
  Packed byte values for Hap
@@ -212,6 +213,8 @@ static unsigned int hap_texture_format_constant_for_format_identifier(unsigned i
             return HapTextureFormat_YCoCg_DXT5;
         case kHapFormatARGTC1:
             return HapTextureFormat_A_RGTC1;
+		case kHapFormatRGBABC7:
+			return HapTextureFormat_RGBA_BC7;
         default:
             return 0;
             
@@ -231,6 +234,8 @@ static unsigned int hap_texture_format_identifier_for_format_constant(unsigned i
             return kHapFormatYCoCgDXT5;
         case HapTextureFormat_A_RGTC1:
             return kHapFormatARGTC1;
+		case HapTextureFormat_RGBA_BC7:
+			return kHapFormatRGBABC7;
         default:
             return 0;
     }

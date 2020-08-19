@@ -20,6 +20,7 @@
 			case 'HapY':
 			case 'HapM':
 			case 'HapA':
+			case 'Hap7':
 				hapTrack = trackPtr;
 				break;
 			default:
