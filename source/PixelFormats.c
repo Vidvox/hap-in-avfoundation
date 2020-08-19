@@ -170,7 +170,7 @@ void HapCodecRegisterPixelFormats(void)
         HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_YCoCg_DXT5, 8, 0x83F3, false);
         HapCodecRegisterYCoCgPixelFormat();
         HapCodecRegisterYCoCgDXTARGTC1PixelFormat();
-		HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGBA_BC7, 8, 0x8E8C, true);
+        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGBA_BC7, 8, 0x8E8C, true);
         registered = true;
     }
 }

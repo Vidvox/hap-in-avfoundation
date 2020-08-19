@@ -42,7 +42,7 @@ enum HapTextureFormat {
     HapTextureFormat_RGBA_DXT5 = 0x83F3,
     HapTextureFormat_YCoCg_DXT5 = 0x01,
     HapTextureFormat_A_RGTC1 = 0x8DBB,
-	HapTextureFormat_RGBA_BC7 = 0x8E8C,
+    HapTextureFormat_RGBA_BC7 = 0x8E8C,
 };
 
 enum HapCompressor {
