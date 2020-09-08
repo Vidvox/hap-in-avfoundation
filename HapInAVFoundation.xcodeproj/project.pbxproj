@@ -1410,7 +1410,6 @@
 					"\"$(BUILT_PRODUCTS_DIR)/include/squish\"",
 					"\"$(BUILT_PRODUCTS_DIR)/include/snappy\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = HapInAVFoundation;
 				SKIP_INSTALL = YES;
 			};
@@ -1435,7 +1434,6 @@
 					"\"$(BUILT_PRODUCTS_DIR)/include/squish\"",
 					"\"$(BUILT_PRODUCTS_DIR)/include/snappy\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = HapInAVFoundation;
 				SKIP_INSTALL = YES;
 			};
@@ -1485,7 +1483,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -1527,7 +1524,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -1552,7 +1548,6 @@
 				INFOPLIST_FILE = HapInAVFoundation/Info.plist;
 				INSTALL_PATH = "@rpath";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @loader_path/Frameworks";
-				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1579,7 +1574,6 @@
 				INFOPLIST_FILE = HapInAVFoundation/Info.plist;
 				INSTALL_PATH = "@rpath";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @loader_path/Frameworks";
-				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
