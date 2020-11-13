@@ -143,11 +143,15 @@ static int HapCodecSquishEncoderEncode(HapCodecDXTEncoderRef encoder,
                 if (src_pixel_format == 'BGRA')
                 {
                     
+#if defined(__i386__) || defined(__x86_64__)
 #if defined(HAP_SSSE3_ALWAYS_AVAILABLE)
                     HapCodecDXTReadBlockBGRASSSE3(copy_src, copy_dst, src_bytes_per_row);
 #else
                     if (hasSSSE3) HapCodecDXTReadBlockBGRASSSE3(copy_src, copy_dst, src_bytes_per_row);
                     else HapCodecDXTReadBlockBGRAScalar(copy_src, copy_dst, src_bytes_per_row);
+#endif
+#else
+                    HapCodecDXTReadBlockBGRAScalar(copy_src, copy_dst, src_bytes_per_row);
 #endif
                     
                 }
