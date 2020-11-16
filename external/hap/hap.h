@@ -33,8 +33,8 @@ extern "C" {
 #endif
 
 /*
- These match the constants defined by GL_EXT_texture_compression_s3tc and
- GL_ARB_texture_compression_rgtc
+ These match the constants defined by GL_EXT_texture_compression_s3tc,
+ GL_ARB_texture_compression_rgtc and GL_ARB_texture_compression_bptc
  */
 
 enum HapTextureFormat {
@@ -42,7 +42,7 @@ enum HapTextureFormat {
     HapTextureFormat_RGBA_DXT5 = 0x83F3,
     HapTextureFormat_YCoCg_DXT5 = 0x01,
     HapTextureFormat_A_RGTC1 = 0x8DBB,
-    HapTextureFormat_RGBA_BC7 = 0x8E8C,
+    HapTextureFormat_RGBA_BPTC_UNORM = 0x8E8C
 };
 
 enum HapCompressor {
@@ -143,6 +143,11 @@ unsigned int HapGetFrameTextureCount(const void *inputBuffer, unsigned long inpu
  On return sets outputBufferTextureFormat to a HapTextureFormat constant describing the format of the texture at index in the frame.
  */
 unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int index, unsigned int *outputBufferTextureFormat);
+
+/*
+ On return sets chunk_count to the chunk count value of the texture at index in the frame.
+*/
+unsigned int HapGetFrameTextureChunkCount(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int index, int *chunk_count);
 
 #ifdef __cplusplus
 }
