@@ -89,9 +89,11 @@ static int HapCodecSquishEncoderEncode(HapCodecDXTEncoderRef encoder,
 	uint8_t* dst_block = (uint8_t *)dst;
 	int bytes_per_block = ( ( ((struct HapCodecSquishEncoder *)encoder)->flags & ( kDxt1 | kRgtc1A ) ) != 0 ) ? 8 : 16;
     unsigned int y, x, py, px;
-    
+
+#if defined(__i386__) || defined(__x86_64__)
 #if !defined(HAP_SSSE3_ALWAYS_AVAILABLE)
     int hasSSSE3 = HapCodecHasSSSE3();
+#endif
 #endif
     
     if (src_pixel_format != 'RGBA' && src_pixel_format != 'BGRA') return 1;
