@@ -161,7 +161,7 @@
 		1AC0CA1A1A437C2A00A9BC2C /* HapEncoderFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */; };
 		1ACF5DEC1A3E4127005DDF19 /* PixelFormats.c in Sources */ = {isa = PBXBuildFile; fileRef = 1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */; };
 		1ACF5DED1A3E41FF005DDF19 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
-		1AE092DC1AFE96F4004E866B /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */; };
+		1AEACEA325D5B9520063A3FB /* HapMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AEACEA225D5B9520063A3FB /* HapMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		840B32C72417D9DD007CA678 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 840B32C62417D9DD007CA678 /* Metal.framework */; };
 		840B32CC2417E796007CA678 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 840B32CB2417E796007CA678 /* MetalKit.framework */; };
 		84C83733242A79B000734A42 /* TextureRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C83726242A79B000734A42 /* TextureRenderer.m */; };
@@ -333,6 +333,7 @@
 		1A32301B1A3BA14000DDB2E0 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		1A32301D1A3BA14000DDB2E0 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1A3230201A3BA14000DDB2E0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		1A36D59C25D35682000AEA3D /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		1A38F87420E64AFA00F47ACA /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = external/Sparkle.framework; sourceTree = "<group>"; };
 		1A3BABFD1A65239C0065403A /* AVF Batch Converter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AVF Batch Converter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A3BAC001A65239D0065403A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -403,6 +404,7 @@
 		1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapEncoderFrame.m; sourceTree = "<group>"; };
 		1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = PixelFormats.c; path = source/PixelFormats.c; sourceTree = SOURCE_ROOT; };
 		1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = ../../../../System/Library/Frameworks/VideoToolbox.framework; sourceTree = "<group>"; };
+		1AEACEA225D5B9520063A3FB /* HapMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HapMacros.h; sourceTree = "<group>"; };
 		840B32C62417D9DD007CA678 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		840B32CB2417E796007CA678 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		84C83726242A79B000734A42 /* TextureRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextureRenderer.m; sourceTree = "<group>"; };
@@ -433,7 +435,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1AE092DC1AFE96F4004E866B /* VideoToolbox.framework in Frameworks */,
 				1A642D1C1A652CE900E2152D /* HapInAVFoundation.framework in Frameworks */,
 				1A38F87520E64AFA00F47ACA /* Sparkle.framework in Frameworks */,
 				1A642D181A65245900E2152D /* AVFoundation.framework in Frameworks */,
@@ -612,6 +613,7 @@
 		1A6060711A38D8F5008E693F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1A36D59C25D35682000AEA3D /* VideoToolbox.framework */,
 				84F6F9362418F9D600E1C63D /* CoreImage.framework */,
 				840B32CB2417E796007CA678 /* MetalKit.framework */,
 				840B32C62417D9DD007CA678 /* Metal.framework */,
@@ -681,6 +683,7 @@
 			isa = PBXGroup;
 			children = (
 				1A97F5B01A38ABBF00E0DC74 /* HapInAVFoundation.h */,
+				1AEACEA225D5B9520063A3FB /* HapMacros.h */,
 				1A64BAE61A445CC3005691E0 /* Decode (playback) */,
 				1A64BAE71A445CED005691E0 /* Encode (recording) */,
 				1AB1C97F1A38CAFA00688AB4 /* HapCodecSubTypes.h */,
@@ -808,10 +811,11 @@
 				1AB1C9911A38CAFA00688AB4 /* HapCodecSubTypes.h in Headers */,
 				1A60606C1A38D812008E693F /* PixelFormats.h in Headers */,
 				1AB1C9971A38CAFA00688AB4 /* HapPlatform.h in Headers */,
-				1A628E781A422EAD003736AC /* CMBlockBufferPool.h in Headers */,
 				1A401D6C1A41FF79003B6E0A /* AVAssetWriterHapInput.h in Headers */,
 				1AC0CA191A437C2A00A9BC2C /* HapEncoderFrame.h in Headers */,
 				1A97F5D31A38AC9800E0DC74 /* hap.h in Headers */,
+				1A628E781A422EAD003736AC /* CMBlockBufferPool.h in Headers */,
+				1AEACEA325D5B9520063A3FB /* HapMacros.h in Headers */,
 				1A0535FB1A38C9FD005B47BD /* squish-c.h in Headers */,
 				1A6060731A38D91A008E693F /* HapInAVFoundation_Prefix.pch in Headers */,
 				1AB1C9A01A38CAFA00688AB4 /* Utility.h in Headers */,
@@ -1267,7 +1271,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "HapInAVF Test App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1301,7 +1304,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "HapInAVF Test App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1483,7 +1485,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -1525,7 +1527,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;

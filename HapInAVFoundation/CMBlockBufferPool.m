@@ -5,7 +5,7 @@
 
 CMMemoryPoolRef		_HIAVFMemPool = NULL;
 CFAllocatorRef		_HIAVFMemPoolAllocator = NULL;
-os_unfair_lock	_HIAVFMemPoolLock = OS_UNFAIR_LOCK_INIT;
+HapLock	_HIAVFMemPoolLock = HAP_LOCK_INIT;
 
 
 

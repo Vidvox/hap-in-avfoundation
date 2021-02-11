@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "HapDecoderFrame.h"
 #import <AVFoundation/AVFoundation.h>
-#import "CMBlockBufferPool.h"
 
 
 
@@ -18,24 +17,24 @@ typedef void (^AVFHapDXTPostDecodeBlock)(HapDecoderFrame *decodedFrame);
 /**
 This class is the main interface for decoding hap video from AVFoundation.  You create an instance of this class and add it to an AVPlayerItem as you would with any other AVPlayerItemOutput subclass.  You retrieve frame data from this output by calling one of the allocFrame\* methods, depending on what you want to decode and whether your want it to be decoded asynchronously or not.  While it was written to be used in the AVPlayer* ecosystem, instances of this class can also be created outside AVPlayers and used to decode arbitrary frames of video (for more info, see initWithHapAssetTrack:).		*/
 @interface AVPlayerItemHapDXTOutput : AVPlayerItemOutput	{
-	os_unfair_lock			propertyLock;	//	used to lock access to everything but the pools
+	HapLock				propertyLock;	//	used to lock access to everything but the pools
 	
-	dispatch_queue_t			decodeQueue;	//	decoding is performed on this queue (if you use them, the allocFrameBlock and postDecodeBlock are also executed on this queue)
-	AVAssetTrack				*track;	//	RETAINED
-	id							gen;	//	RETAINED.  actually a 'AVSampleBufferGenerator', but listed as an id here so the fmwk can be compiled against 10.6
-	CMTime						lastGeneratedSampleTime;	//	used to prevent requesting the same buffer twice from the sample generator
+	dispatch_queue_t	decodeQueue;	//	decoding is performed on this queue (if you use them, the allocFrameBlock and postDecodeBlock are also executed on this queue)
+	AVAssetTrack		*track;	//	RETAINED
+	id					gen;	//	RETAINED.  actually a 'AVSampleBufferGenerator', but listed as an id here so the fmwk can be compiled against 10.6
+	CMTime				lastGeneratedSampleTime;	//	used to prevent requesting the same buffer twice from the sample generator
 	
-	NSMutableArray				*decodeTimes;	//	contains CMTime/NSValues of frame times that need to be decoded
-	NSMutableArray				*decodeFrames;	//	contains HapDecoderFrame instances that are populated with all necessary fields and are ready to begin decoding
-	NSMutableArray				*decodingFrames;	//	contains HapDecoderFrame instances that are in the process of being decoded
-	NSMutableArray				*decodedFrames;	//	contains HapDecoderFrame instances that have been decoded, and are ready for retrieval
-	NSMutableArray				*playedOutFrames;	//	contains HapDecoderFrame instances that have been decoded and retrieved at least once
+	NSMutableArray		*decodeTimes;	//	contains CMTime/NSValues of frame times that need to be decoded
+	NSMutableArray		*decodeFrames;	//	contains HapDecoderFrame instances that are populated with all necessary fields and are ready to begin decoding
+	NSMutableArray		*decodingFrames;	//	contains HapDecoderFrame instances that are in the process of being decoded
+	NSMutableArray		*decodedFrames;	//	contains HapDecoderFrame instances that have been decoded, and are ready for retrieval
+	NSMutableArray		*playedOutFrames;	//	contains HapDecoderFrame instances that have been decoded and retrieved at least once
 	
-	BOOL						outputAsRGB;	//	NO by default.  if YES, outputs frames as RGB data
-	OSType						destRGBPixelFormat;	//	if 'outputAsRGB' is YES, this is the pixel format that will be output.  kCVPixelFormatType_32BGRA or kCVPixelFormatType_32RGBA.
-	NSUInteger					dxtPoolLengths[2];
-	NSUInteger					convPoolLength;
-	NSUInteger					rgbPoolLength;
+	BOOL				outputAsRGB;	//	NO by default.  if YES, outputs frames as RGB data
+	OSType				destRGBPixelFormat;	//	if 'outputAsRGB' is YES, this is the pixel format that will be output.  kCVPixelFormatType_32BGRA or kCVPixelFormatType_32RGBA.
+	NSUInteger			dxtPoolLengths[2];
+	NSUInteger			convPoolLength;
+	NSUInteger			rgbPoolLength;
 	
 	HapDecoderFrameAllocBlock		allocFrameBlock;	//	retained, nil by default.  this block is optional, but it must be threadsafe- it will be called (on a thread spawned by GCD) to create HapDecoderFrame instances.  if you want to provide your own memory into which the hap frames will be decoded into DXT, this is a good place to do it.
 	AVFHapDXTPostDecodeBlock		postDecodeBlock;	//	retained, nil by default.  this block is optional, but it must be threadsafe- it's executed on GCD-spawned threads immediately after decompression if decompression was successful.  if you want to upload your DXT data to a GL texture, this is a good place to do it.
