@@ -7,11 +7,11 @@
 
 
 - (NSString *) description	{
-	return [NSString stringWithFormat:@"<HapEncoderFrame %@, %d>",[(id)CMTimeCopyDescription(NULL,timing.presentationTimeStamp) autorelease], encoded];
+	return [NSString stringWithFormat:@"<HapEncoderFrame %@, %d>",CMTimeCopyDescription(NULL,timing.presentationTimeStamp), encoded];
 }
 + (id) createWithPresentationTime:(CMTime)t	{
 	id		returnMe = [[HapEncoderFrame alloc] initWithPresentationTime:t];
-	return (returnMe==nil) ? nil : [returnMe autorelease];
+	return (returnMe==nil) ? nil : returnMe;
 }
 - (id) initWithPresentationTime:(CMTime)t	{
 	self = [super init];
@@ -34,7 +34,6 @@
 		CFRelease(format);
 		format = NULL;
 	}
-	[super dealloc];
 }
 - (BOOL) addEncodedBlockBuffer:(CMBlockBufferRef)b withLength:(size_t)s formatDescription:(CMFormatDescriptionRef)f	{
 	if (f==NULL)
@@ -63,7 +62,7 @@
 }
 - (CMSampleBufferRef) allocCMSampleBufferWithDurationTimeValue:(CMTimeValue)n	{
 	if (format==NULL)	{
-		NSLog(@"\t\terr: returning a null sbuf, format nil in %s.  ptime was %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault,timing.presentationTimeStamp) autorelease]);
+		NSLog(@"\t\terr: returning a null sbuf, format nil in %s.  ptime was %@",__func__,CMTimeCopyDescription(kCFAllocatorDefault,timing.presentationTimeStamp));
 		if (block==NULL)
 			NSLog(@"\t\terr: the block was also nil, encoded was %d",[self encoded]);
 		return NULL;

@@ -15,7 +15,6 @@
 		hapDXTOutput = nil;
 		lastCopiedBufferTime = kCMTimeInvalid;
 		if (![trackPtr isHapTrack])	{
-			[self release];
 			return nil;
 		}
 		
@@ -29,11 +28,9 @@
 	//NSLog(@"%s ... %p",__func__,self);
 	HapLockLock(&hapLock);
 	if (hapDXTOutput!=nil)	{
-		[hapDXTOutput release];
 		hapDXTOutput = nil;
 	}
 	HapLockUnlock(&hapLock);
-	[super dealloc];
 }
 - (CMSampleBufferRef) copyNextSampleBuffer	{
 	//NSLog(@"%s",__func__);
@@ -52,7 +49,7 @@
 		}
 		//	else if i already tried to read this sample time
 		else if (CMTIME_COMPARE_INLINE(bufferTime,==,lastCopiedBufferTime))	{
-			NSLog(@"\t\terr: already copied buffer for time %@ in %s, returning nil",[(id)CMTimeCopyDescription(kCFAllocatorDefault,bufferTime) autorelease],__func__);
+			NSLog(@"\t\terr: already copied buffer for time %@ in %s, returning nil",CMTimeCopyDescription(kCFAllocatorDefault,bufferTime),__func__);
 		}
 		//	else there's a valid time on the sample buffer- i should decode a frame for this time, and return a sample buffer with the decoded RGB data!
 		else	{
@@ -70,7 +67,6 @@
 					//NSLog(@"\t\tshould be successful! %s",__func__);
 				}
 				
-				[hapFrame release];
 				hapFrame = nil;
 			}
 		}

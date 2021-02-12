@@ -96,4 +96,4 @@ If outputAsRGB is YES, this is the RGB pixel format that the data should be deco
 
 
 //	we need to register the DXT pixel formats with CoreVideo- until we do this, they won't be recognized and we won't be able to work with them.  this BOOL is used to ensure that we only register them once.
-extern BOOL				_AVFinHapCVInit;
+extern dispatch_once_t	_AVFinHapCVInit;

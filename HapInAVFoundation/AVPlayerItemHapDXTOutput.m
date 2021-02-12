@@ -12,7 +12,9 @@
 
 
 
-BOOL				_AVFinHapCVInit = NO;
+#define TIMEDESC(n) CMTimeCopyDescription(kCFAllocatorDefault,n)
+
+dispatch_once_t		_AVFinHapCVInit;
 /*			Callback for multithreaded Hap decoding			*/
 void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, void *info HAP_ATTR_UNUSED)	{
 	dispatch_apply(count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t index) {
@@ -34,13 +36,10 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 @implementation AVPlayerItemHapDXTOutput
 
 
-+ (void) initialize	{
-	@synchronized (self)	{
-		if (!_AVFinHapCVInit)	{
-			HapCodecRegisterPixelFormats();
-			_AVFinHapCVInit = YES;
-		}
-	}
++ (void) initialize {
+	dispatch_once(&_AVFinHapCVInit, ^{
+		HapCodecRegisterPixelFormats();
+	});
 	//	make sure the CMMemoryPool used by this framework exists
 	LOCK(&_HIAVFMemPoolLock);
 	if (_HIAVFMemPool==NULL)
@@ -52,18 +51,15 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 - (id) initWithHapAssetTrack:(AVAssetTrack *)n	{
 	self = [self init];
 	if (self!=nil)	{
-		if (n!=nil)	{
+		if (n!=nil) {
 			LOCK(&propertyLock);
 			
-			if (decodeQueue!=nil)
-				dispatch_release(decodeQueue);
+			decodeQueue = nil;
+			
 			//decodeQueue = dispatch_queue_create("HapDecode", DISPATCH_QUEUE_CONCURRENT);
 			decodeQueue = dispatch_queue_create("HapDecode", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, DISPATCH_QUEUE_PRIORITY_HIGH, -1));
-			if (track != nil)
-				[track release];
-			track = [n retain];
-			if (gen != nil)
-				[gen release];
+			track = n;
+			gen = nil;
 			//	can't make a sample buffer generator 'cause i don't have a timebase- AVPlayerItem seems to be the only thing that uses this?
 			gen = [[AVSampleBufferGenerator alloc] initWithAsset:[n asset] timebase:NULL];
 			//gen = [[AVSampleBufferGenerator alloc] init];
@@ -84,7 +80,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	}
 	return self;
 }
-- (id) init	{
+- (id) init {
 	self = [super init];
 	if (self!=nil)	{
 		propertyLock = HAP_LOCK_INIT;
@@ -92,11 +88,11 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		track = nil;
 		gen = nil;
 		lastGeneratedSampleTime = kCMTimeInvalid;
-		decodeTimes = [[NSMutableArray arrayWithCapacity:0] retain];
-		decodeFrames = [[NSMutableArray arrayWithCapacity:0] retain];
-		decodingFrames = [[NSMutableArray arrayWithCapacity:0] retain];
-		decodedFrames = [[NSMutableArray arrayWithCapacity:0] retain];
-		playedOutFrames = [[NSMutableArray arrayWithCapacity:0] retain];
+		decodeTimes = [NSMutableArray arrayWithCapacity:0];
+		decodeFrames = [NSMutableArray arrayWithCapacity:0];
+		decodingFrames = [NSMutableArray arrayWithCapacity:0];
+		decodedFrames = [NSMutableArray arrayWithCapacity:0];
+		playedOutFrames = [NSMutableArray arrayWithCapacity:0];
 		outputAsRGB = NO;
 		destRGBPixelFormat = kCVPixelFormatType_32RGBA;
 		dxtPoolLengths[0] = 0;
@@ -111,55 +107,26 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 }
 - (void) dealloc	{
 	LOCK(&propertyLock);
-	if (decodeQueue!=NULL)	{
-		dispatch_release(decodeQueue);
-		decodeQueue=NULL;
-	}
-	if (gen != nil)	{
-		[gen release];
-		gen = nil;
-	}
-	if (track != nil)	{
-		[track release];
-		track = nil;
-	}
-	if (decodeTimes != nil)	{
-		[decodeTimes release];
-		decodeTimes = nil;
-	}
-	if (decodeFrames != nil)	{
-		[decodeFrames release];
-		decodeFrames = nil;
-	}
-	if (decodingFrames != nil)	{
-		[decodingFrames release];
-		decodingFrames = nil;
-	}
-	if (decodedFrames != nil)	{
-		[decodedFrames release];
-		decodedFrames = nil;
-	}
-	if (playedOutFrames != nil)	{
-		[playedOutFrames release];
-		playedOutFrames = nil;
-	}
-	if (allocFrameBlock != nil)	{
-		Block_release(allocFrameBlock);
-		allocFrameBlock = nil;
-	}
-	if (postDecodeBlock!=nil)	{
-		Block_release(postDecodeBlock);
-		postDecodeBlock = nil;
-	}
+	
+	decodeQueue=nil;
+	gen = nil;
+	track = nil;
+	decodeTimes = nil;
+	decodeFrames = nil;
+	decodingFrames = nil;
+	decodedFrames = nil;
+	playedOutFrames = nil;
+	allocFrameBlock = nil;
+	postDecodeBlock = nil;
+	
 	UNLOCK(&propertyLock);
-	[super dealloc];
 }
 
 #pragma mark -
 
 //	you must lock before calling this method- checks all cached frames looking for a frame with the passed time
-- (BOOL) _containsPendingFrameForTime:(CMTime)n	{
-	for (HapDecoderFrame *framePtr in decodeFrames)	{
+- (BOOL) _containsPendingFrameForTime:(CMTime)n {
+	for (HapDecoderFrame *framePtr in decodeFrames) {
 		if ([framePtr containsTime:n])	{
 			return YES;
 		}
@@ -186,7 +153,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 }
 //	you should only call this method from the 'decodeQueue'!  doesn't decode anything- just creates a HapDecoderFrame instance with all the appropriate fields/blocks of memory, and places it in 'decodeFrames'
 - (void) _prepareDecodeFrameForTime:(CMTime)n	{
-	//NSLog(@"%s ... %f",__func__,CMTimeGetSeconds(n));
+	//NSLog(@"%s ... %@",__func__,TIMEDESC(n));
 	LOCK(&propertyLock);
 	//	check to see if we already have a decode frame pending or available for that time
 	if ([self _containsPendingFrameForTime:n] || [self _containsAvailableFrameForTime:n])	{
@@ -196,14 +163,14 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	//	else we don't have a frame for the corresponding time- set one up by pulling a sample from the track
 	else	{
 		//	get a CMSampleBufferRef for the passed time, use the buffer to set up a decode
-		if (track!=nil)	{
+		if (track!=nil) {
 			AVSampleCursor			*cursor = [track makeSampleCursorWithPresentationTimeStamp:n];
 			//	generate a sample buffer for the requested time.  this sample buffer contains a hap frame (compressed).
 			AVSampleBufferRequest	*request = [[AVSampleBufferRequest alloc] initWithStartCursor:cursor];
 			[request setMode:AVSampleBufferRequestModeImmediate];
 			CMSampleBufferRef		newSample = (gen==nil) ? nil : [gen createSampleBufferForRequest:request];
 			UNLOCK(&propertyLock);
-		
+	
 			if (newSample==NULL)	{
 				NSLog(@"\t\terr: sample null, %s",__func__);
 			}
@@ -212,11 +179,8 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 				CFRelease(newSample);
 				newSample = NULL;
 			}
-		
-			if (request != nil)	{
-				[request release];
-				request = nil;
-			}
+	
+			request = nil;
 		}
 		else	{
 			NSLog(@"\t\terr: track nil in %s",__func__);
@@ -226,13 +190,13 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 }
 //	you should only call this method from the 'decodeQueue'!  doesn't decode anything- just creates a HapDecoderFrame instance with all the appropriate fields/blocks of memory, and places it in 'decodeFrames'
 - (void) _prepareDecodeFrameForCMSampleBuffer:(CMSampleBufferRef)n	{
-	//NSLog(@"%s ... %f",__func__,CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(n)));
+	//NSLog(@"%s ... %@",__func__,TIMEDESC(CMSampleBufferGetPresentationTimeStamp(n)));
 	//NSLog(@"%s ... %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault, CMSampleBufferGetPresentationTimeStamp(n)) autorelease]);
 	OSStatus				cmErr = noErr;
-	if (CMSampleBufferHasDataFailed(n, &cmErr))	{
+	if (CMSampleBufferHasDataFailed(n, &cmErr)) {
 		NSLog(@"\t\terr: CMSampleBufferHasDataFailed in %s returns %d",__func__,cmErr);
 	}
-	else if (!CMSampleBufferIsValid(n))	{
+	else if (!CMSampleBufferIsValid(n)) {
 		NSLog(@"\t\terr: CMSampleBufferIsValid failed in %s",__func__);
 	}
 	
@@ -264,12 +228,12 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		//	make a new contiguous block buffer
 		CMBlockBufferRef		contigBlockBuffer = NULL;
 		cmErr = CMBlockBufferCreateContiguous(
-			_HIAVFMemPoolAllocator,	//	structure allocator
+			_HIAVFMemPoolAllocator, //	structure allocator
 			origBlockBuffer,	//	source buffer
-			_HIAVFMemPoolAllocator,	//	block allocator
+			_HIAVFMemPoolAllocator, //	block allocator
 			NULL,	//	custom block source
 			0,	//	offset to data
-			0, 	//	data length
+			0,	//	data length
 			kCMBlockBufferAssureMemoryNowFlag | kCMBlockBufferAlwaysCopyDataFlag,	//	flags
 			&contigBlockBuffer);
 		if (cmErr!=noErr || contigBlockBuffer==NULL)	{
@@ -296,10 +260,10 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			
 			//	make a new sample buffer
 			cmErr = CMSampleBufferCreateReady(
-				_HIAVFMemPoolAllocator,	//	allocator
+				_HIAVFMemPoolAllocator, //	allocator
 				contigBlockBuffer,	//	data buffer- must not be NULL
 				CMSampleBufferGetFormatDescription(n),	//	format description
-				CMSampleBufferGetNumSamples(n),	//	number of samples
+				CMSampleBufferGetNumSamples(n), //	number of samples
 				timingInfoCount,	//	number of sample timing entries
 				timingInfoArray,	//	array of CMSampleTimingInfo structs
 				sampleSizeCount,	//	number of sample sizes
@@ -331,7 +295,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	}
 	
 	
-	if (contigSampleBuffer == NULL)	{
+	if (contigSampleBuffer == NULL) {
 		NSLog(@"\t\terr: couldn't create a contiguous sample buffer in %s for %@",__func__,n);
 		return;
 	}
@@ -341,7 +305,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	HapDecoderFrameAllocBlock		localAllocFrameBlock = nil;
 	
 	LOCK(&propertyLock);
-	localAllocFrameBlock = (allocFrameBlock==nil) ? nil : [allocFrameBlock retain];
+	localAllocFrameBlock = (allocFrameBlock==nil) ? nil : allocFrameBlock;
 	BOOL				localOutputAsRGB = outputAsRGB;
 	OSType				localDestRGBPixelFormat = destRGBPixelFormat;
 	UNLOCK(&propertyLock);
@@ -358,14 +322,14 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		if (rgbPoolLength!=rgbMinDataSize)
 			rgbPoolLength = rgbMinDataSize;
 	}
-	//	allocate a decoder frame- this data structure holds all the values needed to decode the hap frame into a blob of memory (actually a DXT frame).  if there's a custom frame allocator block, use that- otherwise, just make a CFData and decode into that.
+	//	allocate a decoder frame- this data structure holds all the values needed to decode the hap frame into a blob of memory (actually a DXT frame).	 if there's a custom frame allocator block, use that- otherwise, just make a CFData and decode into that.
 	HapDecoderFrame			*newDecoderFrame = nil;
 	if (localAllocFrameBlock!=nil)	{
 		newDecoderFrame = localAllocFrameBlock(contigSampleBuffer);
 	}
 	if (newDecoderFrame==nil)	{
 		//	make an empty frame (i can just retain & use the sample frame i made earlier to size the pools)
-		newDecoderFrame = (sampleDecoderFrame==nil) ? nil : [sampleDecoderFrame retain];
+		newDecoderFrame = (sampleDecoderFrame==nil) ? nil : sampleDecoderFrame;
 		
 		//	allocate mem objects for dxt and rgb data
 		void			**dxtMem = [newDecoderFrame dxtDatas];
@@ -393,19 +357,19 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			CFDataRef		rgbDataRef = (rgbPoolLength<1 || rgbMem==NULL)
 				?	NULL
 				:	CFDataCreateWithBytesNoCopy(NULL, rgbMem, rgbPoolLength, _HIAVFMemPoolAllocator);
-			[newDecoderFrame setUserInfo:[NSArray arrayWithObjects:(NSData *)dxtDataRef, (dxtAlphaDataRef==NULL)?(id)[NSNull null]:(NSData *)dxtAlphaDataRef, (rgbDataRef==NULL)?[NSNull null]:(NSData *)rgbDataRef, nil]];
-			if (dxtDataRef != NULL)	{
+			[newDecoderFrame setUserInfo:[NSArray arrayWithObjects:(__bridge NSData *)dxtDataRef, (dxtAlphaDataRef==NULL) ? (id)[NSNull null]:(__bridge NSData *)dxtAlphaDataRef, (rgbDataRef==NULL)?[NSNull null]:(__bridge NSData *)rgbDataRef, nil]];
+			if (dxtDataRef != NULL) {
 				CFRelease(dxtDataRef);
 				dxtDataRef = NULL;
 			}
-			if (rgbDataRef != NULL)	{
+			if (rgbDataRef != NULL) {
 				CFRelease(rgbDataRef);
 				rgbDataRef = NULL;
 			}
 		}
 		else	{
 			CFDataRef		dxtDataRef = CFDataCreateWithBytesNoCopy(NULL, dxtMem[0], dxtPoolLengths[0], _HIAVFMemPoolAllocator);
-			[newDecoderFrame setUserInfo:[NSArray arrayWithObjects:(NSData *)dxtDataRef, (NSData *)dxtAlphaDataRef, nil]];
+			[newDecoderFrame setUserInfo:[NSArray arrayWithObjects:(__bridge NSData *)dxtDataRef, (__bridge NSData *)dxtAlphaDataRef, nil]];
 			CFRelease(dxtDataRef);
 		}
 		if (dxtAlphaDataRef != NULL)	{
@@ -415,7 +379,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	}
 	//	free the sample decoder frame i used to calculate and configure the size of the buffer pools
 	if (sampleDecoderFrame!=nil)	{
-		[sampleDecoderFrame release];
 		sampleDecoderFrame = nil;
 	}
 	
@@ -423,26 +386,24 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	if (newDecoderFrame==nil)
 		NSLog(@"\t\terr: decoder frame nil, %s",__func__);
 	else	{
-        LOCK(&propertyLock);
+		LOCK(&propertyLock);
 		[decodeFrames addObject:newDecoderFrame];
 		while ([decodeFrames count] > MAXDECODEFRAMES)
 			[decodeFrames removeObjectAtIndex:0];
-        UNLOCK(&propertyLock);
+		UNLOCK(&propertyLock);
 		
-		[newDecoderFrame release];
 		newDecoderFrame = nil;
 	}
 	
 	
-	if (localAllocFrameBlock!=nil)
-		[localAllocFrameBlock release];
+	localAllocFrameBlock = nil;
 	
-	if (contigSampleBuffer != NULL)	{
+	if (contigSampleBuffer != NULL) {
 		CFRelease(contigSampleBuffer);
 		contigSampleBuffer = NULL;
 	}
 }
-//	you should only call this method from the 'decodeQueue'!  does nothing if you haven't already prepared a decode frame!  pulls the appropriate frame from 'decodeFrames', moves it to 'decodingFrames', starts decoding it, moves it to 'decodedFrames' when complete
+//	you should only call this method from the 'decodeQueue'!  does nothing if you haven't already prepared a decode frame!	pulls the appropriate frame from 'decodeFrames', moves it to 'decodingFrames', starts decoding it, moves it to 'decodedFrames' when complete
 - (void) _beginDecodingFrameForTime:(CMTime)n	{
 	//NSLog(@"%s ... %f",__func__,CMTimeGetSeconds(n));
 	//	find a frame to decode
@@ -453,8 +414,8 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	tmpIndex = 0;
 	matchingIndex = NSNotFound;
 	for (HapDecoderFrame *frame in decodeFrames)	{
-		if ([frame containsTime:n])	{
-			frameToDecode = [frame retain];
+		if ([frame containsTime:n]) {
+			frameToDecode = frame;
 			matchingIndex = tmpIndex;
 			break;
 		}
@@ -482,7 +443,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		tmpIndex = 0;
 		matchingIndex = NSNotFound;
 		for (HapDecoderFrame *frame in decodingFrames)	{
-			if (frame == frameToDecode)	{
+			if (frame == frameToDecode) {
 				matchingIndex = tmpIndex;
 				break;
 			}
@@ -495,28 +456,27 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			[decodingFrames removeObjectAtIndex:matchingIndex];
 		UNLOCK(&propertyLock);
 		
-		[frameToDecode release];
 		frameToDecode = nil;
 	}
 }
-//	you should only call this method from the 'decodeQueue'!  does nothing if 'decodeFrames' is empty!  pulls a frame from 'decodeFrames', moves it to 'decodingFrames', starts decoding it, moves it to 'decodedFrames' when complete
+//	you should only call this method from the 'decodeQueue'!  does nothing if 'decodeFrames' is empty!	pulls a frame from 'decodeFrames', moves it to 'decodingFrames', starts decoding it, moves it to 'decodedFrames' when complete
 - (void) _beginDecodingNextFrame	{
 	//NSLog(@"%s",__func__);
 	//	copy the 'decodeTimes' and clear the array
 	LOCK(&propertyLock);
-	NSArray			*copiedDecodeTimes = (decodeTimes==nil || [decodeTimes count]<1) ? nil : [[decodeTimes copy] autorelease];
+	NSArray			*copiedDecodeTimes = (decodeTimes==nil || [decodeTimes count]<1) ? nil : [decodeTimes copy];
 	[decodeTimes removeAllObjects];
 	UNLOCK(&propertyLock);
 	//	run through the copy of decode times, prepping frames for each time
-	for (NSValue *timeVal in copiedDecodeTimes)	{
+	for (NSValue *timeVal in copiedDecodeTimes) {
 		CMTime		time = [timeVal CMTimeValue];
 		[self _prepareDecodeFrameForTime:time];
 	}
 	
 	//	find a frame to decode
-    LOCK(&propertyLock);
+	LOCK(&propertyLock);
 	HapDecoderFrame		*frameToDecode = nil;
-	frameToDecode = (decodeFrames==nil || [decodeFrames count]<1) ? nil : [[decodeFrames objectAtIndex:0] retain];
+	frameToDecode = (decodeFrames==nil || [decodeFrames count]<1) ? nil : [decodeFrames objectAtIndex:0];
 	if (frameToDecode == nil)	{
 		//NSLog(@"\t\terr: frameToDecode nil in %s",__func__);
 	}
@@ -538,7 +498,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		NSInteger			tmpIndex = 0;
 		NSInteger			matchingIndex = NSNotFound;
 		for (HapDecoderFrame *frame in decodingFrames)	{
-			if (frame == frameToDecode)	{
+			if (frame == frameToDecode) {
 				matchingIndex = tmpIndex;
 				break;
 			}
@@ -557,10 +517,10 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		//NSLog(@"\t\tdecoded frame %@, bumping age of decoded frames",frameToDecode);
 		for (HapDecoderFrame *frame in decodedFrames)	{
 			[frame incrementAge];
-			if ([frame age] >= MAXDECODEFRAMES)	{
+			if ([frame age] >= MAXDECODEFRAMES) {
 				//NSLog(@"\t\tframe %@ is too old and should be tossed",frame);
 				if (indicesToDelete == nil)
-					indicesToDelete = [[[NSMutableIndexSet alloc] init] autorelease];
+					indicesToDelete = [[NSMutableIndexSet alloc] init];
 				[indicesToDelete addIndex:tmpIndex];
 			}
 			++tmpIndex;
@@ -571,7 +531,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		
 		UNLOCK(&propertyLock);
 		
-		[frameToDecode release];
 		frameToDecode = nil;
 	}
 	
@@ -597,15 +556,15 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 }
 - (void) _decodeHapDecoderFrame:(HapDecoderFrame *)n	{
 	//NSLog(@"%s ... %@",__func__,n);
-	if (n==nil)	{
+	if (n==nil) {
 		NSLog(@"\t\terr: decoder frame nil, %s",__func__);
 		return;
 	}
 	
-	[n retain];
+	//[n retain];
 	
 	LOCK(&propertyLock);
-	AVFHapDXTPostDecodeBlock		localPostDecodeBlock = (postDecodeBlock==nil) ? nil : [postDecodeBlock retain];
+	AVFHapDXTPostDecodeBlock		localPostDecodeBlock = (postDecodeBlock==nil) ? nil : postDecodeBlock;
 	//BOOL				localOutputAsRGB = outputAsRGB;
 	//OSType				localDestRGBPixelFormat = destRGBPixelFormat;
 	UNLOCK(&propertyLock);
@@ -619,7 +578,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	OSStatus			cmErr = noErr;
 	
 	CMBlockBufferRef	dataBlockBuffer = (hapSampleBuffer==nil) ? nil : CMSampleBufferGetDataBuffer(hapSampleBuffer);
-	if (dxtDatas[0]==NULL || dataBlockBuffer==NULL)	{
+	if (dxtDatas[0]==NULL || dataBlockBuffer==NULL) {
 		NSLog(@"\t\terr:dxtData or dataBlockBuffer null in %s",__func__);
 	}
 	else	{
@@ -724,10 +683,10 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 						}
 					
 					}
-                    else if (dxtTextureFormats[0] == HapTextureFormat_A_RGTC1)    {
-                        unsigned int        bytesPerRow = (unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height);
-                        HapCodecSquishRGTC1DecodeAsAlphaOnly(dxtDatas[0], rgbData, bytesPerRow, dxtImgSize.width, dxtImgSize.height);
-                    }
+					else if (dxtTextureFormats[0] == HapTextureFormat_A_RGTC1)	  {
+						unsigned int		bytesPerRow = (unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height);
+						HapCodecSquishRGTC1DecodeAsAlphaOnly(dxtDatas[0], rgbData, bytesPerRow, dxtImgSize.width, dxtImgSize.height);
+					}
 					else	{
 						NSLog(@"\t\terr: unrecognized text formats %X/%x in %s",dxtTextureFormats[0],dxtTextureFormats[1],__func__);
 					}
@@ -750,30 +709,30 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	if (localPostDecodeBlock!=nil)
 		localPostDecodeBlock(n);
 	
-	[n release];
+	//[n release];
 }
 
 #pragma mark -
 
-- (HapDecoderFrame *) allocFrameClosestToTime:(CMTime)n	{
-	//NSLog(@"%s ... %f",__func__,CMTimeGetSeconds(n));
+- (HapDecoderFrame *) allocFrameClosestToTime:(CMTime)n {
+	//NSLog(@"%s ... %@",__func__,TIMEDESC(n));
 	HapDecoderFrame			*returnMe = nil;
 	NSInteger				tmpIndex = 0;
 	NSInteger				matchingIndex = NSNotFound;
 	LOCK(&propertyLock);
-	if (track==nil || gen==nil)	{
+	//NSLog(@"\t\tdecodedFrames are %@",decodedFrames);
+	//NSLog(@"\t\tplayedOutFrames are %@",playedOutFrames);
+	if (track==nil || gen==nil) {
 		UNLOCK(&propertyLock);
 		return returnMe;
 	}
-	//NSLog(@"\t\tdecodedFrames are %@",decodedFrames);
-	//NSLog(@"\t\tplayedOutFrames are %@",playedOutFrames);
 	
 	//	check 'playedOutFrames' to see if a frame that contains the passed time is available.  if it is, return it.
 	tmpIndex = 0;
 	matchingIndex = NSNotFound;
-	for (HapDecoderFrame *frame in playedOutFrames)	{
-		if ([frame containsTime:n])	{
-			returnMe = [frame retain];
+	for (HapDecoderFrame *frame in playedOutFrames) {
+		if ([frame containsTime:n]) {
+			returnMe = frame;
 			matchingIndex = tmpIndex;
 			break;
 		}
@@ -789,7 +748,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		//	we don't want to return the same frame twice
 		CMTime				frameTime = [returnMe presentationTime];
 		if (CMTIME_COMPARE_INLINE(frameTime,==,lastGeneratedSampleTime))	{
-			[returnMe release];
 			returnMe = nil;
 		}
 		else
@@ -799,12 +757,13 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		return returnMe;
 	}
 	
-	//	check 'decodedFrames' to see if a frame that contains the passed time is available.  if it is, move it to 'playedOutFrames' and then return it
+	//	check 'decodedFrames' to see if a frame that contains the passed time is available.	 if it is, move it to 'playedOutFrames' and then return it
 	tmpIndex = 0;
 	matchingIndex = NSNotFound;
 	for (HapDecoderFrame *frame in decodedFrames)	{
-		if ([frame containsTime:n])	{
-			returnMe = [frame retain];
+		//NSLog(@"\t\tchecking frame %@ for time %@",frame,TIMEDESC(n));
+		if ([frame containsTime:n]) {
+			returnMe = frame;
 			matchingIndex = tmpIndex;
 			break;
 		}
@@ -820,7 +779,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		//	we don't want to return the same frame twice
 		CMTime				frameTime = [returnMe presentationTime];
 		if (CMTIME_COMPARE_INLINE(frameTime,==,lastGeneratedSampleTime))	{
-			[returnMe release];
 			returnMe = nil;
 		}
 		else
@@ -853,9 +811,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		double			frameDelta = targetFrameTime - frameTime;
 		if (fabs(frameDelta) < fabs(runningDelta))	{
 			runningDelta = frameDelta;
-			if (returnMe != nil)
-				[returnMe release];
-			returnMe = [frame retain];
+			returnMe = frame;
 		}
 		double			frameWrapDelta = 999999.0;
 		if (frameTime < trackCenter)
@@ -864,22 +820,17 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			frameWrapDelta = frameTime + (trackDuration - targetFrameTime);
 		if (fabs(frameWrapDelta) < fabs(runningDelta))	{
 			runningDelta = frameWrapDelta;
-			if (returnMe != nil)
-				[returnMe release];
-			returnMe = [frame retain];
+			returnMe = frame;
 		}
 	}
 	
 	//	we're not going to return a frame from 'playedOutFrames' if it's not an exact match but we want to run through them anyway so we can prevent a close match from 'decodedFrames' from being returned...
-	for (HapDecoderFrame *frame in playedOutFrames)	{
+	for (HapDecoderFrame *frame in playedOutFrames) {
 		double			frameTime = CMTimeGetSeconds([frame presentationTime]);
 		double			frameDelta = targetFrameTime - frameTime;
 		if (fabs(frameDelta) < fabs(runningDelta))	{
 			runningDelta = frameDelta;
-			if (returnMe != nil)	{
-				[returnMe release];
-				returnMe = nil;
-			}
+			returnMe = nil;
 			//returnMe = [frame retain];
 		}
 		double			frameWrapDelta = 999999.0;
@@ -889,10 +840,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			frameWrapDelta = frameTime + (trackDuration - targetFrameTime);
 		if (fabs(frameWrapDelta) < fabs(runningDelta))	{
 			runningDelta = frameWrapDelta;
-			if (returnMe != nil)	{
-				[returnMe release];
-				returnMe = nil;
-			}
+			returnMe = nil;
 			//returnMe = [frame retain];
 		}
 	}
@@ -906,22 +854,19 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	//	we don't want to return the same frame twice
 	CMTime				frameTime = [returnMe presentationTime];
 	if (CMTIME_COMPARE_INLINE(frameTime,==,lastGeneratedSampleTime))	{
-		[returnMe release];
 		returnMe = nil;
 	}
 	else
 		lastGeneratedSampleTime = frameTime;
 	//	when i finish decoding a frame asynchornously, i automatically start decoding a new frame- so i only need to start decoding here if i'm not currently decoding anything...
 	BOOL				needsToStartDecoding = NO;
-	if ([decodeFrames count]<1)	{
+	if ([decodeFrames count]<1) {
 		needsToStartDecoding = YES;
 	}
 	//	start decoding the frame for the passed time on the decode queue
 	if (needsToStartDecoding)	{
 		dispatch_async(decodeQueue, ^{
-			@autoreleasepool	{
-				[self _beginDecodingNextFrame];
-			}
+			[self _beginDecodingNextFrame];
 		});
 	}
 	UNLOCK(&propertyLock);
@@ -935,16 +880,16 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	NSInteger				tmpIndex = 0;
 	NSInteger				matchingIndex = NSNotFound;
 	LOCK(&propertyLock);
-	if (track==nil || gen==nil)	{
+	if (track==nil || gen==nil) {
 		UNLOCK(&propertyLock);
 		return returnMe;
 	}
-	//	check 'decodedFrames' to see if a frame that contains the passed time is available.  if it is, move it to 'playedOutFrames' and then return it
+	//	check 'decodedFrames' to see if a frame that contains the passed time is available.	 if it is, move it to 'playedOutFrames' and then return it
 	tmpIndex = 0;
 	matchingIndex = NSNotFound;
 	for (HapDecoderFrame *frame in decodedFrames)	{
-		if ([frame containsTime:n])	{
-			returnMe = [frame retain];
+		if ([frame containsTime:n]) {
+			returnMe = frame;
 			matchingIndex = tmpIndex;
 			break;
 		}
@@ -963,9 +908,9 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	//	check 'playedOutFrames' to see if a frame that contains the passed time is available.  if it is, return it.
 	tmpIndex = 0;
 	matchingIndex = NSNotFound;
-	for (HapDecoderFrame *frame in playedOutFrames)	{
-		if ([frame containsTime:n])	{
-			returnMe = [frame retain];
+	for (HapDecoderFrame *frame in playedOutFrames) {
+		if ([frame containsTime:n]) {
+			returnMe = frame;
 			matchingIndex = tmpIndex;
 			break;
 		}
@@ -990,8 +935,8 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	tmpIndex = 0;
 	matchingIndex = NSNotFound;
 	for (HapDecoderFrame *frame in decodedFrames)	{
-		if ([frame containsTime:n])	{
-			returnMe = [frame retain];
+		if ([frame containsTime:n]) {
+			returnMe = frame;
 			matchingIndex = tmpIndex;
 			break;
 		}
@@ -1007,54 +952,48 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	UNLOCK(&propertyLock);
 	return returnMe;
 }
-- (HapDecoderFrame *) allocFrameForHapSampleBuffer:(CMSampleBufferRef)n	{
+- (HapDecoderFrame *) allocFrameForHapSampleBuffer:(CMSampleBufferRef)n {
 	//NSLog(@"%s",__func__);
 	if (n == NULL)
 		return nil;
 	return [self allocFrameForTime:CMSampleBufferGetPresentationTimeStamp(n)];
 }
 
-- (HapDecoderFrame *) findFrameClosestToTime:(CMTime)n    {
-    HapDecoderFrame            *returnMe = nil;
-    LOCK(&propertyLock);
-    if (track==nil || gen==nil)    {
-        UNLOCK(&propertyLock);
-        return returnMe;
-    }
-    for (HapDecoderFrame *frame in playedOutFrames)    {
-        if ([frame containsTime:n])    {
-            returnMe = [frame retain];
-            returnMe = [frame autorelease];
-            UNLOCK(&propertyLock);
-            return returnMe;
-        }
-    }
-    for (HapDecoderFrame *frame in decodedFrames)    {
-        if ([frame containsTime:n])    {
-            returnMe = [frame retain];
-            returnMe = [frame autorelease];
-            UNLOCK(&propertyLock);
-            return returnMe;
-        }
-    }
-    UNLOCK(&propertyLock);
-    return returnMe;
+- (HapDecoderFrame *) findFrameClosestToTime:(CMTime)n	  {
+	HapDecoderFrame			   *returnMe = nil;
+	LOCK(&propertyLock);
+	if (track==nil || gen==nil)	   {
+		UNLOCK(&propertyLock);
+		return returnMe;
+	}
+	for (HapDecoderFrame *frame in playedOutFrames)	   {
+		if ([frame containsTime:n])	   {
+			returnMe = frame;
+			UNLOCK(&propertyLock);
+			return returnMe;
+		}
+	}
+	for (HapDecoderFrame *frame in decodedFrames)	 {
+		if ([frame containsTime:n])	   {
+			returnMe = frame;
+			UNLOCK(&propertyLock);
+			return returnMe;
+		}
+	}
+	UNLOCK(&propertyLock);
+	return returnMe;
 }
 
 #pragma mark -
 
 - (void) setAllocFrameBlock:(HapDecoderFrameAllocBlock)n	{
 	LOCK(&propertyLock);
-	if (allocFrameBlock != nil)
-		Block_release(allocFrameBlock);
-	allocFrameBlock = (n==nil) ? nil : Block_copy(n);
+	allocFrameBlock = n;
 	UNLOCK(&propertyLock);
 }
-- (void) setPostDecodeBlock:(AVFHapDXTPostDecodeBlock)n	{
+- (void) setPostDecodeBlock:(AVFHapDXTPostDecodeBlock)n {
 	LOCK(&propertyLock);
-	if (postDecodeBlock!=nil)
-		Block_release(postDecodeBlock);
-	postDecodeBlock = (n==nil) ? nil : Block_copy(n);
+	postDecodeBlock = n;
 	UNLOCK(&propertyLock);
 }
 
@@ -1064,18 +1003,9 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	//NSLog(@"%s",__func__);
 	LOCK(&propertyLock);
 	
-	if (decodeQueue!=NULL)	{
-		dispatch_release(decodeQueue);
-		decodeQueue = NULL;
-	}
-	if (track != nil)	{
-		[track release];
-		track = nil;
-	}
-	if (gen != nil)	{
-		[gen release];
-		gen = nil;
-	}
+	decodeQueue = NULL;
+	track = nil;
+	gen = nil;
 	lastGeneratedSampleTime = kCMTimeInvalid;
 	[decodeTimes removeAllObjects];
 	[decodeFrames removeAllObjects];
@@ -1096,7 +1026,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 		it, so if the player we're attaching to loaded a composition we have to programmatically 
 		determine the source URL, creat our own asset, pull its hap track, and create the sample 
 		buffer generator from *that*.			*/
-		if ([[arg1 asset] isKindOfClass:[AVComposition class]])	{
+		if ([[arg1 asset] isKindOfClass:[AVComposition class]]) {
 			NSArray				*segments = [[arg1 hapTrack] segments];
 			AVCompositionTrackSegment	*segment = (segments==nil || [segments count]<1) ? nil : [segments objectAtIndex:0];
 			NSURL				*assetURL = (segment==nil) ? nil : [segment sourceURL];
@@ -1115,14 +1045,10 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 			LOCK(&propertyLock);
 			
 			if (decodeQueue!=nil)
-				dispatch_release(decodeQueue);
+				decodeQueue = nil;
 			//decodeQueue = dispatch_queue_create("HapDecode", DISPATCH_QUEUE_CONCURRENT);
 			decodeQueue = dispatch_queue_create("HapDecode", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, DISPATCH_QUEUE_PRIORITY_HIGH, -1));
-			if (track != nil)
-				[track release];
-			track = [hapTrack retain];
-			if (gen != nil)
-				[gen release];
+			track = hapTrack;
 			gen = [[AVSampleBufferGenerator alloc] initWithAsset:itemAsset timebase:[arg1 timebase]];
 			lastGeneratedSampleTime = kCMTimeInvalid;
 			[decodeTimes removeAllObjects];
@@ -1137,7 +1063,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	}
 	return returnMe;
 }
-- (void) setOutputAsRGB:(BOOL)n	{
+- (void) setOutputAsRGB:(BOOL)n {
 	LOCK(&propertyLock);
 	outputAsRGB = n;
 	UNLOCK(&propertyLock);
