@@ -138,6 +138,12 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 			dxtPixelFormats[1] = 0;
 			dxtMinDataSizes[1] = 0;
 			break;
+		case kHap7CodecSubType:
+			dxtPlaneCount = 1;
+			dxtPixelFormats[0] = kHapCVPixelFormat_RGBA_BC7;
+			dxtPixelFormats[1] = 0;
+			dxtMinDataSizes[1] = 0;
+			break;
 		}
 		rgbMinDataSize = 32 * imgSize.width * imgSize.height / 8;
 	}
