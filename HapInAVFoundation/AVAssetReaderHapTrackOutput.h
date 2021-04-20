@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import "AVPlayerItemHapDXTOutput.h"
+#import <HapInAVFoundation/AVPlayerItemHapDXTOutput.h>
 
 
 

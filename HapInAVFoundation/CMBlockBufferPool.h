@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreMedia/CoreMedia.h>
 
-#import "HapMacros.h"
+#import <HapInAVFoundation/HapMacros.h>
 
 
 
