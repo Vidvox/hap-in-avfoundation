@@ -44,7 +44,7 @@ void HapCodecDXTReadBlockRGBA(const uint8_t *copy_src, uint8_t *copy_dst, unsign
 #include <immintrin.h>
 #define hap_cpuid(i,t)    __cpuid((i),(t))
 
-#else
+#elif defined(__i386__) || defined(__x86_64__)
 
 static void hap_cpuid(int info[4],int infoType){
     __asm__ __volatile__ (
@@ -61,6 +61,7 @@ static void hap_cpuid(int info[4],int infoType){
 
 int HapCodecHasSSSE3(void)
 {
+#if defined(__i386__) || defined(__x86_64__)
     int info[4] = { 0, 0, 0, 0 };
     int hasSSE2, hasSSE3, hasSSSE3;
     
@@ -69,6 +70,9 @@ int HapCodecHasSSSE3(void)
     hasSSE3  = (info[2] & ((int)1 <<  0)) != 0;
     hasSSSE3 = (info[2] & ((int)1 <<  9)) != 0;
     return (hasSSE2 && hasSSE3 && hasSSSE3);
+#else
+    return false;
+#endif
 }
 
 void HapCodecDXTReadBlockBGRAScalar(const uint8_t *copy_src, uint8_t *copy_dst, unsigned int src_bytes_per_row)

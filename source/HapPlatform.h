@@ -35,9 +35,11 @@
     #else
         #define HAP_INLINE inline
     #endif
-    #if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-        #define HAP_SSSE3_ALWAYS_AVAILABLE
-    #endif
+	#if defined(__i386__) || defined(__x86_64__)
+		#if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+			#define HAP_SSSE3_ALWAYS_AVAILABLE
+		#endif
+	#endif
 #else
     #define HAP_ATTR_UNUSED
     #define HAP_FUNC __FUNCTION__

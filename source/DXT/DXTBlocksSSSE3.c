@@ -26,6 +26,9 @@
  */
 
 #include "DXTBlocks.h"
+
+#if defined(__i386__) || defined(__x86_64__)
+
 #include <tmmintrin.h>
 
 void HapCodecDXTReadBlockBGRASSSE3(const uint8_t *copy_src, uint8_t *copy_dst, unsigned int src_bytes_per_row)
@@ -42,3 +45,5 @@ void HapCodecDXTReadBlockBGRASSSE3(const uint8_t *copy_src, uint8_t *copy_dst, u
         copy_dst += 16;
     }
 }
+
+#endif
