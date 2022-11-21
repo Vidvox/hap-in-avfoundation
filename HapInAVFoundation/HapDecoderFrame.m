@@ -8,6 +8,7 @@
 
 
 
+#define TIMEDESC(n) CMTimeCopyDescription(kCFAllocatorDefault,n)
 /*
 void CMBlockBuffer_FreeHapDecoderFrame(void *refCon, void *doomedMemoryBlock, size_t sizeInBytes)	{
 	//	'refCon' is the HapDecoderFrame instance which contains the data that is backing this block buffer...
@@ -16,7 +17,9 @@ void CMBlockBuffer_FreeHapDecoderFrame(void *refCon, void *doomedMemoryBlock, si
 */
 void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddress)	{
 	//	'releaseRefCon' is the HapDecoderFrame instance which contains the data that is backing this pixel buffer...
-	[(id)releaseRefCon release];
+	//[(id)releaseRefCon release];
+	HapDecoderFrame		*tmpFrame = (__bridge HapDecoderFrame *)releaseRefCon;
+	tmpFrame = nil;
 }
 
 #define FourCCLog(n,f) NSLog(@"%@, %c%c%c%c",n,(int)((f>>24)&0xFF),(int)((f>>16)&0xFF),(int)((f>>8)&0xFF),(int)((f>>0)&0xFF))
@@ -29,12 +32,12 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 
 + (void) initialize	{
 	//	make sure the CMMemoryPool used by this framework exists
-	os_unfair_lock_lock(&_HIAVFMemPoolLock);
+	HapLockLock(&_HIAVFMemPoolLock);
 	if (_HIAVFMemPool==NULL)
 		_HIAVFMemPool = CMMemoryPoolCreate(NULL);
 	if (_HIAVFMemPoolAllocator==NULL)
 		_HIAVFMemPoolAllocator = CMMemoryPoolGetAllocator(_HIAVFMemPool);
-	os_unfair_lock_unlock(&_HIAVFMemPoolLock);
+	HapLockUnlock(&_HIAVFMemPoolLock);
 }
 - (id) initWithHapSampleBuffer:(CMSampleBufferRef)sb	{
 	self = [self initEmptyWithHapSampleBuffer:sb];
@@ -44,7 +47,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		dxtDatas[1] = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtMinDataSizes[1], 0);
 		dxtDataSizes[1] = dxtMinDataSizes[1];
 	}
-	userInfo = (id)CFDataCreateWithBytesNoCopy(NULL, dxtDatas[0], dxtMinDataSizes[0], _HIAVFMemPoolAllocator);
+	userInfo = CFBridgingRelease(CFDataCreateWithBytesNoCopy(NULL, dxtDatas[0], dxtMinDataSizes[0], _HIAVFMemPoolAllocator));
 	return self;
 }
 - (id) initEmptyWithHapSampleBuffer:(CMSampleBufferRef)sb	{
@@ -70,7 +73,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		rgbDataSize = 0;
 		rgbPixelFormat = kCVPixelFormatType_32BGRA;
 		rgbImgSize = NSMakeSize(0,0);
-		atomicLock = OS_UNFAIR_LOCK_INIT;
+		atomicLock = HAP_LOCK_INIT;
 		userInfo = nil;
 		decoded = NO;
 		age = 0;
@@ -140,8 +143,8 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	}
 	return self;
 	BAIL:
-	[self release];
-	return nil;
+	self = nil;
+	return self;
 }
 - (void) dealloc	{
 	if (hapSampleBuffer != nil)	{
@@ -152,18 +155,17 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	dxtDatas[1] = NULL;
 	rgbData = NULL;
 	if (userInfo != nil)	{
-		[userInfo release];
 		userInfo = nil;
 	}
-	[super dealloc];
 }
 
 - (NSString *) description	{
-	if (hapSampleBuffer==nil)
-		return @"<HapDecoderFrame>";
-	CMTime		presentationTime = CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer);
+	//if (hapSampleBuffer==nil)
+	//	return @"<HapDecoderFrame>";
+	//CMTime		presentationTime = CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer);
 	//return [NSString stringWithFormat:@"<HapDecoderFrame, %d/%d, %f x %f, %@>",dxtTextureFormats[0],dxtTextureFormats[1],dxtImgSize.width,dxtImgSize.height,[(id)CMTimeCopyDescription(kCFAllocatorDefault,presentationTime) autorelease]];
-	return [NSString stringWithFormat:@"<HapDecoderFrame, %@>",[(id)CMTimeCopyDescription(kCFAllocatorDefault,presentationTime) autorelease]];
+	//return [NSString stringWithFormat:@"<HapDecoderFrame, %@>",TIMEDESC(presentationTime)];
+	return [NSString stringWithFormat:@"<HapDecoderFrame, %p>",self];
 }
 
 - (BOOL) isEqual:(HapDecoderFrame *)n	{
@@ -247,6 +249,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	return ((hapSampleBuffer==NULL) ? kCMTimeInvalid : CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer));
 }
 - (BOOL) containsTime:(CMTime)n	{
+	//NSLog(@"%s ... %@",__func__,TIMEDESC(n));
 	if (hapSampleBuffer==NULL)
 		return NO;
 	CMTimeRange		timeRange = CMTimeRangeMake(CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer),CMSampleBufferGetDuration(hapSampleBuffer));
@@ -280,8 +283,8 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		rgbData,
 		rgbDataSize/(size_t)rgbImgSize.height,
 		CVPixelBuffer_FreeHapDecoderFrame,
-		self,
-		(CFDictionaryRef)pixelBufferAttribs,
+		(__bridge void *)self,
+		(__bridge CFDictionaryRef)pixelBufferAttribs,
 		&cvPixRef);
 	if (cvErr!=kCVReturnSuccess || cvPixRef==NULL)	{
 		NSLog(@"\t\terr %d at CVPixelBufferCreateWithBytes() in %s",cvErr,__func__);
@@ -291,7 +294,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	}
 	else	{
 		//	retain self, to ensure that this HapDecoderFrame instance will persist at least until the CVPixelBufferRef frees it!
-		[self retain];
+		//[self retain];
 		
 		//	make a CMFormatDescriptionRef that describes the RGB data
 		CMFormatDescriptionRef		desc = NULL;
@@ -344,45 +347,41 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 
 
 - (void) setUserInfo:(id)n	{
-	os_unfair_lock_lock(&atomicLock);
+	HapLockLock(&atomicLock);
 	if (n!=userInfo)	{
-		if (userInfo!=nil)
-			[userInfo release];
 		userInfo = n;
-		if (userInfo!=nil)
-			[userInfo retain];
 	}
-	os_unfair_lock_unlock(&atomicLock);
+	HapLockUnlock(&atomicLock);
 }
 - (id) userInfo	{
 	id		returnMe = nil;
-	os_unfair_lock_lock(&atomicLock);
+	HapLockLock(&atomicLock);
 	returnMe = userInfo;
-	os_unfair_lock_unlock(&atomicLock);
+	HapLockUnlock(&atomicLock);
 	return returnMe;
 }
 - (void) setDecoded:(BOOL)n	{
-	os_unfair_lock_lock(&atomicLock);
+	HapLockLock(&atomicLock);
 	decoded = n;
-	os_unfair_lock_unlock(&atomicLock);
+	HapLockUnlock(&atomicLock);
 }
 - (BOOL) decoded	{
 	BOOL		returnMe = NO;
-	os_unfair_lock_lock(&atomicLock);
+	HapLockLock(&atomicLock);
 	returnMe = decoded;
-	os_unfair_lock_unlock(&atomicLock);
+	HapLockUnlock(&atomicLock);
 	return returnMe;
 }
 - (void) incrementAge	{
-	os_unfair_lock_lock(&atomicLock);
+	HapLockLock(&atomicLock);
 	++age;
-	os_unfair_lock_unlock(&atomicLock);
+	HapLockUnlock(&atomicLock);
 }
 - (int) age	{
 	int		returnMe = 0;
-	os_unfair_lock_lock(&atomicLock);
+	HapLockLock(&atomicLock);
 	returnMe = age;
-	os_unfair_lock_unlock(&atomicLock);
+	HapLockUnlock(&atomicLock);
 	return returnMe;
 }
 

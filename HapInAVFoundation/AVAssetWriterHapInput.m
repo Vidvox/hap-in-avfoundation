@@ -22,6 +22,8 @@ YCoCg encodes YCoCg in DXT and requires a shader to draw, and produces very high
 
 #import "AVPlayerItemHapDXTOutput.h"
 
+#import "CMBlockBufferPool.h"
+
 
 
 
@@ -55,27 +57,28 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 
 
 + (void) initialize	{
-	@synchronized ([AVPlayerItemHapDXTOutput class])	{
-		if (!_AVFinHapCVInit)	{
-			HapCodecRegisterPixelFormats();
-			_AVFinHapCVInit = YES;
-		}
-	}
+	dispatch_once(&_AVFinHapCVInit, ^{
+		HapCodecRegisterPixelFormats();
+	});
+	
 	//	make sure the CMMemoryPool used by this framework exists
-	os_unfair_lock_lock(&_HIAVFMemPoolLock);
+	HapLockLock(&_HIAVFMemPoolLock);
 	if (_HIAVFMemPool==NULL)
 		_HIAVFMemPool = CMMemoryPoolCreate(NULL);
 	if (_HIAVFMemPoolAllocator==NULL)
 		_HIAVFMemPoolAllocator = CMMemoryPoolGetAllocator(_HIAVFMemPool);
-	os_unfair_lock_unlock(&_HIAVFMemPoolLock);
+	HapLockUnlock(&_HIAVFMemPoolLock);
 }
+
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101300)
 - (id) initWithMediaType:(AVMediaType)mediaType outputSettings:(NSDictionary<NSString *,id> *)outputSettings	{
 	NSLog(@"**** ERR: DO NOT USE THIS INIT METHOD (%s)",__func__);
 	NSLog(@"AVFoundation does not officially recognize the Hap codec");
 	NSLog(@"Please use -[AVAssetWriterHapInput initWithOutputSettings:] instead");
-	[self release];
-	return nil;
+	self = nil;
+	return self;
 }
+#endif
 - (id) initWithOutputSettings:(NSDictionary *)n	{
 	self = [super initWithMediaType:AVMediaTypeVideo outputSettings:nil];
 	if (self!=nil)	{
@@ -100,10 +103,10 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 		dxtBufferBytesPerRow[0] = 0;
 		dxtBufferBytesPerRow[1] = 0;
 		hapBufferPoolLength = 0;
-		encoderLock = OS_UNFAIR_LOCK_INIT;
+		encoderLock = HAP_LOCK_INIT;
 		glDXTEncoder = NULL;
-		encoderProgressLock = OS_UNFAIR_LOCK_INIT;
-		encoderProgressFrames = [[NSMutableArray arrayWithCapacity:0] retain];
+		encoderProgressLock = HAP_LOCK_INIT;
+		encoderProgressFrames = [NSMutableArray arrayWithCapacity:0];
 		encoderWaitingToRunOut = NO;
 		lastEncodedDuration = kCMTimeZero;
 		if (n==nil)
@@ -317,28 +320,23 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 	return self;
 	BAIL:
 	NSLog(@"ERR: bailed in %s",__func__);
-	[self release];
-	return nil;
+	self = nil;
+	return self;
 }
 - (void) dealloc	{
-	if (encodeQueue!=NULL)	{
-		dispatch_release(encodeQueue);
-		encodeQueue = NULL;
-	}
-	os_unfair_lock_lock(&encoderProgressLock);
+	encodeQueue = nil;
+	HapLockLock(&encoderProgressLock);
 	if (encoderProgressFrames!=nil)	{
-		[encoderProgressFrames release];
 		encoderProgressFrames = nil;
 	}
-	os_unfair_lock_unlock(&encoderProgressLock);
-	os_unfair_lock_lock(&encoderLock);
+	HapLockUnlock(&encoderProgressLock);
+	HapLockLock(&encoderLock);
 	//	release the DXT encoder
 	if (glDXTEncoder!=NULL)	{
 		HapCodecDXTEncoderDestroy((HapCodecDXTEncoderRef)glDXTEncoder);
 		glDXTEncoder = NULL;
 	}
-	os_unfair_lock_unlock(&encoderLock);
-	[super dealloc];
+	HapLockUnlock(&encoderLock);
 }
 - (BOOL) appendPixelBuffer:(CVPixelBufferRef)pb withPresentationTime:(CMTime)t	{
 	return [self appendPixelBuffer:pb withPresentationTime:t asynchronously:YES];
@@ -363,7 +361,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 	
 	//	if i'm done accepting samples (because something marked me as finished), i won't be encoding a frame- but i'll still want to execute the block
 	__block HapEncoderFrame		*encoderFrame = nil;
-	os_unfair_lock_lock(&encoderProgressLock);
+	HapLockLock(&encoderProgressLock);
 	if (encoderWaitingToRunOut)	{
 		if (pb!=NULL)	{
 			NSLog(@"\t\tERR: can't append pixel buffer, marked as finished and waiting for in-flight tasks to complete");
@@ -376,10 +374,9 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 		encoderFrame = (pb==NULL) ? nil : [[HapEncoderFrame alloc] initWithPresentationTime:t];
 		if (encoderFrame!=nil)	{
 			[encoderProgressFrames addObject:encoderFrame];
-			[encoderFrame release];
 		}
 	}
-	os_unfair_lock_unlock(&encoderProgressLock);
+	HapLockUnlock(&encoderProgressLock);
 	
 	//	retain the pixel buffer i was passed- i'll release it in the block (on the GCD-controlled thread)
 	if (pb!=NULL)
@@ -403,7 +400,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 			
 			//	allocate the resize buffer if i need it
 			void			*resizeBuffer = nil;
-			if (!NSEqualSizes(pbSize, exportImgSize))	{
+			if (!NSEqualSizes(pbSize, self->exportImgSize))	{
 				//	make a vImage struct for the pixel buffer we were passed
 				vImage_Buffer		pbImage = {
 					.data = sourceBuffer,
@@ -412,14 +409,14 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 					.rowBytes = sourceBufferBytesPerRow
 				};
 				//	make the resize buffer
-				size_t			resizeBufferSize = encoderInputPxlFmtBytesPerRow[0] * exportImgSize.height;
+				size_t			resizeBufferSize = self->encoderInputPxlFmtBytesPerRow[0] * self->exportImgSize.height;
 				resizeBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, resizeBufferSize, 0);
 				//	make a vImage struct for the resize buffer we just allocated
 				vImage_Buffer		resizeImage = {
 					.data = resizeBuffer,
-					.height = exportImgSize.height,
-					.width = exportImgSize.width,
-					.rowBytes = encoderInputPxlFmtBytesPerRow[0]
+					.height = self->exportImgSize.height,
+					.width = self->exportImgSize.width,
+					.rowBytes = self->encoderInputPxlFmtBytesPerRow[0]
 				};
 				//	scale the pixel buffer's vImage to the resize buffer's vImage
 				vImage_Error		vErr = vImageScale_ARGB8888(&pbImage, &resizeImage, NULL, kvImageHighQualityResampling | kvImageDoNotTile);
@@ -437,21 +434,21 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 			_formatConvertBuffers[0] = nil;
 			_formatConvertBuffers[1] = nil;
 			void			**formatConvertBuffers = _formatConvertBuffers;	//	this exists because we can't refer to arrays on the stack from within blocks
-			for (int i=0; i<exportPixelFormatsCount; ++i)	{
-				if (sourceFormat != encoderInputPxlFmts[i])	{
-					formatConvertBuffers[i] = CFAllocatorAllocate(_HIAVFMemPoolAllocator, formatConvertPoolLengths[i], 0);
+			for (int i=0; i<self->exportPixelFormatsCount; ++i)	{
+				if (sourceFormat != self->encoderInputPxlFmts[i])	{
+					formatConvertBuffers[i] = CFAllocatorAllocate(_HIAVFMemPoolAllocator, self->formatConvertPoolLengths[i], 0);
 				}
 			}
 			
 			//	allocate the DXT buffer (or buffers) i'll be creating
-			void			*dxtBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtBufferPoolLengths[0], 0);
+			void			*dxtBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, self->dxtBufferPoolLengths[0], 0);
 			void			*dxtAlphaBuffer = NULL;
 			__block int		intErr = 0;
 			//	try to get the default GL-based DXT encoder- if it exists we need to use it (and it's shared)
-			os_unfair_lock_lock(&encoderLock);
-			void			*targetDXTEncoder = glDXTEncoder;
+			HapLockLock(&self->encoderLock);
+			void			*targetDXTEncoder = self->glDXTEncoder;
 			void			*targetAlphaEncoder = NULL;
-			os_unfair_lock_unlock(&encoderLock);
+			HapLockUnlock(&self->encoderLock);
 			void			*newDXTEncoder = NULL;
 			void			*newAlphaEncoder = NULL;
 			//	if we aren't sharing a GL-based DXT encoder, we need to make a new DXT encoder (which will be freed after this frame is encoded)
@@ -459,10 +456,10 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 				newDXTEncoder = [self allocDXTEncoder];
 				targetDXTEncoder = newDXTEncoder;
 			}
-			if (exportPixelFormatsCount > 1)	{
+			if (self->exportPixelFormatsCount > 1)	{
 				newAlphaEncoder = [self allocAlphaEncoder];
 				targetAlphaEncoder = newAlphaEncoder;
-				dxtAlphaBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtBufferPoolLengths[1], 0);
+				dxtAlphaBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, self->dxtBufferPoolLengths[1], 0);
 			}
 			
 			//	...at this point, i've created all the resource i need to convert the pixel buffer to the appropriate pixel format/formats and encode it/them as DXT data
@@ -470,40 +467,40 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 			//	make a block that converts a slice from the pixel buffer to DXT.  single block converts both RGB and alpha planes.
 			void						(^encodeSliceAsDXTBlock)(size_t index) = ^(size_t index)	{
 				//	figure out how tall this slice is going to be (based on the export slice height and the dims of the input img)
-				size_t				thisSliceHeight = exportSliceHeight;
-				if (((index+1) * exportSliceHeight) > exportImgSize.height)
-					thisSliceHeight = exportSliceHeight - (((index+1) * exportSliceHeight) - exportImgSize.height);
+				size_t				thisSliceHeight = self->exportSliceHeight;
+				if (((index+1) * self->exportSliceHeight) > self->exportImgSize.height)
+					thisSliceHeight = self->exportSliceHeight - (((index+1) * self->exportSliceHeight) - self->exportImgSize.height);
 				//	run run through the export pixel formats
-				for (int i=0; i<exportPixelFormatsCount; ++i)	{
+				for (int i=0; i<self->exportPixelFormatsCount; ++i)	{
 					//	if the source format doesn't match the encoder input format, we're going to have to convert the source into something encoder can work with
-					if (sourceFormat != encoderInputPxlFmts[i])	{
-						switch (encoderInputPxlFmts[i])	{
+					if (sourceFormat != self->encoderInputPxlFmts[i])	{
+						switch (self->encoderInputPxlFmts[i])	{
 						case kHapCVPixelFormat_CoCgXY:
 							if (sourceFormat == k32BGRAPixelFormat)	{
-								ConvertBGR_ToCoCg_Y8888((uint8_t *)sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
-									(uint8_t *)formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
-									(NSUInteger)exportImgSize.width,
+								ConvertBGR_ToCoCg_Y8888((uint8_t *)sourceBuffer + (index * self->exportSliceHeight * sourceBufferBytesPerRow),
+									(uint8_t *)formatConvertBuffers[i] + (index * self->exportSliceHeight * self->encoderInputPxlFmtBytesPerRow[i]),
+									(NSUInteger)self->exportImgSize.width,
 									(NSUInteger)thisSliceHeight,
 									sourceBufferBytesPerRow,
-									encoderInputPxlFmtBytesPerRow[i],
+									self->encoderInputPxlFmtBytesPerRow[i],
 									0);
 							}
 							else if (sourceFormat == k32ARGBPixelFormat || sourceFormat == 0x20)	{
-								ConvertARGB_ToCoCg_Y8888((uint8_t *)sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
-									(uint8_t *)formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
-									(NSUInteger)exportImgSize.width,
+								ConvertARGB_ToCoCg_Y8888((uint8_t *)sourceBuffer + (index * self->exportSliceHeight * sourceBufferBytesPerRow),
+									(uint8_t *)formatConvertBuffers[i] + (index * self->exportSliceHeight * self->encoderInputPxlFmtBytesPerRow[i]),
+									(NSUInteger)self->exportImgSize.width,
 									(NSUInteger)thisSliceHeight,
 									sourceBufferBytesPerRow,
-									encoderInputPxlFmtBytesPerRow[i],
+									self->encoderInputPxlFmtBytesPerRow[i],
 									0);
 							}
 							else	{
-								ConvertRGB_ToCoCg_Y8888((uint8_t *)sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
-									(uint8_t *)formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
-									(NSUInteger)exportImgSize.width,
+								ConvertRGB_ToCoCg_Y8888((uint8_t *)sourceBuffer + (index * self->exportSliceHeight * sourceBufferBytesPerRow),
+									(uint8_t *)formatConvertBuffers[i] + (index * self->exportSliceHeight * self->encoderInputPxlFmtBytesPerRow[i]),
+									(NSUInteger)self->exportImgSize.width,
 									(NSUInteger)thisSliceHeight,
 									sourceBufferBytesPerRow,
-									encoderInputPxlFmtBytesPerRow[i],
+									self->encoderInputPxlFmtBytesPerRow[i],
 									0);
 							}
 							break;
@@ -569,7 +566,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 				if (targetDXTEncoder != NULL)	{
 					//	if we haven't created a new DXT encoder then we're using the GL encoder, which is shared- and must thus be locked
 					if (newDXTEncoder == NULL)
-						os_unfair_lock_lock(&encoderLock);
+						HapLockLock(&encoderLock);
 					//	slightly different path depending on whether i'm converting the passed pixel buffer...
 					if (formatConvertBuffers[0]==nil)	{
 						intErr = ((HapCodecDXTEncoderRef)targetDXTEncoder)->encode_function(targetDXTEncoder,
@@ -591,7 +588,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 							(unsigned int)thisSliceHeight);
 					}
 					if (newDXTEncoder == NULL)
-						os_unfair_lock_unlock(&encoderLock);
+						HapLockUnlock(&encoderLock);
 				}
 				
 				//	if it exists, encode the data from the alpha plane for this slice as DXT data
@@ -708,7 +705,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 									exportCodecType,
 									(uint32_t)exportImgSize.width,
 									(uint32_t)exportImgSize.height,
-									(CFDictionaryRef)bufferExtensions,
+									(__bridge CFDictionaryRef)bufferExtensions,
 									&desc);
 								if (osErr!=noErr)
 									NSLog(@"\t\terr %d at CMVideoFormatDescriptionCreate() in %s, not appending buffer",(int)osErr,__func__);
@@ -810,7 +807,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 			if (!returnMe)	{
 				CMSampleTimingInfo		sampleTimingInfo;
 				CMSampleBufferGetSampleTimingInfo(n, 0, &sampleTimingInfo);
-				NSLog(@"\t\tERR: %s, failed to append sampleBuffer at time %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.decodeTimeStamp) autorelease]);
+				NSLog(@"\t\tERR: %s, failed to append sampleBuffer at time %@",__func__,CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.decodeTimeStamp));
 			}
 		}
 		//	else the format description isn't a match for the export type- try to get the image buffer and then append it
@@ -836,34 +833,34 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 }
 - (BOOL) finishedEncoding	{
 	BOOL		returnMe = NO;
-	os_unfair_lock_lock(&encoderProgressLock);
+	HapLockLock(&encoderProgressLock);
 	if ([encoderProgressFrames count]==0)
 		returnMe = YES;
-	os_unfair_lock_unlock(&encoderProgressLock);
+	HapLockUnlock(&encoderProgressLock);
 	return returnMe;
 }
 - (void) finishEncoding	{
-	os_unfair_lock_lock(&encoderProgressLock);
+	HapLockLock(&encoderProgressLock);
 	BOOL			needsToEncodeMore = NO;
 	if (encoderWaitingToRunOut || [encoderProgressFrames count]>0)
 		needsToEncodeMore = YES;
-	os_unfair_lock_unlock(&encoderProgressLock);
+	HapLockUnlock(&encoderProgressLock);
 	
 	if (needsToEncodeMore)
 		[self appendEncodedFrames];
 }
 - (void)markAsFinished	{
 	//NSLog(@"%s",__func__);
-	os_unfair_lock_lock(&encoderProgressLock);
+	HapLockLock(&encoderProgressLock);
 	encoderWaitingToRunOut = YES;
-	os_unfair_lock_unlock(&encoderProgressLock);
+	HapLockUnlock(&encoderProgressLock);
 	//	append any encoded frames- if there are frames left over that aren't done encoding yet, this does nothing.  if there aren't any frames left over, it marks the input as finished.
 	[self appendEncodedFrames];
 }
 - (BOOL) isReadyForMoreMediaData	{
 	BOOL		returnMe = [super isReadyForMoreMediaData];
 	if (returnMe)	{
-		os_unfair_lock_lock(&encoderProgressLock);
+		HapLockLock(&encoderProgressLock);
 		if (encoderWaitingToRunOut)	{
 			//NSLog(@"\t\tpretending i'm not ready for more data, waiting to run out- %s",__func__);
 			returnMe = NO;
@@ -872,7 +869,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 			//NSLog(@"\t\ttoo many frames waiting to be appended, not ready- %s",__func__);
 			returnMe = NO;
 		}
-		os_unfair_lock_unlock(&encoderProgressLock);
+		HapLockUnlock(&encoderProgressLock);
 	}
 	return returnMe;
 }
@@ -883,11 +880,11 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 - (void) appendEncodedFrames	{
 	//NSLog(@"%s",__func__);
 	
-	os_unfair_lock_lock(&encoderProgressLock);
+	HapLockLock(&encoderProgressLock);
 	if (![super isReadyForMoreMediaData])	{
 		NSLog(@"\t\terr: not ready for more media data, %s",__func__);
 		[encoderProgressFrames removeAllObjects];
-		os_unfair_lock_unlock(&encoderProgressLock);
+		HapLockUnlock(&encoderProgressLock);
 		
 		[super markAsFinished];
 	}
@@ -902,12 +899,11 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 			if (![lastFrame encoded])
 				lastFrame = nil;
 			else	{
-				[lastFrame retain];
 				[encoderProgressFrames removeObjectAtIndex:0];
 				markAsFinished = YES;
 			}
 		}
-		os_unfair_lock_unlock(&encoderProgressLock);
+		HapLockUnlock(&encoderProgressLock);
 		
 		if (lastFrame != nil)	{
 			//	make a hap sample buffer, append it
@@ -935,12 +931,11 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 				if (![super appendSampleBuffer:hapSampleBuffer])	{
 					CMSampleTimingInfo		sampleTimingInfo;
 					CMSampleBufferGetSampleTimingInfo(hapSampleBuffer, 0, &sampleTimingInfo);
-					NSLog(@"\t\tERR: %s, failed to append sampleBuffer A at time %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.decodeTimeStamp) autorelease]);
+					NSLog(@"\t\tERR: %s, failed to append sampleBuffer A at time %@",__func__,CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.decodeTimeStamp));
 				}
 				CFRelease(hapSampleBuffer);
 			}
 			
-			[lastFrame release];
 			lastFrame = nil;
 		}
 		
@@ -951,12 +946,12 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 	}
 	//	else i'm either not waiting to run out, or there's more than one frame in the array...
 	else	{
-		os_unfair_lock_unlock(&encoderProgressLock);
+		HapLockUnlock(&encoderProgressLock);
 		
 		//	we want to add as many samples as possible
 		while ([super isReadyForMoreMediaData])	{
 			//	get the first two frames- if they're both encoded then i can append the first frame
-			os_unfair_lock_lock(&encoderProgressLock);
+			HapLockLock(&encoderProgressLock);
 			HapEncoderFrame		*thisFrame = nil;
 			HapEncoderFrame		*nextFrame = nil;
 			if ([encoderProgressFrames count]>1)	{
@@ -967,12 +962,10 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 					nextFrame = nil;
 				}
 				else	{
-					[thisFrame retain];
-					[nextFrame retain];
 					[encoderProgressFrames removeObjectAtIndex:0];
 				}
 			}
-			os_unfair_lock_unlock(&encoderProgressLock);
+			HapLockUnlock(&encoderProgressLock);
 			
 			//	if we don't have any frames to work with, break out of the while loop- there's nothing for us to append
 			if (thisFrame==nil || nextFrame==nil)
@@ -991,16 +984,14 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 				[self setLastEncodedDuration:sampleTimingInfo.duration];
 				
 				if (![super appendSampleBuffer:hapSampleBuffer])	{
-					NSLog(@"\t\tERR: %s, failed to append sampleBuffer B at time %@",__func__,[(id)CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.decodeTimeStamp) autorelease]);
+					NSLog(@"\t\tERR: %s, failed to append sampleBuffer B at time %@",__func__,CMTimeCopyDescription(kCFAllocatorDefault, sampleTimingInfo.decodeTimeStamp));
 				}
 				
 				CFRelease(hapSampleBuffer);
 			}
 			
-			if (thisFrame!=nil)
-				[thisFrame release];
-			if (nextFrame!=nil)
-				[nextFrame release];
+			thisFrame = nil;
+			nextFrame = nil;
 		}
 		
 	}
@@ -1008,7 +999,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 }
 - (void *) allocDXTEncoder	{
 	void			*returnMe = NULL;
-	os_unfair_lock_lock(&encoderProgressLock);
+	HapLockLock(&encoderProgressLock);
 	switch (exportCodecType)	{
 	case kHapCodecSubType:
 	case kHapAlphaCodecSubType:
@@ -1030,13 +1021,13 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 		NSLog(@"\t\terr: couldn't make encoder, %s",__func__);
 		FourCCLog(@"\t\texport codec type was",exportCodecType);
 	}
-	os_unfair_lock_unlock(&encoderProgressLock);
+	HapLockUnlock(&encoderProgressLock);
 	return returnMe;
 }
 - (void *) allocAlphaEncoder	{
 	//	note: only create and return an alpha encoder if appropriate (if i should be exporting a discrete alpha channel)
 	void			*returnMe = NULL;
-	os_unfair_lock_lock(&encoderProgressLock);
+	HapLockLock(&encoderProgressLock);
 	switch (exportCodecType)	{
 	case kHapCodecSubType:
 	case kHapAlphaCodecSubType:
@@ -1053,7 +1044,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 		NSLog(@"\t\terr: couldn't make encoder, %s",__func__);
 		FourCCLog(@"\t\texport codec type was",exportCodecType);
 	}
-	os_unfair_lock_unlock(&encoderProgressLock);
+	HapLockUnlock(&encoderProgressLock);
 	return returnMe;
 }
 
