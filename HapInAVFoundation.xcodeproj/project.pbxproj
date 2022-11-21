@@ -126,7 +126,7 @@
 		1A6D0E71207E4AC6005CCB1A /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E231A39CFFF007678E5 /* AVFoundation.framework */; };
 		1A6D0E72207E4ACF005CCB1A /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
 		1A6D0E73207E4AE3005CCB1A /* libsquish.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CDB207E47CD003FE56B /* libsquish.a */; };
-		1A6D0E74207E4AE6005CCB1A /* lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CD8207E47CD003FE56B /* lib.a */; };
+		1A6D0E74207E4AE6005CCB1A /* libsnappy.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CD8207E47CD003FE56B /* libsnappy.a */; };
 		1A6D0E75207E4AED005CCB1A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606D1A38D8D9008E693F /* OpenGL.framework */; };
 		1A6D0E76207E4AF2005CCB1A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606F1A38D8DE008E693F /* Accelerate.framework */; };
 		1A6D0E77207E4AF9005CCB1A /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A6060741A38D929008E693F /* Carbon.framework */; };
@@ -452,7 +452,7 @@
 				1A6D0E76207E4AF2005CCB1A /* Accelerate.framework in Frameworks */,
 				1A6D0E75207E4AED005CCB1A /* OpenGL.framework in Frameworks */,
 				1A6D0E73207E4AE3005CCB1A /* libsquish.a in Frameworks */,
-				1A6D0E74207E4AE6005CCB1A /* lib.a in Frameworks */,
+				1A6D0E74207E4AE6005CCB1A /* libsnappy.a in Frameworks */,
 				1A6D0E72207E4ACF005CCB1A /* CoreVideo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -721,7 +721,7 @@
 			isa = PBXGroup;
 			children = (
 				1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */,
-				1A4D2CD8207E47CD003FE56B /* lib.a */,
+				1A4D2CD8207E47CD003FE56B /* libsnappy.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -953,6 +953,7 @@
 					};
 					1A97F5AA1A38ABBF00E0DC74 = {
 						CreatedOnToolsVersion = 6.1;
+						ProvisioningStyle = Automatic;
 					};
 					1AABDE89207E544000D8F504 = {
 						CreatedOnToolsVersion = 9.2;
@@ -1001,10 +1002,9 @@
 			remoteRef = 1A0535F01A38C9C4005B47BD /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1A4D2CD8207E47CD003FE56B /* lib.a */ = {
+		1A4D2CD8207E47CD003FE56B /* libsnappy.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			name = lib.a;
 			path = libsnappy.a;
 			remoteRef = 1A4D2CD7207E47CD003FE56B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -1536,8 +1536,10 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_X86_VECTOR_INSTRUCTIONS = ssse3;
-				CODE_SIGN_IDENTITY = "Developer ID Application: Vidvox, LLC (KH97KZU7A7)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1553,6 +1555,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -1563,8 +1566,10 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_X86_VECTOR_INSTRUCTIONS = ssse3;
-				CODE_SIGN_IDENTITY = "Developer ID Application: Vidvox, LLC (KH97KZU7A7)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1580,6 +1585,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Vidvox.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
