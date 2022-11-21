@@ -507,22 +507,22 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 						case k32RGBAPixelFormat:
 							if (sourceFormat == k32BGRAPixelFormat)	{
 								uint8_t			permuteMap[] = {2, 1, 0, 3};
-								ImageMath_Permute8888(sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
+                                ImageMath_Permute8888(sourceBuffer + (index * self->exportSliceHeight * sourceBufferBytesPerRow),
 									sourceBufferBytesPerRow,
-									formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
-									encoderInputPxlFmtBytesPerRow[i],
-									(NSUInteger)exportImgSize.width,
+                                                      formatConvertBuffers[i] + (index * self->exportSliceHeight * self->encoderInputPxlFmtBytesPerRow[i]),
+                                                      self->encoderInputPxlFmtBytesPerRow[i],
+                                                      (NSUInteger)self->exportImgSize.width,
 									(NSUInteger)thisSliceHeight,
 									permuteMap,
 									0);
 							}
 							else if (sourceFormat == k32ARGBPixelFormat || sourceFormat == 0x20)	{
 								uint8_t			permuteMap[] = {1, 2, 3, 0};
-								ImageMath_Permute8888(sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
+                                ImageMath_Permute8888(sourceBuffer + (index * self->exportSliceHeight * sourceBufferBytesPerRow),
 									sourceBufferBytesPerRow,
-									formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
-									encoderInputPxlFmtBytesPerRow[i],
-									(NSUInteger)exportImgSize.width,
+                                                      formatConvertBuffers[i] + (index * self->exportSliceHeight * self->encoderInputPxlFmtBytesPerRow[i]),
+                                                      self->encoderInputPxlFmtBytesPerRow[i],
+                                                      (NSUInteger)self->exportImgSize.width,
 									(NSUInteger)thisSliceHeight,
 									permuteMap,
 									0);
@@ -530,17 +530,17 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 							else	{
 								NSLog(@"\t\terr: unhandled, %s",__func__);
 								FourCCLog(@"\t\tsourceFormat is",sourceFormat);
-								FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmts[i]);
+                                FourCCLog(@"\t\tencoderInputPxlFmt is",self->encoderInputPxlFmts[i]);
 							}
 							break;
 						case k32BGRAPixelFormat:
 							if (sourceFormat == k32ARGBPixelFormat || sourceFormat == 0x20)	{
 								uint8_t			permuteMap[] = {3, 2, 1, 0};
-								ImageMath_Permute8888(sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
+                                ImageMath_Permute8888(sourceBuffer + (index * self->exportSliceHeight * sourceBufferBytesPerRow),
 									sourceBufferBytesPerRow,
-									formatConvertBuffers[i] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[i]),
-									encoderInputPxlFmtBytesPerRow[i],
-									(NSUInteger)exportImgSize.width,
+                                                      formatConvertBuffers[i] + (index * self->exportSliceHeight * self->encoderInputPxlFmtBytesPerRow[i]),
+                                                      self->encoderInputPxlFmtBytesPerRow[i],
+                                                      (NSUInteger)self->exportImgSize.width,
 									(NSUInteger)thisSliceHeight,
 									permuteMap,
 									0);
@@ -548,13 +548,13 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 							else	{
 								NSLog(@"\t\terr: unhandled, %s",__func__);
 								FourCCLog(@"\t\tsourceFormat is",sourceFormat);
-								FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmts[i]);
+                                FourCCLog(@"\t\tencoderInputPxlFmt is",self->encoderInputPxlFmts[i]);
 							}
 							break;
 						default:
 							NSLog(@"\t\terr: default case, %s",__func__);
 							FourCCLog(@"\t\tsourceFormat is",sourceFormat);
-							FourCCLog(@"\t\tencoderInputPxlFmt is",encoderInputPxlFmts[i]);
+                                FourCCLog(@"\t\tencoderInputPxlFmt is",self->encoderInputPxlFmts[i]);
 							break;
 						}
 					}
@@ -566,42 +566,42 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 				if (targetDXTEncoder != NULL)	{
 					//	if we haven't created a new DXT encoder then we're using the GL encoder, which is shared- and must thus be locked
 					if (newDXTEncoder == NULL)
-						HapLockLock(&encoderLock);
+                        HapLockLock(&self->encoderLock);
 					//	slightly different path depending on whether i'm converting the passed pixel buffer...
 					if (formatConvertBuffers[0]==nil)	{
 						intErr = ((HapCodecDXTEncoderRef)targetDXTEncoder)->encode_function(targetDXTEncoder,
-							sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
+                                                                                            sourceBuffer + (index * self->exportSliceHeight * sourceBufferBytesPerRow),
 							(unsigned int)sourceBufferBytesPerRow,
-							encoderInputPxlFmts[0],
-							dxtBuffer + (index * exportSliceHeight * dxtBufferBytesPerRow[0]),
-							(unsigned int)exportImgSize.width,
+                                                                                            self->encoderInputPxlFmts[0],
+                                                                                            dxtBuffer + (index * self->exportSliceHeight * self->dxtBufferBytesPerRow[0]),
+                                                                                            (unsigned int)self->exportImgSize.width,
 							(unsigned int)thisSliceHeight);
 					}
 					//	...or if i'm converting the format conversion buffer 
 					else	{
 						intErr = ((HapCodecDXTEncoderRef)targetDXTEncoder)->encode_function(targetDXTEncoder,
-							formatConvertBuffers[0] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[0]),
-							(unsigned int)encoderInputPxlFmtBytesPerRow[0],
-							encoderInputPxlFmts[0],
-							dxtBuffer + (index * exportSliceHeight * dxtBufferBytesPerRow[0]),
-							(unsigned int)exportImgSize.width,
+                                                                                            formatConvertBuffers[0] + (index * self->exportSliceHeight * self->encoderInputPxlFmtBytesPerRow[0]),
+                                                                                            (unsigned int)self->encoderInputPxlFmtBytesPerRow[0],
+                                                                                            self->encoderInputPxlFmts[0],
+                                                                                            dxtBuffer + (index * self->exportSliceHeight * self->dxtBufferBytesPerRow[0]),
+                                                                                            (unsigned int)self->exportImgSize.width,
 							(unsigned int)thisSliceHeight);
 					}
 					if (newDXTEncoder == NULL)
-						HapLockUnlock(&encoderLock);
+                        HapLockUnlock(&self->encoderLock);
 				}
 				
 				//	if it exists, encode the data from the alpha plane for this slice as DXT data
-				if (exportPixelFormatsCount>1 && targetAlphaEncoder!=NULL)	{
+                if (self->exportPixelFormatsCount>1 && targetAlphaEncoder!=NULL)	{
 					//	slightly different path depending on whether i'm converting the passed pixel buffer...
 					if (formatConvertBuffers[1]==nil)	{
 						
 						intErr = ((HapCodecDXTEncoderRef)targetAlphaEncoder)->encode_function(targetAlphaEncoder,
-							sourceBuffer + (index * exportSliceHeight * sourceBufferBytesPerRow),
+                                                                                              sourceBuffer + (index * self->exportSliceHeight * sourceBufferBytesPerRow),
 							(unsigned int)sourceBufferBytesPerRow,
-							encoderInputPxlFmts[1],
-							dxtAlphaBuffer + (index * exportSliceHeight * dxtBufferBytesPerRow[1]),
-							(unsigned int)exportImgSize.width,
+                                                                                              self->encoderInputPxlFmts[1],
+                                                                                              dxtAlphaBuffer + (index * self->exportSliceHeight * self->dxtBufferBytesPerRow[1]),
+                                                                                              (unsigned int)self->exportImgSize.width,
 							(unsigned int)thisSliceHeight);
 						
 					}
@@ -609,11 +609,11 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 					else	{
 						
 						intErr = ((HapCodecDXTEncoderRef)targetAlphaEncoder)->encode_function(targetAlphaEncoder,
-							formatConvertBuffers[1] + (index * exportSliceHeight * encoderInputPxlFmtBytesPerRow[1]),
-							(unsigned int)encoderInputPxlFmtBytesPerRow[1],
-							encoderInputPxlFmts[1],
-							dxtAlphaBuffer + (index * exportSliceHeight * dxtBufferBytesPerRow[1]),
-							(unsigned int)exportImgSize.width,
+                                                                                              formatConvertBuffers[1] + (index * self->exportSliceHeight * self->encoderInputPxlFmtBytesPerRow[1]),
+                                                                                              (unsigned int)self->encoderInputPxlFmtBytesPerRow[1],
+                                                                                              self->encoderInputPxlFmts[1],
+                                                                                              dxtAlphaBuffer + (index * self->exportSliceHeight * self->dxtBufferBytesPerRow[1]),
+                                                                                              (unsigned int)self->exportImgSize.width,
 							(unsigned int)thisSliceHeight);
 						
 					}
@@ -622,10 +622,10 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 			};
 			
 			//	now i have to execute the conversion block the appropriate number of times...
-			if (exportSliceCount == 1)
+            if (self->exportSliceCount == 1)
 				encodeSliceAsDXTBlock(0);
 			else
-				dispatch_apply(exportSliceCount, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), encodeSliceAsDXTBlock);
+                dispatch_apply(self->exportSliceCount, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), encodeSliceAsDXTBlock);
 			
 			
 			//	unlock the pixel buffer immediately- we're done creating the DXT buffer, and don't need the source pixel buffer's data any longer
@@ -641,7 +641,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 				//	make a buffer to encode into (needs enough memory for a max-size hap frame), then do the dxt->hap encode into this buffer
 				OSStatus				osErr = noErr;
 				CMBlockBufferRef		maxSizeHapBlockBuffer = NULL;
-				osErr = CMBlockBufferCreateWithMemoryBlock(NULL, NULL, hapBufferPoolLength, _HIAVFMemPoolAllocator, NULL, 0, hapBufferPoolLength, kCMBlockBufferAssureMemoryNowFlag, &maxSizeHapBlockBuffer);
+                osErr = CMBlockBufferCreateWithMemoryBlock(NULL, NULL, self->hapBufferPoolLength, _HIAVFMemPoolAllocator, NULL, 0, self->hapBufferPoolLength, kCMBlockBufferAssureMemoryNowFlag, &maxSizeHapBlockBuffer);
 				if (osErr!=noErr)
 					NSLog(@"\t\terr %d at CMBlockBufferCreateWithMemoryBlock() in %s, not appending buffer",(int)osErr,__func__);
 				else	{
@@ -655,12 +655,12 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 						enum HapResult		hapErr = HapResult_No_Error;
 						const void			*tmpDXTBuffers[] = {dxtBuffer, dxtAlphaBuffer};
 						unsigned int		compressors[] = {HapCompressorSnappy, HapCompressorSnappy};
-						hapErr = HapEncode(exportPixelFormatsCount,
+                        hapErr = HapEncode(self->exportPixelFormatsCount,
 							(const void **)tmpDXTBuffers,
-							dxtBufferPoolLengths,
-							exportTextureTypes,
+                                           self->dxtBufferPoolLengths,
+                                           self->exportTextureTypes,
 							compressors,
-							exportChunkCounts,
+                                           self->exportChunkCounts,
 							hapBuffer,
 							hapBufferLength,
 							&bytesWrittenToHapBuffer);
@@ -682,7 +682,7 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 								//	make a CMFormatDescriptionRef that will describe the frame i'm supplying
 								CMFormatDescriptionRef		desc = NULL;
                                 int depth;
-                                switch (exportCodecType) {
+                                switch (self->exportCodecType) {
                                     case kHapAlphaCodecSubType:
                                     case kHapYCoCgACodecSubType:
                                         depth = 32;
@@ -702,9 +702,9 @@ NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 									[NSNumber numberWithInt:2], kCMFormatDescriptionExtension_Version,
 									nil];
 								osErr = CMVideoFormatDescriptionCreate(NULL,
-									exportCodecType,
-									(uint32_t)exportImgSize.width,
-									(uint32_t)exportImgSize.height,
+                                                                       self->exportCodecType,
+                                                                       (uint32_t)self->exportImgSize.width,
+                                                                       (uint32_t)self->exportImgSize.height,
 									(__bridge CFDictionaryRef)bufferExtensions,
 									&desc);
 								if (osErr!=noErr)
