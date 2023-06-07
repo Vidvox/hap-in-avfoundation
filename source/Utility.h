@@ -34,7 +34,7 @@
 #include <CoreFoundation.h>
 #include <stdio.h>
 #endif
-#include "HapPlatform.h"
+#include <HapInAVFoundation/HapPlatform.h>
 
 void addNumberToDictionary( CFMutableDictionaryRef dictionary, CFStringRef key, SInt32 numberSInt32 );
 void addDoubleToDictionary( CFMutableDictionaryRef dictionary, CFStringRef key, double numberDouble );

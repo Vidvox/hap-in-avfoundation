@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import "HapDecoderFrame.h"
+#import <HapInAVFoundation/HapDecoderFrame.h>
 #import <AVFoundation/AVFoundation.h>
 
 

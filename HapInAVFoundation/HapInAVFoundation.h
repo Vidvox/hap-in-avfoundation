@@ -3,25 +3,25 @@
 #import <CoreMedia/CoreMedia.h>
 #import <AVFoundation/AVFoundation.h>
 
-#include "HapPlatform.h"
+#include <HapInAVFoundation/HapPlatform.h>
 
 
 
 
 /*			if you're reading this, these are the headers that you're probably going to want to look at			*/
 
-#include "PixelFormats.h"
-#include "HapCodecSubTypes.h"
+#include <HapInAVFoundation/PixelFormats.h>
+#include <HapInAVFoundation/HapCodecSubTypes.h>
 
-#import "CMBlockBufferPool.h"
+#import <HapInAVFoundation/CMBlockBufferPool.h>
 
-#import "AVPlayerItemHapDXTOutput.h"
-#import "AVAssetReaderHapTrackOutput.h"
-#import "HapDecoderFrame.h"
-#import "AVPlayerItemAdditions.h"
-#import "AVAssetAdditions.h"
+#import <HapInAVFoundation/AVPlayerItemHapDXTOutput.h>
+#import <HapInAVFoundation/AVAssetReaderHapTrackOutput.h>
+#import <HapInAVFoundation/HapDecoderFrame.h>
+#import <HapInAVFoundation/AVPlayerItemAdditions.h>
+#import <HapInAVFoundation/AVAssetAdditions.h>
 
-#import "AVAssetWriterHapInput.h"
+#import <HapInAVFoundation/AVAssetWriterHapInput.h>
 
 
 

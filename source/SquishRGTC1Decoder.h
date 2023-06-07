@@ -25,7 +25,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "PixelFormats.h"
+#include <HapInAVFoundation/PixelFormats.h>
 
 void HapCodecSquishRGTC1Decode(const void *src,
                                void *dst,

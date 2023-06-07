@@ -1,8 +1,8 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "HapEncoderFrame.h"
+#import <HapInAVFoundation/HapEncoderFrame.h>
 //#import <os/lock.h>
-#import "HapMacros.h"
+#import <HapInAVFoundation/HapMacros.h>
 
 
 
