@@ -54,7 +54,7 @@ This method returns a retained frame as close to the passed time as possible.  M
 - (HapDecoderFrame *) allocFrameClosestToTime:(CMTime)n;
 
 /**
-This method immediately fetches and decodes the sample for the provided time.  Unlike allocFrameClosestToTime: (which is asynchronous), this method will take a bit longer to return because it fetches and decodes the raw samples before returning (synchronous), and is generally more appropriate for situations when you immediately need the specified sample (transcoding, thumbnails, that sort of thing).
+This method immediately fetches and decodes the sample for the provided time.  Unlike allocFrameClosestToTime: (which initiates asynchronous processing and returns immediately with the closest frame to the requested time), this method will take a bit longer to return because it fetches and decodes the raw samples before returning (synchronous), and is generally more appropriate for situations when you immediately need the specified sample (transcoding, thumbnails, that sort of thing).
 @return The decoded frame.
 @param n The time at which you would like to retrieve a frame.
 */

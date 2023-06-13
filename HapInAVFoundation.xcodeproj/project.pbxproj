@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1A05185E1A3E17CF00FC80D2 /* GLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A05185B1A3E17CF00FC80D2 /* GLView.m */; };
-		1A05185F1A3E17CF00FC80D2 /* HapPixelBufferTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A05185D1A3E17CF00FC80D2 /* HapPixelBufferTexture.m */; };
+		1A05185F1A3E17CF00FC80D2 /* HapGLPixelBufferTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A05185D1A3E17CF00FC80D2 /* HapGLPixelBufferTexture.m */; };
 		1A0518621A3E17DC00FC80D2 /* HapInAVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */; };
 		1A0518641A3E17F000FC80D2 /* HapInAVFoundation.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A97F5AB1A38ABBF00E0DC74 /* HapInAVFoundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1A05186B1A3E228700FC80D2 /* ScaledCoCgYToRGBA.frag in Resources */ = {isa = PBXBuildFile; fileRef = 1A0518691A3E228700FC80D2 /* ScaledCoCgYToRGBA.frag */; };
@@ -57,6 +57,8 @@
 		1A3BAC3C1A6524100065403A /* VVKQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC311A6524100065403A /* VVKQueue.m */; };
 		1A401D6C1A41FF79003B6E0A /* AVAssetWriterHapInput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A401D681A41FF79003B6E0A /* AVAssetWriterHapInput.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A401D6D1A41FF79003B6E0A /* AVAssetWriterHapInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */; };
+		1A499E682A324465003E19F0 /* HapMTLPixelBufferTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A499E672A324465003E19F0 /* HapMTLPixelBufferTexture.m */; };
+		1A499E6B2A3245BC003E19F0 /* HapMTLDecoderFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A499E6A2A3245BC003E19F0 /* HapMTLDecoderFrame.m */; };
 		1A4A76AF1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A4A76B01A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */; };
 		1A4D2CDD207E499A003FE56B /* ImageMath.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A05361D1A38CA5D005B47BD /* ImageMath.c */; };
@@ -126,7 +128,7 @@
 		1A6D0E71207E4AC6005CCB1A /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A680E231A39CFFF007678E5 /* AVFoundation.framework */; };
 		1A6D0E72207E4ACF005CCB1A /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
 		1A6D0E73207E4AE3005CCB1A /* libsquish.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CDB207E47CD003FE56B /* libsquish.a */; };
-		1A6D0E74207E4AE6005CCB1A /* lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CD8207E47CD003FE56B /* lib.a */; };
+		1A6D0E74207E4AE6005CCB1A /* libsnappy.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A4D2CD8207E47CD003FE56B /* libsnappy.a */; };
 		1A6D0E75207E4AED005CCB1A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606D1A38D8D9008E693F /* OpenGL.framework */; };
 		1A6D0E76207E4AF2005CCB1A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606F1A38D8DE008E693F /* Accelerate.framework */; };
 		1A6D0E77207E4AF9005CCB1A /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A6060741A38D929008E693F /* Carbon.framework */; };
@@ -138,6 +140,8 @@
 		1A97F5D31A38AC9800E0DC74 /* hap.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A97F5D11A38AC9800E0DC74 /* hap.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A97F5D61A38AD0700E0DC74 /* libsnappy.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */; };
 		1A97F5DB1A38AD3000E0DC74 /* libsnappy.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		1A9C97EE2A3234CB0071AE85 /* HapMTKView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9C97ED2A3234CB0071AE85 /* HapMTKView.m */; };
+		1A9C97F42A3235160071AE85 /* HapMTKViewShader.metal in Sources */ = {isa = PBXBuildFile; fileRef = 1A9C97F32A3235160071AE85 /* HapMTKViewShader.metal */; };
 		1AA70B14207E6B72005AC524 /* VVAVFTranscoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2F1A6524100065403A /* VVAVFTranscoder.m */; };
 		1AA70B15207E6B7A005AC524 /* VVAVFExportBasicSettingsCtrlr.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2C1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.m */; };
 		1AA70B18207E6BDE005AC524 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606F1A38D8DE008E693F /* Accelerate.framework */; };
@@ -164,11 +168,6 @@
 		1AEACEA325D5B9520063A3FB /* HapMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AEACEA225D5B9520063A3FB /* HapMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		840B32C72417D9DD007CA678 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 840B32C62417D9DD007CA678 /* Metal.framework */; };
 		840B32CC2417E796007CA678 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 840B32CB2417E796007CA678 /* MetalKit.framework */; };
-		84C83733242A79B000734A42 /* TextureRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C83726242A79B000734A42 /* TextureRenderer.m */; };
-		84C83734242A79B000734A42 /* MetalImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C83728242A79B000734A42 /* MetalImageView.m */; };
-		84C83736242A79B000734A42 /* HapMetalPixelBufferTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C8372B242A79B000734A42 /* HapMetalPixelBufferTexture.m */; };
-		84C83737242A79B000734A42 /* MetalHapDisplayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C8372C242A79B000734A42 /* MetalHapDisplayer.m */; };
-		84C83738242A79B000734A42 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 84C8372D242A79B000734A42 /* Shaders.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -299,8 +298,8 @@
 /* Begin PBXFileReference section */
 		1A05185A1A3E17CF00FC80D2 /* GLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLView.h; sourceTree = "<group>"; };
 		1A05185B1A3E17CF00FC80D2 /* GLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLView.m; sourceTree = "<group>"; };
-		1A05185C1A3E17CF00FC80D2 /* HapPixelBufferTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HapPixelBufferTexture.h; sourceTree = "<group>"; };
-		1A05185D1A3E17CF00FC80D2 /* HapPixelBufferTexture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapPixelBufferTexture.m; sourceTree = "<group>"; };
+		1A05185C1A3E17CF00FC80D2 /* HapGLPixelBufferTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HapGLPixelBufferTexture.h; sourceTree = "<group>"; };
+		1A05185D1A3E17CF00FC80D2 /* HapGLPixelBufferTexture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapGLPixelBufferTexture.m; sourceTree = "<group>"; };
 		1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		1A0518691A3E228700FC80D2 /* ScaledCoCgYToRGBA.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = ScaledCoCgYToRGBA.frag; sourceTree = "<group>"; };
 		1A05186A1A3E228700FC80D2 /* ScaledCoCgYToRGBA.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = ScaledCoCgYToRGBA.vert; sourceTree = "<group>"; };
@@ -365,6 +364,10 @@
 		1A3BAC311A6524100065403A /* VVKQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VVKQueue.m; sourceTree = "<group>"; };
 		1A401D681A41FF79003B6E0A /* AVAssetWriterHapInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetWriterHapInput.h; sourceTree = "<group>"; };
 		1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetWriterHapInput.m; sourceTree = "<group>"; };
+		1A499E662A324465003E19F0 /* HapMTLPixelBufferTexture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HapMTLPixelBufferTexture.h; sourceTree = "<group>"; };
+		1A499E672A324465003E19F0 /* HapMTLPixelBufferTexture.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HapMTLPixelBufferTexture.m; sourceTree = "<group>"; };
+		1A499E692A3245BC003E19F0 /* HapMTLDecoderFrame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HapMTLDecoderFrame.h; sourceTree = "<group>"; };
+		1A499E6A2A3245BC003E19F0 /* HapMTLDecoderFrame.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HapMTLDecoderFrame.m; sourceTree = "<group>"; };
 		1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetReaderHapTrackOutput.h; sourceTree = "<group>"; };
 		1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetReaderHapTrackOutput.m; sourceTree = "<group>"; };
 		1A4D2CCE207E47CD003FE56B /* libHapInAVFoundation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libHapInAVFoundation.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -385,6 +388,10 @@
 		1A97F5C91A38AC8000E0DC74 /* snappy.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = snappy.xcodeproj; path = "external/snappy/snappy-mac/snappy.xcodeproj"; sourceTree = "<group>"; };
 		1A97F5D01A38AC9800E0DC74 /* hap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hap.c; path = external/hap/hap.c; sourceTree = "<group>"; };
 		1A97F5D11A38AC9800E0DC74 /* hap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hap.h; path = external/hap/hap.h; sourceTree = "<group>"; };
+		1A9C97EC2A3234CB0071AE85 /* HapMTKView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HapMTKView.h; sourceTree = "<group>"; };
+		1A9C97ED2A3234CB0071AE85 /* HapMTKView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HapMTKView.m; sourceTree = "<group>"; };
+		1A9C97F22A32350C0071AE85 /* HapMTKViewShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HapMTKViewShaderTypes.h; sourceTree = "<group>"; };
+		1A9C97F32A3235160071AE85 /* HapMTKViewShader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = HapMTKViewShader.metal; sourceTree = "<group>"; };
 		1AABDE8A207E544000D8F504 /* AVFtoHap */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AVFtoHap; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AABDE8C207E544000D8F504 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		1AAE52DF1CFDDB8600BA5205 /* SquishRGTC1Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SquishRGTC1Decoder.h; path = source/SquishRGTC1Decoder.h; sourceTree = SOURCE_ROOT; };
@@ -407,16 +414,6 @@
 		1AEACEA225D5B9520063A3FB /* HapMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HapMacros.h; sourceTree = "<group>"; };
 		840B32C62417D9DD007CA678 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		840B32CB2417E796007CA678 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
-		84C83726242A79B000734A42 /* TextureRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextureRenderer.m; sourceTree = "<group>"; };
-		84C83727242A79B000734A42 /* MetalShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalShaderTypes.h; sourceTree = "<group>"; };
-		84C83728242A79B000734A42 /* MetalImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalImageView.m; sourceTree = "<group>"; };
-		84C8372B242A79B000734A42 /* HapMetalPixelBufferTexture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapMetalPixelBufferTexture.m; sourceTree = "<group>"; };
-		84C8372C242A79B000734A42 /* MetalHapDisplayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalHapDisplayer.m; sourceTree = "<group>"; };
-		84C8372D242A79B000734A42 /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
-		84C8372E242A79B000734A42 /* MetalImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalImageView.h; sourceTree = "<group>"; };
-		84C8372F242A79B000734A42 /* TextureRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureRenderer.h; sourceTree = "<group>"; };
-		84C83731242A79B000734A42 /* MetalHapDisplayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalHapDisplayer.h; sourceTree = "<group>"; };
-		84C83732242A79B000734A42 /* HapMetalPixelBufferTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HapMetalPixelBufferTexture.h; sourceTree = "<group>"; };
 		84F6F9362418F9D600E1C63D /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -452,7 +449,7 @@
 				1A6D0E76207E4AF2005CCB1A /* Accelerate.framework in Frameworks */,
 				1A6D0E75207E4AED005CCB1A /* OpenGL.framework in Frameworks */,
 				1A6D0E73207E4AE3005CCB1A /* libsquish.a in Frameworks */,
-				1A6D0E74207E4AE6005CCB1A /* lib.a in Frameworks */,
+				1A6D0E74207E4AE6005CCB1A /* libsnappy.a in Frameworks */,
 				1A6D0E72207E4ACF005CCB1A /* CoreVideo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -547,8 +544,8 @@
 				1A3230191A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.m */,
 				1A05185A1A3E17CF00FC80D2 /* GLView.h */,
 				1A05185B1A3E17CF00FC80D2 /* GLView.m */,
-				1A05185C1A3E17CF00FC80D2 /* HapPixelBufferTexture.h */,
-				1A05185D1A3E17CF00FC80D2 /* HapPixelBufferTexture.m */,
+				1A05185C1A3E17CF00FC80D2 /* HapGLPixelBufferTexture.h */,
+				1A05185D1A3E17CF00FC80D2 /* HapGLPixelBufferTexture.m */,
 				1AB665ED1C96CDA500FC1B9D /* ScaledCoCgYPlusAToRGBA.frag */,
 				1A0518691A3E228700FC80D2 /* ScaledCoCgYToRGBA.frag */,
 				1A05186A1A3E228700FC80D2 /* ScaledCoCgYToRGBA.vert */,
@@ -721,7 +718,7 @@
 			isa = PBXGroup;
 			children = (
 				1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */,
-				1A4D2CD8207E47CD003FE56B /* lib.a */,
+				1A4D2CD8207E47CD003FE56B /* libsnappy.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -748,16 +745,14 @@
 		84C83725242A79B000734A42 /* Metal */ = {
 			isa = PBXGroup;
 			children = (
-				84C8372E242A79B000734A42 /* MetalImageView.h */,
-				84C83728242A79B000734A42 /* MetalImageView.m */,
-				84C8372F242A79B000734A42 /* TextureRenderer.h */,
-				84C83726242A79B000734A42 /* TextureRenderer.m */,
-				84C83731242A79B000734A42 /* MetalHapDisplayer.h */,
-				84C8372C242A79B000734A42 /* MetalHapDisplayer.m */,
-				84C83732242A79B000734A42 /* HapMetalPixelBufferTexture.h */,
-				84C8372B242A79B000734A42 /* HapMetalPixelBufferTexture.m */,
-				84C83727242A79B000734A42 /* MetalShaderTypes.h */,
-				84C8372D242A79B000734A42 /* Shaders.metal */,
+				1A499E692A3245BC003E19F0 /* HapMTLDecoderFrame.h */,
+				1A499E6A2A3245BC003E19F0 /* HapMTLDecoderFrame.m */,
+				1A499E662A324465003E19F0 /* HapMTLPixelBufferTexture.h */,
+				1A499E672A324465003E19F0 /* HapMTLPixelBufferTexture.m */,
+				1A9C97EC2A3234CB0071AE85 /* HapMTKView.h */,
+				1A9C97ED2A3234CB0071AE85 /* HapMTKView.m */,
+				1A9C97F22A32350C0071AE85 /* HapMTKViewShaderTypes.h */,
+				1A9C97F32A3235160071AE85 /* HapMTKViewShader.metal */,
 			);
 			path = Metal;
 			sourceTree = "<group>";
@@ -1002,10 +997,9 @@
 			remoteRef = 1A0535F01A38C9C4005B47BD /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1A4D2CD8207E47CD003FE56B /* lib.a */ = {
+		1A4D2CD8207E47CD003FE56B /* libsnappy.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			name = lib.a;
 			path = libsnappy.a;
 			remoteRef = 1A4D2CD7207E47CD003FE56B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -1080,14 +1074,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84C83736242A79B000734A42 /* HapMetalPixelBufferTexture.m in Sources */,
-				1A05185F1A3E17CF00FC80D2 /* HapPixelBufferTexture.m in Sources */,
+				1A05185F1A3E17CF00FC80D2 /* HapGLPixelBufferTexture.m in Sources */,
+				1A499E6B2A3245BC003E19F0 /* HapMTLDecoderFrame.m in Sources */,
+				1A499E682A324465003E19F0 /* HapMTLPixelBufferTexture.m in Sources */,
 				1A32301C1A3BA14000DDB2E0 /* main.m in Sources */,
-				84C83734242A79B000734A42 /* MetalImageView.m in Sources */,
-				84C83738242A79B000734A42 /* Shaders.metal in Sources */,
+				1A9C97F42A3235160071AE85 /* HapMTKViewShader.metal in Sources */,
 				1A32301A1A3BA14000DDB2E0 /* HapInAVFTestAppDelegate.m in Sources */,
-				84C83737242A79B000734A42 /* MetalHapDisplayer.m in Sources */,
-				84C83733242A79B000734A42 /* TextureRenderer.m in Sources */,
+				1A9C97EE2A3234CB0071AE85 /* HapMTKView.m in Sources */,
 				1A05185E1A3E17CF00FC80D2 /* GLView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1272,6 +1265,7 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "HapInAVF Test App/Info.plist";
+				INFOPLIST_KEY_MetalCaptureEnabled = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -1310,6 +1304,7 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = "HapInAVF Test App/Info.plist";
+				INFOPLIST_KEY_MetalCaptureEnabled = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -1469,6 +1464,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -1494,7 +1490,7 @@
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -1509,7 +1505,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MTL_ENABLE_DEBUG_INFO = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -1519,6 +1515,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -1560,7 +1557,6 @@
 		1A97F5C21A38ABBF00E0DC74 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_X86_VECTOR_INSTRUCTIONS = ssse3;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -1594,7 +1590,6 @@
 		1A97F5C31A38ABBF00E0DC74 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_X86_VECTOR_INSTRUCTIONS = ssse3;
 				CODE_SIGN_IDENTITY = "Apple Development";

@@ -1,5 +1,5 @@
 /*
- HapPixelBufferTexture.m
+ HapGLPixelBufferTexture.m
  Hap QuickTime Playback
  
  Copyright (c) 2012-2013, Tom Butterworth and Vidvox LLC. All rights reserved.
@@ -25,7 +25,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "HapPixelBufferTexture.h"
+#import "HapGLPixelBufferTexture.h"
 #import <OpenGL/CGLMacro.h>
 //#import "HapSupport.h"
 #import <HapInAVFoundation/HapInAVFoundation.h>
@@ -33,14 +33,14 @@
 #define FourCCLog(n,f) NSLog(@"%@, %c%c%c%c",n,(int)((f>>24)&0xFF),(int)((f>>16)&0xFF),(int)((f>>8)&0xFF),(int)((f>>0)&0xFF))
 
 
-@interface HapPixelBufferTexture (Shader)
+@interface HapGLPixelBufferTexture (Shader)
 - (GLhandleARB)loadShaderOfType:(GLenum)type named:(NSString *)name;
 @end
 
 
 
 
-@implementation HapPixelBufferTexture
+@implementation HapGLPixelBufferTexture
 - (id)initWithContext:(CGLContextObj)context
 {
 	self = [super init];
@@ -73,16 +73,11 @@
 	if (shader != NULL) glDeleteObjectARB(shader);
 	if (alphaShader != NULL) glDeleteObjectARB(alphaShader);
 	if (decodedFrame!=nil)	{
-		[decodedFrame release];
 		decodedFrame = nil;
 	}
 	CGLReleaseContext(cgl_ctx);
-	[super dealloc];
 }
 - (void) setDecodedFrame:(HapDecoderFrame *)newFrame	{
-	[newFrame retain];
-	
-	[decodedFrame release];
 	decodedFrame = newFrame;
 	
 	valid = NO;

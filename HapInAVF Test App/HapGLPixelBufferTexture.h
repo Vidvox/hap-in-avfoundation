@@ -1,5 +1,5 @@
 /*
- HapPixelBufferTexture.h
+ HapGLPixelBufferTexture.h
  Hap QuickTime Playback
  
  Copyright (c) 2012-2013, Tom Butterworth and Vidvox LLC. All rights reserved.
@@ -37,7 +37,7 @@
     ScaledCoCgYToRGBA.vert
     ScaledCoCgYToRGBA.frag
  */
-@interface HapPixelBufferTexture : NSObject
+@interface HapGLPixelBufferTexture : NSObject
 {
 @private
     CGLContextObj   cgl_ctx;
@@ -54,7 +54,7 @@
     GLhandleARB      alphaShader;
 }
 /**
- Returns a HapPixelBufferTexture to draw in the provided CGL context.
+ Returns a HapGLPixelBufferTexture to draw in the provided CGL context.
  */
 - (id)initWithContext:(CGLContextObj)context;
 

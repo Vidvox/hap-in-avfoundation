@@ -25,19 +25,24 @@
 		[player setActionAtItemEnd:AVPlayerActionAtItemEndPause];
 		[player play];
 		playerItem = nil;
-		texCacheContext = [[NSOpenGLContext alloc] initWithFormat:[self createGLPixelFormat] shareContext:sharedContext];
-		texCache = NULL;
 		nativeAVFOutput = nil;
-		hapTexture = nil;
-		hapOutput = nil;
-		metalHapDisplayer = [MetalHapDisplayer new];
+		hapPlayerOutput = nil;
+		
+		glTexCacheContext = [[NSOpenGLContext alloc] initWithFormat:[self createGLPixelFormat] shareContext:sharedContext];
+		glTexCache = NULL;
+		
+		hapGLTexture = nil;
+		
+		hapTexUploadQueue = nil;
+		hapMTLTextures = [[NSMutableArray alloc] init];
+		hapMTLTexture = nil;
 
 		CVReturn		err = CVOpenGLTextureCacheCreate(kCFAllocatorDefault,
 			NULL,
-			[texCacheContext CGLContextObj],
+			[glTexCacheContext CGLContextObj],
 			[[self createGLPixelFormat] CGLPixelFormatObj],
 			NULL,
-			&texCache);
+			&glTexCache);
 		if (err!=kCVReturnSuccess)
 			NSLog(@"\t\terr %d at CVOpenGLTextureCacheCreate()",err);
 		
@@ -47,7 +52,7 @@
 - (void) awakeFromNib	{
 	@synchronized (self)	{
 		//	configure the GL view to use a shared GL context, so it can draw the textures we upload to other contexts
-		NSOpenGLContext		*newCtx = [[[NSOpenGLContext alloc] initWithFormat:[self createGLPixelFormat] shareContext:sharedContext] autorelease];
+		NSOpenGLContext		*newCtx = [[NSOpenGLContext alloc] initWithFormat:[self createGLPixelFormat] shareContext:sharedContext];
 		[glView setOpenGLContext:newCtx];
 		[newCtx setView:glView];
 		[glView reshape];
@@ -70,7 +75,7 @@
 		displayLink = NULL;
 	}
 	else	{
-		CVDisplayLinkSetOutputCallback(displayLink, displayLinkCallback, self);
+		CVDisplayLinkSetOutputCallback(displayLink, displayLinkCallback, (__bridge void * _Nullable)(self));
 		CVDisplayLinkStart(displayLink);
 	}
 	
@@ -86,7 +91,7 @@
 
 
 - (void) openDocument:(id)sender	{
-	NSOpenPanel		*openPanel = [[NSOpenPanel openPanel] retain];
+	NSOpenPanel		*openPanel = [NSOpenPanel openPanel];
 	NSUserDefaults	*def = [NSUserDefaults standardUserDefaults];
 	NSString		*openPanelDir = [def objectForKey:@"openPanelDir"];
 	if (openPanelDir==nil)
@@ -95,7 +100,7 @@
 	[openPanel
 		beginSheetModalForWindow:window
 		completionHandler:^(NSInteger result)	{
-			NSString		*path = (result!=NSFileHandlingPanelOKButton) ? nil : [[openPanel URL] path];
+		NSString		*path = (result!=NSModalResponseOK) ? nil : [[openPanel URL] path];
 			if (path != nil)	{
 				NSUserDefaults		*udef = [NSUserDefaults standardUserDefaults];
 				[udef setObject:[path stringByDeletingLastPathComponent] forKey:@"openPanelDir"];
@@ -105,7 +110,6 @@
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[self loadFileAtPath:path];
 			});
-			[openPanel release];
 		}];
 }
 
@@ -116,7 +120,7 @@
 	NSURL				*newURL = (n==nil) ? nil : [NSURL fileURLWithPath:n];
 	AVAsset				*newAsset = (newURL==nil) ? nil : [AVAsset assetWithURL:newURL];
 	//	make a player item
-	AVPlayerItem		*newPlayerItem = (newAsset==nil) ? nil : [[[AVPlayerItem alloc] initWithAsset:newAsset] autorelease];
+	AVPlayerItem		*newPlayerItem = (newAsset==nil) ? nil : [[AVPlayerItem alloc] initWithAsset:newAsset];
 	if (newPlayerItem == nil)	{
 		NSLog(@"\t\terr: couldn't make AVPlayerItem in %s",__func__);
 		return;
@@ -125,7 +129,7 @@
 	NSArray				*vidTracks = [newAsset tracksWithMediaType:AVMediaTypeVideo];
 	for (AVAssetTrack *trackPtr in vidTracks)	{
 		NSArray					*trackFormatDescs = [trackPtr formatDescriptions];
-		CMFormatDescriptionRef	desc = (trackFormatDescs==nil || [trackFormatDescs count]<1) ? nil : (CMFormatDescriptionRef)[trackFormatDescs objectAtIndex:0];
+		CMFormatDescriptionRef	desc = (trackFormatDescs==nil || [trackFormatDescs count]<1) ? nil : (__bridge CMFormatDescriptionRef)[trackFormatDescs objectAtIndex:0];
 		if (desc==nil)
 			NSLog(@"\t\terr: desc nil in %s",__func__);
 		else	{
@@ -149,28 +153,26 @@
 		}
 		//	else there's no output- create one
 		else	{
-			NSDictionary				*pba = [NSDictionary dictionaryWithObjectsAndKeys:
-				[NSNumber numberWithInteger:kCVPixelFormatType_32BGRA], kCVPixelBufferPixelFormatTypeKey,
-				[NSNumber numberWithBool:YES], kCVPixelBufferIOSurfaceOpenGLFBOCompatibilityKey,
-				//NUMINT(dims.width), kCVPixelBufferWidthKey,
-				//NUMINT(dims.height), kCVPixelBufferHeightKey,
-				nil];
+			NSDictionary		*pba = @{
+				(NSString*)kCVPixelBufferPixelFormatTypeKey: @( kCVPixelFormatType_32BGRA ),
+				(NSString*)kCVPixelBufferIOSurfaceOpenGLFBOCompatibilityKey: @( YES ),
+				(NSString*)kCVPixelBufferMetalCompatibilityKey: @( YES )
+			};
 			nativeAVFOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pba];
 			[nativeAVFOutput setSuppressesPlayerRendering:YES];
 		}
 		
 		//	if there's a hap output, remove it from the "old" item
-		if (hapOutput != nil)	{
+		if (hapPlayerOutput != nil)	{
 			if (playerItem != nil)
-				[playerItem removeOutput:hapOutput];
+				[playerItem removeOutput:hapPlayerOutput];
 		}
 		//	else there's no hap output- create one
 		else	{
-			hapOutput = [[AVPlayerItemHapDXTOutput alloc] init];
-			[hapOutput setSuppressesPlayerRendering:YES];
+			hapPlayerOutput = [[AVPlayerItemHapDXTOutput alloc] init];
+			[hapPlayerOutput setSuppressesPlayerRendering:YES];
 			//	if the user's displaying the the NSImage/CPU tab, we want this output to output as RGB
-			if (selectedTabIndex==1)
-				[hapOutput setOutputAsRGB:YES];
+			[hapPlayerOutput setOutputAsRGB:(selectedTabIndex==1)];
 		}
 		
 		//	unregister as an observer for the "old" item's play-to-end notifications
@@ -178,14 +180,13 @@
 		if (playerItem != nil)
 			[nc removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:playerItem];
 		
-		if (hapTexture!=nil)	{
-			[hapTexture release];
-			hapTexture = nil;
+		if (hapGLTexture!=nil)	{
+			hapGLTexture = nil;
 		}
 		
 		//	add the outputs to the new player item
 		[newPlayerItem addOutput:nativeAVFOutput];
-		[newPlayerItem addOutput:hapOutput];
+		[newPlayerItem addOutput:hapPlayerOutput];
 		//	tell the player to start playing the new player item
 		if ([NSThread isMainThread])
 			[player replaceCurrentItemWithPlayerItem:newPlayerItem];
@@ -196,42 +197,44 @@
 			[nc addObserver:self selector:@selector(itemDidPlayToEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:newPlayerItem];
 		
 		//	release the "old" player item, retain a ptr to the "new" player item
-		if (playerItem!=nil)
-			[playerItem release];
-		playerItem = (newPlayerItem==nil) ? nil : [newPlayerItem retain];
+		playerItem = (newPlayerItem==nil) ? nil : newPlayerItem;
 		
 		[player setRate:1.0];
 	}
 }
+
+
 //	this is called when you change the tabs in the tab view
 - (void) tabView:(NSTabView *)tv didSelectTabViewItem:(NSTabViewItem *)item {
 	NSInteger		selIndex = [tv indexOfTabViewItem:item];
 	selectedTabIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
 	//	if the user's displaying the the NSImage/CPU tab, we want this output to output as RGB
 	if (selIndex==1)
-		[hapOutput setOutputAsRGB:YES];
+		[hapPlayerOutput setOutputAsRGB:YES];
 	else if (selIndex==0)
-		[hapOutput setOutputAsRGB:NO];
+		[hapPlayerOutput setOutputAsRGB:NO];
 	else if (selIndex==2) // METAL
-		[hapOutput setOutputAsRGB:NO];
+		[hapPlayerOutput setOutputAsRGB:NO];
 }
+
+
 //	this is called by the displaylink's C callback- this drives rendering
 - (void) renderCallback {
 	@synchronized (self)	{
 		//	try to get a hap decoder frame- it returns a nil quickly if the player it's attached to doesn't have a hap track.
-		CMTime					outputTime = [hapOutput itemTimeForMachAbsoluteTime:mach_absolute_time()];
-		HapDecoderFrame			*dxtFrame = [hapOutput allocFrameClosestToTime:outputTime];
-		//HapDecoderFrame			*dxtFrame = [hapOutput allocFrameForTime:outputTime];
+		CMTime					outputTime = [hapPlayerOutput itemTimeForMachAbsoluteTime:mach_absolute_time()];
+		HapDecoderFrame			*dxtFrame = [hapPlayerOutput allocFrameClosestToTime:outputTime];
+		//HapDecoderFrame			*dxtFrame = [hapPlayerOutput allocFrameForTime:outputTime];
 		if (dxtFrame!=nil)	{
 			//	if there's no hap texture, make one
-			if (hapTexture==nil)	{
+			if (hapGLTexture==nil)	{
 				CGLContextObj		newCtx = NULL;
 				CGLError			err = CGLCreateContext([[self createGLPixelFormat] CGLPixelFormatObj], [sharedContext CGLContextObj], &newCtx);
 				if (err!=kCGLNoError)
 					NSLog(@"\t\terr %u at CGLCreateContext() in %s",err,__func__);
 				else	{
-					hapTexture = [[HapPixelBufferTexture alloc] initWithContext:newCtx];
-					if (hapTexture==nil)
+					hapGLTexture = [[HapGLPixelBufferTexture alloc] initWithContext:newCtx];
+					if (hapGLTexture==nil)
 						NSLog(@"\t\terr: couldn't create HapPixelBufferContext in %s",__func__);
 					CGLReleaseContext(newCtx);
 				}
@@ -239,10 +242,10 @@
 			
 			NSSize					imgSize = [dxtFrame imgSize];
 			NSSize					dxtImgSize = [dxtFrame dxtImgSize];
-			if (selectedTabIndex==0 || selectedTabIndex==1)		{
-				if (hapTexture!=nil)	{
+			if (selectedTabIndex == 0)	{
+				if (hapGLTexture!=nil)	{
 					//	pass the decoded frame to the hap texture
-					[hapTexture setDecodedFrame:dxtFrame];
+					[hapGLTexture setDecodedFrame:dxtFrame];
 					//	draw the texture in the GL view
 					NSSize					dxtTexSize;
 					// On NVIDIA hardware there is a massive slowdown if DXT textures aren't POT-dimensioned, so we use POT-dimensioned backing
@@ -257,33 +260,34 @@
 						tmpInt = tmpInt<<1;
 					dxtTexSize.height = tmpInt;
 					
-					if ([hapTexture textureCount]>1)	{
+					if ([hapGLTexture textureCount]>1)	{
 						[glView
-							drawTexture:[hapTexture textureNames][0]
+							drawTexture:[hapGLTexture textureNames][0]
 							target:GL_TEXTURE_2D
-							alphaTexture:[hapTexture textureNames][1]
+							alphaTexture:[hapGLTexture textureNames][1]
 							alphaTarget:GL_TEXTURE_2D
 							imageSize:imgSize
 							textureSize:dxtTexSize
 							flipped:YES
-							usingShader:[hapTexture shaderProgramObject]];
+							usingShader:[hapGLTexture shaderProgramObject]];
 					}
 					else	{
 						[glView
-							drawTexture:[hapTexture textureNames][0]
+							drawTexture:[hapGLTexture textureNames][0]
 							target:GL_TEXTURE_2D
 							imageSize:imgSize
 							textureSize:dxtTexSize
 							flipped:YES
-							usingShader:[hapTexture shaderProgramObject]];
+							usingShader:[hapGLTexture shaderProgramObject]];
 					}
 				}
-				
+			}
+			else if (selectedTabIndex == 1)	{
 				//	if the frame has RGB data attached to it, make an NSBitmapImageRep & NSImage from the data, then draw it in the NSImageView
 				void				*rgbData = [dxtFrame rgbData];
 				size_t				rgbDataSize = [dxtFrame rgbDataSize];
 				if (rgbData==nil)	{
-					//NSLog(@"\t\terr: rgb data nil in %s",__func__);
+					NSLog(@"\t\terr: rgb data nil in %s",__func__);
 				}
 				else	{
 					NSBitmapImageRep	*bitmapRep = [[NSBitmapImageRep alloc]
@@ -309,26 +313,53 @@
 							[imgView setImage:newImg];
 						});
 						
-						[newImg release];
 						newImg = nil;
-						[bitmapRep release];
 						bitmapRep = nil;
 					}
 				}
-			} else if(selectedTabIndex==2)	  {
-				metalView.flip = NO;
-				[metalHapDisplayer displayFrame:dxtFrame inView:metalView];
+			}
+			else if(selectedTabIndex==2)	  {
+				id<MTLDevice>			viewDevice = metalView.device;
+				
+				//	make sure we have an upload queue that works with the view's device...
+				if (hapTexUploadQueue != nil && hapTexUploadQueue.device != viewDevice)
+					hapTexUploadQueue = nil;
+				if (hapTexUploadQueue == nil)	{
+					hapTexUploadQueue = [viewDevice newCommandQueue];
+				}
+				
+				//	if we have a texture, but its frame differs from the decoded frame we're going to try drawing, just free it- the view that draws it is responsible for retaining its own copy.  we need to start uploading this new image data to a new texture ("new"- likely pooled).
+				if (hapMTLTexture != nil && hapMTLTexture.frame != dxtFrame)	{
+					hapMTLTexture = nil;
+				}
+				
+				//	if we still have a hap metal texture...
+				if (hapMTLTexture != nil)	{
+					//	intentionally blank- the image data has already been uploaded to the texture, and will be passed to the view when the commnad buffer pushing the data to the GPU completes
+				}
+				//	else we don't have a hap metal texture- we need to create one and populate it...
+				else	{
+					hapMTLTexture = [self getHapMTLPixelBufferTexture];
+					
+					//	when the command buffer that populates the texture completes, pass the texture to the view for display
+					id<MTLCommandBuffer>	cmdBuffer = [hapTexUploadQueue commandBuffer];
+					[hapMTLTexture populateWithHapDecoderFrame:dxtFrame inCommandBuffer:cmdBuffer];
+					[cmdBuffer addCompletedHandler:^(id<MTLCommandBuffer> completedCB)	{
+						[metalView displayPixelBufferTexture:hapMTLTexture flipped:NO];
+					}];
+					[cmdBuffer commit];
+				}
 			}
 			
-			[dxtFrame release];
+			dxtFrame = nil;
 		}
 
-		//	try to get a CV pixel buffer (returns immediately if we're not using the native AVF output side of things)
+		//	try to get a CV pixel buffer (returns immediately if we're not using the native AVF output side of things: this chunk of code only executes if we're playing back NON-hap video files supported by AVFoundation!)
 		CMTime					frameTime = [nativeAVFOutput itemTimeForMachAbsoluteTime:mach_absolute_time()];
 		if (nativeAVFOutput!=nil && [nativeAVFOutput hasNewPixelBufferForItemTime:frameTime])	{
 			CMTime					frameDisplayTime = kCMTimeZero;
-			CVPixelBufferRef		pb = [nativeAVFOutput copyPixelBufferForItemTime:frameTime itemTimeForDisplay:&frameDisplayTime];
-			if (pb==NULL)
+			CVPixelBufferRef		nativeAVFPB = [nativeAVFOutput copyPixelBufferForItemTime:frameTime itemTimeForDisplay:&frameDisplayTime];
+			if (nativeAVFPB==NULL)
 				NSLog(@"\t\tERR: unable to copy pixel buffer from nativeAVFOutput");
 			else	{
 				//	if we want to use opengl to display the buffer...
@@ -336,8 +367,8 @@
 					//	make a CV GL texture from the pixel buffer
 					CVOpenGLTextureRef		newTex = NULL;
 					CVReturn				err = CVOpenGLTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
-						texCache,
-						pb,
+						glTexCache,
+						nativeAVFPB,
 						NULL,
 						&newTex);
 					if (err == kCVReturnSuccess)	{
@@ -355,8 +386,8 @@
 				}
 				//	else we want to use NSImage to display the buffer...
 				else if (selectedTabIndex==1)	{
-					size_t				pbBytesPerRow = CVPixelBufferGetBytesPerRow(pb);
-					NSSize				imgSize = NSMakeSize(CVPixelBufferGetWidth(pb), CVPixelBufferGetHeight(pb));
+					size_t				pbBytesPerRow = CVPixelBufferGetBytesPerRow(nativeAVFPB);
+					NSSize				imgSize = NSMakeSize(CVPixelBufferGetWidth(nativeAVFPB), CVPixelBufferGetHeight(nativeAVFPB));
 					NSBitmapImageRep	*bitmapRep = [[NSBitmapImageRep alloc]
 						initWithBitmapDataPlanes:NULL
 						pixelsWide:(NSUInteger)imgSize.width
@@ -372,33 +403,31 @@
 					if (bitmapRep==nil)
 						NSLog(@"\t\terr: bitmap rep nil, %s",__func__);
 					else	{
-						CVPixelBufferLockBaseAddress(pb, kCVPixelBufferLock_ReadOnly);
+						CVPixelBufferLockBaseAddress(nativeAVFPB, kCVPixelBufferLock_ReadOnly);
 						size_t				bitmapBytesPerRow = [bitmapRep bytesPerRow];
 						size_t				minBytesPerRow = fminl(pbBytesPerRow, bitmapBytesPerRow);
-						void				*readAddr = CVPixelBufferGetBaseAddress(pb);
+						void				*readAddr = CVPixelBufferGetBaseAddress(nativeAVFPB);
 						void				*writeAddr = [bitmapRep bitmapData];
 						for (int i=0; i<imgSize.height; ++i)	{
 							memcpy(writeAddr, readAddr, minBytesPerRow);
 							writeAddr += bitmapBytesPerRow;
 							readAddr += pbBytesPerRow;
 						}
-						CVPixelBufferUnlockBaseAddress(pb, kCVPixelBufferLock_ReadOnly);
+						CVPixelBufferUnlockBaseAddress(nativeAVFPB, kCVPixelBufferLock_ReadOnly);
 						
 						NSImage				*newImg = [[NSImage alloc] initWithSize:imgSize];
 						[newImg addRepresentation:bitmapRep];
 						//	draw the NSImage in the view
 						[imgView setImage:newImg];
 					
-						[newImg release];
 						newImg = nil;
-						[bitmapRep release];
 						bitmapRep = nil;
 					}
 					
 				}
-				// Metal
+				//	else we're using metal to display the buffer...
 				else if (selectedTabIndex==2)	 {
-					// Lazy Init
+					
 					if (metalTextureCache==NULL)	{
 						CVReturn		cvReturn = CVMetalTextureCacheCreate(
 							kCFAllocatorDefault,
@@ -412,34 +441,33 @@
 						}
 					}
 					CVMetalTextureRef		metalTextureRef;
-					CGSize			textureSize = CVImageBufferGetEncodedSize(pb);
+					CGSize			textureSize = CVImageBufferGetEncodedSize(nativeAVFPB);
 					CVReturn		cvReturn = CVMetalTextureCacheCreateTextureFromImage(
 						kCFAllocatorDefault,
 						metalTextureCache,
-						pb, nil,
+						nativeAVFPB,
+						nil,
 						metalView.colorPixelFormat,
-						textureSize.width, textureSize.height,
+						textureSize.width,
+						textureSize.height,
 						0,
 						&metalTextureRef);
 					if (cvReturn == kCVReturnSuccess)	{
-						// draw the CV Metal texture in the Metal view
-						id<MTLTexture>			unsafeTexture = CVMetalTextureGetTexture(metalTextureRef);
-						metalView.flip = YES;
-						[metalView setUnsafeImage:unsafeTexture];
-						unsafeTexture = nil;
+						[metalView displayCVMetalTextureRef:metalTextureRef flipped:NO];
 						CVBufferRelease(metalTextureRef);
 					}
 					else	{
 						NSLog(@"\t\terr %d at CVMetalTextureCacheCreateTextureFromImage()",cvReturn);
 					}
+					
 				}
 				
-				CVPixelBufferRelease(pb);
+				CVPixelBufferRelease(nativeAVFPB);
 			}
 		}
 		
 		/*		THIS IS FLAGGED AS A LEAK BY STATIC ANALYSIS...		*/
-		CVOpenGLTextureCacheFlush(texCache,0);
+		CVOpenGLTextureCacheFlush(glTexCache,0);
 		/*		...but it isn't.  analysis thinks that "pb" is an id with a retain count, rather than a CFType that needs to be released by a special function (CVPixelBufferRelease())		*/
 	}
 	
@@ -467,7 +495,29 @@
 		NSOpenGLPFANoRecovery,
 		NSOpenGLPFAAllowOfflineRenderers,
 		0};
-	return [[[NSOpenGLPixelFormat alloc] initWithAttributes:attrs] autorelease];
+	return [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
+}
+
+
+- (void) poolFreedPixelBufferTexture:(HapMTLPixelBufferTexture *)n	{
+	if (n == nil)
+		return;
+	@synchronized (self)	{
+		[hapMTLTextures addObject:n];
+	}
+}
+- (HapMTLPixelBufferTexture *) getHapMTLPixelBufferTexture	{
+	HapMTLPixelBufferTexture		*returnMe = nil;
+	@synchronized (self)	{
+		if (hapMTLTextures.count > 0)	{
+			returnMe = hapMTLTextures[0];
+			[hapMTLTextures removeObjectAtIndex:0];
+		}
+	}
+	if (returnMe == nil)	{
+		returnMe = [[HapMTLPixelBufferTexture alloc] initWithDevice:metalView.device];
+	}
+	return returnMe;
 }
 
 
@@ -483,12 +533,12 @@ CVReturn displayLinkCallback(CVDisplayLinkRef displayLink,
 	CVOptionFlags *flagsOut, 
 	void *displayLinkContext)
 {
-	NSAutoreleasePool		*pool =[[NSAutoreleasePool alloc] init];
-	[(HapInAVFTestAppDelegate *)displayLinkContext renderCallback];
-	[pool release];
+	@autoreleasepool	{
+		[(__bridge HapInAVFTestAppDelegate *)displayLinkContext renderCallback];
+	}
 	return kCVReturnSuccess;
 }
 void pixelBufferReleaseCallback(void *releaseRefCon, const void *baseAddress)	{
-	HapDecoderFrame		*decoderFrame = (HapDecoderFrame *)releaseRefCon;
-	[decoderFrame release];
+	HapDecoderFrame		*decoderFrame = (HapDecoderFrame *)CFBridgingRelease(releaseRefCon);
+	decoderFrame = nil;
 }

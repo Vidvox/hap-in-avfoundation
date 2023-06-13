@@ -12,6 +12,7 @@
 
 #include <HapInAVFoundation/PixelFormats.h>
 #include <HapInAVFoundation/HapCodecSubTypes.h>
+#include <HapInAVFoundation/hap.h>
 
 #import <HapInAVFoundation/CMBlockBufferPool.h>
 

@@ -3,34 +3,38 @@
 #import <AVFoundation/AVFoundation.h>
 #import <HapInAVFoundation/HapInAVFoundation.h>
 #import "GLView.h"
-#import "HapPixelBufferTexture.h"
-#import "MetalImageView.h"
-#import "MetalHapDisplayer.h"
+#import "HapGLPixelBufferTexture.h"
+#import "HapMTLPixelBufferTexture.h"
+#import "HapMTKView.h"
 
 
 
 
-@interface HapInAVFTestAppDelegate : NSObject <NSApplicationDelegate,NSTabViewDelegate>	{
+@interface HapInAVFTestAppDelegate : NSObject <NSApplicationDelegate,NSTabViewDelegate> {
 	CVDisplayLinkRef			displayLink;	//	this "drives" rendering
-	NSOpenGLContext				*sharedContext;	//	all GL contexts share this, so textures from one contact can be used in others
+	NSOpenGLContext				*sharedContext; //	all GL contexts share this, so textures from one contact can be used in others
 	IBOutlet NSWindow			*window;
 	IBOutlet NSTabView			*tabView;
 	IBOutlet GLView				*glView;
 	IBOutlet NSImageView		*imgView;
+	IBOutlet HapMTKView			*metalView;
 	IBOutlet NSTextField		*statusField;
 	
 	AVPlayer					*player;
 	AVPlayerItem				*playerItem;
-	
-	NSOpenGLContext				*texCacheContext;	//	this and the associated texture cache are used to create GL textures from non-hap content played back by AVFoundation
-	CVOpenGLTextureCacheRef		texCache;
 	AVPlayerItemVideoOutput		*nativeAVFOutput;	//	this video output is used to play back non-hap content
+	AVPlayerItemHapDXTOutput	*hapPlayerOutput; //	works similarly to "nativeAVFOutput"- it's a subclass of AVPlayerItemOutput, you add it to a player item and ask it for new frames (instances of HapDecoderFrame)
 	
-	HapPixelBufferTexture		*hapTexture;	//	this class uploads the DXT data in a decoded instance of HapDecoderFrame into a GL texture.  this is also where the shader that draws YCoCg DXT data as RGB is loaded.  this class was copied from the hap/quicktime sample app
-	AVPlayerItemHapDXTOutput	*hapOutput;	//	works similarly to "nativeAVFOutput"- it's a subclass of AVPlayerItemOutput, you add it to a player item and ask it for new frames (instances of HapDecoderFrame)
-
-    IBOutlet MetalImageView     *metalView;
-    MetalHapDisplayer           *metalHapDisplayer;
+	NSOpenGLContext				*glTexCacheContext;	//	this and the associated texture cache are used to create GL textures from non-hap content played back by AVFoundation
+	CVOpenGLTextureCacheRef		glTexCache;
+	
+	HapGLPixelBufferTexture		*hapGLTexture;	//	this class uploads the DXT data in a decoded instance of HapDecoderFrame into a GL texture.	 this is also where the shader that draws YCoCg DXT data as RGB is loaded.	this class was copied from the hap/quicktime sample app
+	
+	id<MTLCommandQueue>			hapTexUploadQueue;
+	//	this class uploads the DXT data in a decoded instance of HapDecoderFrame into an id<MTLTexture>.
+	HapMTLPixelBufferTexture	*hapMTLTexture;
+	//	when we're done with 'hapMTLTexture' we stick it in this array (and when we need a new one, we try to pull from this array first).  functions as crude texture pool to minimize asset creation at runtime.
+	NSMutableArray<HapMTLPixelBufferTexture*>	*hapMTLTextures;
 }
 
 - (void) loadFileAtPath:(NSString *)n;
@@ -38,6 +42,9 @@
 - (void) itemDidPlayToEnd:(NSNotification *)note;
 
 - (NSOpenGLPixelFormat *) createGLPixelFormat;
+
+- (void) poolFreedPixelBufferTexture:(HapMTLPixelBufferTexture *)n;
+- (HapMTLPixelBufferTexture *) getHapMTLPixelBufferTexture;
 
 @end
 
