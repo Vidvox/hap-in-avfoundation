@@ -46,7 +46,7 @@ static void HapCodecAddBlockDescription(CFMutableDictionaryRef dictionary, unsig
     addNumberToDictionary(dictionary, kCVPixelFormatBlockVerticalAlignment, 4);
 }
 
-static void HapCodecRegisterYCoCgDXTARGTC1PixelFormat()
+static void HapCodecRegisterYCoCgDXTARGTC1PixelFormat(void)
 {
     //ICMPixelFormatInfo pixelInfo;
 

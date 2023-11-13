@@ -29,7 +29,7 @@
 #include "Utility.h"
 #import <Foundation/Foundation.h>
 
-int hapCodecMaxTasks()
+int hapCodecMaxTasks(void)
 {
     /*
      Some Adobe products throw an error if they queue more than 10 buffers
