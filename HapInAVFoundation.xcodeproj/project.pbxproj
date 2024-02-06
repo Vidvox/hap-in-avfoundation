@@ -58,7 +58,6 @@
 		1A401D6C1A41FF79003B6E0A /* AVAssetWriterHapInput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A401D681A41FF79003B6E0A /* AVAssetWriterHapInput.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A401D6D1A41FF79003B6E0A /* AVAssetWriterHapInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */; };
 		1A499E682A324465003E19F0 /* HapMTLPixelBufferTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A499E672A324465003E19F0 /* HapMTLPixelBufferTexture.m */; };
-		1A499E6B2A3245BC003E19F0 /* HapMTLDecoderFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A499E6A2A3245BC003E19F0 /* HapMTLDecoderFrame.m */; };
 		1A4A76AF1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A4A76B01A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */; };
 		1A4D2CDD207E499A003FE56B /* ImageMath.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A05361D1A38CA5D005B47BD /* ImageMath.c */; };
@@ -366,8 +365,6 @@
 		1A401D691A41FF79003B6E0A /* AVAssetWriterHapInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetWriterHapInput.m; sourceTree = "<group>"; };
 		1A499E662A324465003E19F0 /* HapMTLPixelBufferTexture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HapMTLPixelBufferTexture.h; sourceTree = "<group>"; };
 		1A499E672A324465003E19F0 /* HapMTLPixelBufferTexture.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HapMTLPixelBufferTexture.m; sourceTree = "<group>"; };
-		1A499E692A3245BC003E19F0 /* HapMTLDecoderFrame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HapMTLDecoderFrame.h; sourceTree = "<group>"; };
-		1A499E6A2A3245BC003E19F0 /* HapMTLDecoderFrame.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HapMTLDecoderFrame.m; sourceTree = "<group>"; };
 		1A4A76AD1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetReaderHapTrackOutput.h; sourceTree = "<group>"; };
 		1A4A76AE1A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetReaderHapTrackOutput.m; sourceTree = "<group>"; };
 		1A4D2CCE207E47CD003FE56B /* libHapInAVFoundation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libHapInAVFoundation.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -745,8 +742,6 @@
 		84C83725242A79B000734A42 /* Metal */ = {
 			isa = PBXGroup;
 			children = (
-				1A499E692A3245BC003E19F0 /* HapMTLDecoderFrame.h */,
-				1A499E6A2A3245BC003E19F0 /* HapMTLDecoderFrame.m */,
 				1A499E662A324465003E19F0 /* HapMTLPixelBufferTexture.h */,
 				1A499E672A324465003E19F0 /* HapMTLPixelBufferTexture.m */,
 				1A9C97EC2A3234CB0071AE85 /* HapMTKView.h */,
@@ -1075,7 +1070,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A05185F1A3E17CF00FC80D2 /* HapGLPixelBufferTexture.m in Sources */,
-				1A499E6B2A3245BC003E19F0 /* HapMTLDecoderFrame.m in Sources */,
 				1A499E682A324465003E19F0 /* HapMTLPixelBufferTexture.m in Sources */,
 				1A32301C1A3BA14000DDB2E0 /* main.m in Sources */,
 				1A9C97F42A3235160071AE85 /* HapMTKViewShader.metal in Sources */,
@@ -1562,6 +1556,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
+				DEFINES_MODULE = YES;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1595,6 +1590,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
+				DEFINES_MODULE = YES;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

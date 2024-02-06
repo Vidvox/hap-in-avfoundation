@@ -15,6 +15,12 @@
 
 
 
+//	i'm #defining this here explicitly so i can use it as a variable in the source code, with the intent of conveying to the user that a)- this is why there's a "multiply by four" step and b)- that this value shouldn't be treated as a variable at runtime.
+#define DXT_BLOCK_SIZE 4
+
+
+
+
 @interface HapMTLPixelBufferTexture ()
 
 @property (strong,readwrite) id<MTLDevice> device;
@@ -186,14 +192,14 @@
 			replaceRegion:MTLRegionMake2D(0,0,round(dxtTextureSize.width),round(dxtTextureSize.height))
 			mipmapLevel:0
 			withBytes:*(dxtDatas+0)
-			bytesPerRow:*(dxtMinDataSizes+0) / round(dxtTextureSize.height) * 4];
+			bytesPerRow:*(dxtMinDataSizes+0) / round(dxtTextureSize.height) * DXT_BLOCK_SIZE];
 	}
 	if (_textureB != nil)	{
 		[_textureB
 			replaceRegion:MTLRegionMake2D(0,0,round(dxtTextureSize.width),round(dxtTextureSize.height))
 			mipmapLevel:0
 			withBytes:*(dxtDatas+1)
-			bytesPerRow:*(dxtMinDataSizes+1) / round(dxtTextureSize.height) * 4];
+			bytesPerRow:*(dxtMinDataSizes+1) / round(dxtTextureSize.height) * DXT_BLOCK_SIZE];
 	}
 	
 	_codecSubType = n.codecSubType;

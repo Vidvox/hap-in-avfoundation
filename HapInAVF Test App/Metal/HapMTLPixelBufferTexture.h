@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak,readonly) HapDecoderFrame * frame;	//	we store a weak ref to the frame here, so outside objects can check to see if they need to allocate a new frame or not
 
 @property (assign,readonly) OSType codecSubType;	//	like 'kHapCodecSubType', etc- interpret this value to determine how many textures receiver has & what kind of textures they are
-@property (assign,readonly) CGSize dxtImgSize;	//	the size of the textures- rounded up to the nearest multiple of
+@property (assign,readonly) CGSize dxtImgSize;	//	the size of the textures- rounded up to the nearest multiple of 4
 @property (assign,readonly) CGSize imgSize;	//	the size of the image (which may be < the size of the texture)
 
 @end
