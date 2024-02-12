@@ -29,6 +29,7 @@
 #define HapCodec_DXTEncoder_h
 
 #include <MacTypes.h>
+#include "PixelFormats.h"
 
 /*
  An encoder is simply a pointer to a struct which provides functions for the codec to call
@@ -68,8 +69,11 @@ struct HapCodecDXTEncoder {
 #endif
     Boolean pad_source_buffers;
     Boolean can_slice;
+    HapDXTEncoderType encoder_type;
 };
 
 #define HapCodecDXTEncoderDestroy(x) if ((x) && (x)->destroy_function) (x)->destroy_function((x))
+
+#define HapCodecDXTEncoderGetDXTEncoderType(x) (((HapCodecDXTEncoderRef)(x))->encoder_type)
 
 #endif

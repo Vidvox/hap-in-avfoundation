@@ -74,6 +74,7 @@ HapCodecDXTEncoderRef HapCodecYCoCgDXTEncoderCreate(void)
 #endif
         encoder->pad_source_buffers = false;
         encoder->can_slice = true;
+        encoder->encoder_type = HapDXTEncoderType_YCoCg;
     }
     return encoder;
 }

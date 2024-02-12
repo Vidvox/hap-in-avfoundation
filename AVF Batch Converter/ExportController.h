@@ -8,7 +8,7 @@
 
 */
 
-@interface ExportController : NSObject <VVAVFTranscoderDelegate> {
+@interface ExportController : NSObject	{
 	IBOutlet id				fileListController;
 	IBOutlet id				fileSettingsController;
 	IBOutlet id				destinationController;
@@ -34,8 +34,8 @@
 
 - (IBAction) exportButtonClicked:(id)sender;
 
-- (void) setAudioSettingsDict:(NSDictionary *)n;
-- (void) setVideoSettingsDict:(NSDictionary *)n;
+@property (strong) NSDictionary * audioSettingsDict;
+@property (strong) NSDictionary * videoSettingsDict;
 
 - (IBAction) pauseToggleUsed:(id)sender;
 - (IBAction) cancelClicked:(id)sender;

@@ -40,7 +40,10 @@ enum HapCodecGLCompressedFormat {
     HapCodecGLCompressedFormat_RGB_DXT1 = 0x83F0,
     HapCodecGLCompressedFormat_RGBA_DXT1 = 0x83F1,
     HapCodecGLCompressedFormat_RGBA_DXT3 = 0x83F2,
-    HapCodecGLCompressedFormat_RGBA_DXT5 = 0x83F3
+    HapCodecGLCompressedFormat_RGBA_DXT5 = 0x83F3,
+    HapCodecGLCompressedFormat_RGBA_BC7 = 0x8E8C,
+    HapCodecGLCompressedFormat_RGB_BC6U = 0x8E8F,
+    HapCodecGLCompressedFormat_RGB_BC6S = 0x8E8E
 };
 
 typedef unsigned int HapCodecGLCompressedFormat;

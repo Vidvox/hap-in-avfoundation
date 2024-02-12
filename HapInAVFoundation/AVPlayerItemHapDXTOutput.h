@@ -1,6 +1,9 @@
 #import <Foundation/Foundation.h>
 #import <HapInAVFoundation/HapDecoderFrame.h>
 #import <AVFoundation/AVFoundation.h>
+#import <Metal/Metal.h>
+
+@class HapMetalDXTDecoder;
 
 
 
@@ -23,6 +26,8 @@ This class is the main interface for decoding hap video from AVFoundation.  You 
 	AVAssetTrack		*track;	//	RETAINED
 	id					gen;	//	RETAINED.  actually a 'AVSampleBufferGenerator', but listed as an id here so the fmwk can be compiled against 10.6
 	CMTime				lastGeneratedSampleTime;	//	used to prevent requesting the same buffer twice from the sample generator
+	
+	HapMetalDXTDecoder	*mtlDecoder;
 	
 	NSMutableArray		*decodeTimes;	//	contains CMTime/NSValues of frame times that need to be decoded
 	NSMutableArray		*decodeFrames;	//	contains HapDecoderFrame instances that are populated with all necessary fields and are ready to begin decoding
@@ -88,6 +93,10 @@ NO by default.  If you set this to YES, the output will provide RGB pixel data i
 If outputAsRGB is YES, this is the RGB pixel format that the data should be decoded into.  Accepted values are kCVPixelFormatType_32RGBA and kCVPixelFormatType_32BGRA (default is kCVPixelFormatType_32RGBA)
 */
 @property (assign,readwrite) OSType destRGBPixelFormat;
+/**
+If the output is using metal to decode a texture, command buffers will be submitted on this queue.  If no queue is provided, the receiver will create its own on the system default metal device (MTLCreateSystemDefaultDevice()).
+*/
+@property (strong) id<MTLCommandQueue> cmdQueue;
 
 
 @end

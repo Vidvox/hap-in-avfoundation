@@ -35,6 +35,7 @@
 #include <Windows.h>
 #define HAP_BZERO(x,y) ZeroMemory((x),(y))
 #endif
+#include "hap.h"
 #include "Utility.h"
 
 static void HapCodecAddBlockDescription(CFMutableDictionaryRef dictionary, unsigned int bits_per_pixel)
@@ -165,9 +166,17 @@ void HapCodecRegisterPixelFormats(void)
     {
         // Register our DXT pixel buffer types if they're not already registered
         // arguments are: OSType, OpenGL internalFormat, alpha
-        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGB_DXT1, 4, 0x83F0, false);
-        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGBA_DXT5, 8, 0x83F3, true);
-        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_YCoCg_DXT5, 8, 0x83F3, false);
+        //HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGB_DXT1, 4, 0x83F0, false);
+        //HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGBA_DXT5, 8, 0x83F3, true);
+        //HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_YCoCg_DXT5, 8, 0x83F3, false);
+        
+        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGB_DXT1, 4, HapTextureFormat_RGB_DXT1, false);
+        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGBA_DXT5, 8, HapTextureFormat_RGBA_DXT5, true);
+        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_YCoCg_DXT5, 8, HapTextureFormat_RGBA_DXT5, false);
+        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGBA_BC7, 8, HapTextureFormat_RGBA_BPTC_UNORM, true);
+        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGB_BC6U, 8, HapTextureFormat_RGB_BPTC_UNSIGNED_FLOAT, false);
+        HapCodecRegisterDXTPixelFormat(kHapCVPixelFormat_RGB_BC6S, 8, HapTextureFormat_RGB_BPTC_SIGNED_FLOAT, false);
+        
         HapCodecRegisterYCoCgPixelFormat();
         HapCodecRegisterYCoCgDXTARGTC1PixelFormat();
         registered = true;

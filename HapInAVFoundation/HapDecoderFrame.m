@@ -17,9 +17,7 @@ void CMBlockBuffer_FreeHapDecoderFrame(void *refCon, void *doomedMemoryBlock, si
 */
 void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddress)	{
 	//	'releaseRefCon' is the HapDecoderFrame instance which contains the data that is backing this pixel buffer...
-	//[(id)releaseRefCon release];
-	HapDecoderFrame		*tmpFrame = (__bridge HapDecoderFrame *)releaseRefCon;
-	tmpFrame = nil;
+	CFRelease( (CFTypeRef)releaseRefCon );
 }
 
 #define FourCCLog(n,f) NSLog(@"%@, %c%c%c%c",n,(int)((f>>24)&0xFF),(int)((f>>16)&0xFF),(int)((f>>8)&0xFF),(int)((f>>0)&0xFF))
@@ -85,6 +83,52 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		}
 		CFRetain(hapSampleBuffer);
 		
+		
+		{
+			CMBlockBufferRef	dataBlockBuffer = (hapSampleBuffer==nil) ? nil : CMSampleBufferGetDataBuffer(hapSampleBuffer);
+			if (dataBlockBuffer==NULL) {
+				NSLog(@"\t\terr: dataBlockBuffer null in %s",__func__);
+				self = nil;
+				return self;
+			}
+			char		*dataBuffer = nil;
+			size_t		availableLength = 0;
+			OSStatus		cmErr = CMBlockBufferGetDataPointer(dataBlockBuffer,
+				0,
+				&availableLength,
+				NULL,
+				&dataBuffer);
+			if (cmErr != kCMBlockBufferNoErr)	{
+				NSLog(@"\t\terr %d at CMBlockBufferGetDataPointer() in %s",(int)cmErr,__func__);
+				self = nil;
+				return self;
+			}
+			int				hapErr = HapResult_No_Error;
+			
+			//	populate the 'dxtPixelFormats'
+			unsigned int		textureCount = 0;
+			hapErr = HapGetFrameTextureCount(dataBuffer, availableLength, &textureCount);
+			if (hapErr == HapResult_No_Error)	{
+				dxtPlaneCount = textureCount;
+				for (int i=0; i<2; ++i)	{
+					if (i >= textureCount)	{
+						dxtPixelFormats[i] = 0;
+						dxtMinDataSizes[i] = 0;
+						continue;
+					}
+					
+					enum HapTextureFormat		textureFormat = 0;
+					hapErr = HapGetFrameTextureFormat(dataBuffer, availableLength, i, &textureFormat);
+					//NSLog(@"textureFormat is %d or %X",textureFormat,textureFormat);
+					if (hapErr == HapResult_No_Error)	{
+						dxtPixelFormats[i] = CVPixelFormatForHapTextureFormat(textureFormat);
+					}
+				}
+			}
+			dataBlockBuffer = NULL;
+		}
+		
+		
 		//NSLog(@"\t\tthis frame's time is %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault, CMSampleBufferGetPresentationTimeStamp(hapSampleBuffer)) autorelease]);
 		CMFormatDescriptionRef	desc = (sb==NULL) ? NULL : CMSampleBufferGetFormatDescription(sb);
 		if (desc==NULL)	{
@@ -109,34 +153,46 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 		dxtMinDataSizes[0] = dxtBytesForDimensions(dxtImgSize.width, dxtImgSize.height, codecSubType);
 		switch (codecSubType)	{
 		case kHapCodecSubType:
-			dxtPlaneCount = 1;
-			dxtPixelFormats[0] = kHapCVPixelFormat_RGB_DXT1;
-			dxtPixelFormats[1] = 0;
-			dxtMinDataSizes[1] = 0;
+			//dxtPlaneCount = 1;
+			//dxtPixelFormats[0] = kHapCVPixelFormat_RGB_DXT1;
+			//dxtPixelFormats[1] = 0;
+			//dxtMinDataSizes[1] = 0;
 			break;
 		case kHapAlphaCodecSubType:
-			dxtPlaneCount = 1;
-			dxtPixelFormats[0] = kHapCVPixelFormat_RGBA_DXT5;
-			dxtPixelFormats[1] = 0;
-			dxtMinDataSizes[1] = 0;
+			//dxtPlaneCount = 1;
+			//dxtPixelFormats[0] = kHapCVPixelFormat_RGBA_DXT5;
+			//dxtPixelFormats[1] = 0;
+			//dxtMinDataSizes[1] = 0;
 			break;
 		case kHapYCoCgCodecSubType:
-			dxtPlaneCount = 1;
-			dxtPixelFormats[0] = kHapCVPixelFormat_YCoCg_DXT5;
-			dxtPixelFormats[1] = 0;
-			dxtMinDataSizes[1] = 0;
+			//dxtPlaneCount = 1;
+			//dxtPixelFormats[0] = kHapCVPixelFormat_YCoCg_DXT5;
+			//dxtPixelFormats[1] = 0;
+			//dxtMinDataSizes[1] = 0;
 			break;
 		case kHapYCoCgACodecSubType:
-			dxtPlaneCount = 2;
-			dxtPixelFormats[0] = kHapCVPixelFormat_CoCgXY;
-			dxtPixelFormats[1] = kHapCVPixelFormat_A_RGTC1;
+			//dxtPlaneCount = 2;
+			//dxtPixelFormats[0] = kHapCVPixelFormat_CoCgXY;
+			//dxtPixelFormats[1] = kHapCVPixelFormat_A_RGTC1;
 			dxtMinDataSizes[1] = dxtBytesForDimensions(dxtImgSize.width, dxtImgSize.height, kHapAOnlyCodecSubType);
 			break;
 		case kHapAOnlyCodecSubType:
-			dxtPlaneCount = 1;
-			dxtPixelFormats[0] = kHapCVPixelFormat_A_RGTC1;
-			dxtPixelFormats[1] = 0;
-			dxtMinDataSizes[1] = 0;
+			//dxtPlaneCount = 1;
+			//dxtPixelFormats[0] = kHapCVPixelFormat_A_RGTC1;
+			//dxtPixelFormats[1] = 0;
+			//dxtMinDataSizes[1] = 0;
+			break;
+		case kHap7AlphaCodecSubType:
+			//dxtPlaneCount = 1;
+			//dxtPixelFormats[0] = kHapCVPixelFormat_RGBA_BC7;
+			//dxtPixelFormats[1] = 0;
+			//dxtMinDataSizes[1] = 0;
+			break;
+		case kHapHDRRGBCodecSubType:
+			//dxtPlaneCount = 1;
+			//dxtPixelFormats[0] = XXX;
+			//dxtPixelFormats[1] = 0;
+			//dxtMinDataSizes[1] = 0;
 			break;
 		}
 		rgbMinDataSize = 32 * imgSize.width * imgSize.height / 8;
@@ -260,7 +316,6 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 
 
 - (CMSampleBufferRef) allocCMSampleBufferFromRGBData	{
-	//NSLog(@"%s ... %@",__func__,self);
 	//	if there's no RGB data, bail immediately
 	if (rgbData==nil)	{
 		NSLog(@"\t\terr: no RGB data, can't alloc a CMSampleBufferRef, %s",__func__);
@@ -294,7 +349,7 @@ void CVPixelBuffer_FreeHapDecoderFrame(void *releaseRefCon, const void *baseAddr
 	}
 	else	{
 		//	retain self, to ensure that this HapDecoderFrame instance will persist at least until the CVPixelBufferRef frees it!
-		//[self retain];
+		CFRetain( (__bridge CFTypeRef)self );
 		
 		//	make a CMFormatDescriptionRef that describes the RGB data
 		CMFormatDescriptionRef		desc = NULL;

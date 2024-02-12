@@ -23,8 +23,9 @@
 - (id) init	{
 	self = [super init];
 	if (self!=nil)	{
-		transcoder = [[VVAVFTranscoder alloc] init];
-		[transcoder setDelegate:self];
+		//transcoder = [[VVAVFTranscoder alloc] init];
+		//[transcoder setDelegate:self];
+		transcoder = nil;
 		exporting = NO;
 		appIsActive = YES;
 		waitingToCloseProgressWindow = NO;
@@ -85,7 +86,7 @@
 }
 - (void) updateProgressMethod	{
 	if ([self exporting])	{
-		[fileProgressIndicator setDoubleValue:[transcoder normalizedProgress]];
+		[fileProgressIndicator setDoubleValue:transcoder.normalizedProgress];
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 			[self updateProgressMethod];
 		});
@@ -104,12 +105,21 @@
 			foundAFile = YES;
 			dispatch_async(dispatch_get_main_queue(), ^{
 				//	update the progress text fields and progress indicators
-				[totalProgressField setStringValue:[NSString stringWithFormat:@"File %d of %ld",fileCount,(unsigned long)[fileArray count]]];
-				[fileNameField setStringValue:[filePtr srcFileName]];
-				[totalProgressIndicator setDoubleValue:(float)fileCount/(float)[fileArray count]];
-				[fileProgressIndicator setDoubleValue:0.0];
+				[self->totalProgressField setStringValue:[NSString stringWithFormat:@"File %d of %ld",fileCount,(unsigned long)[fileArray count]]];
+				[self->fileNameField setStringValue:[filePtr srcFileName]];
+				[self->totalProgressIndicator setDoubleValue:(float)fileCount/(float)[fileArray count]];
+				[self->fileProgressIndicator setDoubleValue:0.0];
 				//	actually start transcoding the file
-				[transcoder transcodeFileAtPath:[filePtr fullSrcPath] toPath:[destinationController fullDstPathForFile:filePtr]];
+				//[self->transcoder transcodeFileAtPath:[filePtr fullSrcPath] toPath:[self->destinationController fullDstPathForFile:filePtr]];
+				self->transcoder = [VVAVFTranscoder
+					createWithSrc:[NSURL fileURLWithPath:[filePtr fullSrcPath]]
+					dst:[NSURL fileURLWithPath:[self->destinationController fullDstPathForFile:filePtr]]
+					audioSettings:self.audioSettingsDict
+					videoSettings:self.videoSettingsDict
+					completionHandler:^(VVAVFTranscoder *completed)	{
+						[self finishedTranscoding:completed];
+					}];
+				self->transcoder.paused = NO;
 			});
 			break;
 		}
@@ -127,15 +137,15 @@
 	[self startExporting];
 }
 /*------------------------------------*/
-- (void) setAudioSettingsDict:(NSDictionary *)n	{
-	[transcoder setAudioExportSettings:n];
-}
-- (void) setVideoSettingsDict:(NSDictionary *)n	{
-	[transcoder setVideoExportSettings:n];
-}
+//- (void) setAudioSettingsDict:(NSDictionary *)n	{
+//	[transcoder setAudioExportSettings:n];
+//}
+//- (void) setVideoSettingsDict:(NSDictionary *)n	{
+//	[transcoder setVideoExportSettings:n];
+//}
 /*------------------------------------*/
 - (IBAction) pauseToggleUsed:(id)sender	{
-	[transcoder setPaused:([pauseToggle intValue]==NSOnState) ? YES : NO];
+	[transcoder setPaused:([pauseToggle intValue]==NSControlStateValueOn) ? YES : NO];
 }
 - (IBAction) cancelClicked:(id)sender	{
 	//	clear the transcoder
@@ -143,17 +153,19 @@
 	[transcoder setPaused:NO];
 	[self stopExporting];
 	//	update the  "pause" button (if it's paused, i have to un-pause so the loop picks up the cancel)
-	if ([pauseToggle intValue] == NSOnState)
-		[pauseToggle setIntValue:NSOffState];
+	if ([pauseToggle intValue] == NSControlStateValueOn)
+		[pauseToggle setIntValue:NSControlStateValueOff];
 }
 /*------------------------------------*/
-- (void) finishedTranscoding:(id)finished	{
+- (void) finishedTranscoding:(VVAVFTranscoder *)finished	{
 	//NSLog(@"%s",__func__);
 	NSArray		*fileArray = [fileListController fileArray];
 	for (FileHolder *filePtr in fileArray)	{
 		//	if this is the file i just finished transcoding
-		if ([filePtr srcFileExists] && [[finished srcPath] isEqualToString:[filePtr fullSrcPath]] && ![filePtr conversionDone])	{
-			NSString		*errorString = [finished errorString];
+		if ([filePtr srcFileExists] && [finished.src.path isEqualToString:[filePtr fullSrcPath]] && ![filePtr conversionDone])	{
+			NSString		*errorString = finished.error.localizedDescription;
+			if (errorString != nil && errorString.length < 1)
+				errorString = nil;
 			[filePtr setErrorString:errorString];
 			if (errorString!=nil)	{
 				[filePtr setStatusString:@"Error"];
@@ -164,7 +176,7 @@
 				[filePtr setConversionDone:YES];
 			}
 			//	if there isn't a finished path, there was an error transcoding the file
-			[filePtr setConvertedFilePath:[finished dstPath]];
+			[filePtr setConvertedFilePath:finished.dst.path];
 			//	start transcoding the next file!
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[self transcodeNextFile];

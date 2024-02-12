@@ -10,41 +10,33 @@
 - (id) init	{
 	self = [super init];
 	if (self!=nil)	{
-		transcoderSettings = [[VVAVFExportBasicSettingsCtrlr alloc] init];
 	}
 	return self;
 }
 - (void) awakeFromNib	{
-	//	put the transcoder settings view in the settings view holder
-	NSView			*settingsView = [transcoderSettings settingsView];
-	[settingsView setFrameOrigin:NSMakePoint(0,0)];
-	[settingsViewHolder addSubview:settingsView];
 	//	load the saved settings from the user defaults (populates the pop-up button)
 	[self loadSavedSettingsFromDefaults];
 	//	load the last audio/video settings
 	NSUserDefaults		*def = [NSUserDefaults standardUserDefaults];
-	NSDictionary		*tmpDict = nil;
-	BOOL				lastAudioAndVideoNil = YES;
+	//NSDictionary		*tmpDict = nil;
 	
-	tmpDict = [def objectForKey:@"lastAudioSettings"];
-	if (tmpDict==nil)
-		tmpDict = [NSDictionary dictionary];
-	else
-		lastAudioAndVideoNil = NO;
-	[transcoderSettings populateUIWithAudioSettingsDict:tmpDict];
-	[audioDescriptionField setStringValue:[transcoderSettings lengthyAudioDescription]];
-	[exportController setAudioSettingsDict:tmpDict];
+	NSDictionary		*tmpAudioDict = [def objectForKey:@"lastAudioSettings"];
+	if (tmpAudioDict==nil)
+		tmpAudioDict = [NSDictionary dictionary];
+	exportController.audioSettingsDict = tmpAudioDict;
 	
-	tmpDict = [def objectForKey:@"lastVideoSettings"];
-	if (tmpDict==nil)
-		tmpDict = [NSDictionary dictionary];
-	else
-		lastAudioAndVideoNil = NO;
-	[transcoderSettings populateUIWithVideoSettingsDict:tmpDict];
-	[videoDescriptionField setStringValue:[transcoderSettings lengthyVideoDescription]];
-	[exportController setVideoSettingsDict:tmpDict];
+	NSDictionary		*tmpVideoDict = [def objectForKey:@"lastVideoSettings"];
+	if (tmpVideoDict==nil)
+		tmpVideoDict = [NSDictionary dictionary];
+	exportController.videoSettingsDict = tmpVideoDict;
 	
-	if (lastAudioAndVideoNil)	{
+	AVFExportAVSettingsWindow		*tmpWin = [AVFExportAVSettingsWindow createWithAudioSettings:tmpAudioDict videoSettings:tmpVideoDict];
+	NSString		*audioDesc = tmpWin.audioVC.lengthyDescription;
+	NSString		*videoDesc = tmpWin.videoVC.lengthyDescription;
+	[audioDescriptionField setStringValue:audioDesc];
+	[videoDescriptionField setStringValue:videoDesc];
+	
+	if (tmpAudioDict == nil && tmpVideoDict == nil)	{
 		[loadSavedExportSettingsPUB selectItemWithTitle:@"h264"];
 		[self loadSavedExportSettingsPUBUsed:loadSavedExportSettingsPUB];
 	}
@@ -67,8 +59,8 @@
 					AVEncoderBitRateStrategyKey: AVAudioBitRateStrategy_Variable
 				},
 				@"video":@{
-					AVVideoCodecKey: AVVideoCodecH264,
-					VVAVVideoMultiPassEncodeKey: @1,
+					AVVideoCodecKey: AVVideoCodecTypeH264,
+					kVVAVFTranscodeMultiPassEncodeKey: @1,
 					AVVideoCompressionPropertiesKey: @{
 						AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel
 					}
@@ -98,10 +90,28 @@
 					AVVideoCodecKey: AVVideoCodecHapQ,
 				}
 			},
+			
+			@"Hap 7 Alpha": @{
+				@"audio":@{},
+				@"video":@{
+					AVVideoCodecKey: AVVideoCodecHap7Alpha,
+				}
+			},
+			/*
+			@"Hap HDR": @{
+				@"audio":@{},
+				@"video":@{
+					AVVideoCodecKey: AVVideoCodecHapHDR,
+					AVVideoCompressionPropertiesKey: @{
+						AVHapVideoHDRSignedFloatKey: @NO
+					}
+				}
+			},
+			*/
 			@"PJPEG": @{
 				@"audio":@{},
 				@"video":@{
-					AVVideoCodecKey: AVVideoCodecJPEG,
+					AVVideoCodecKey: AVVideoCodecTypeJPEG,
 					AVVideoCompressionPropertiesKey: @{
 						AVVideoQualityKey: @0.76
 					}
@@ -110,13 +120,13 @@
 			@"ProRes 422": @{
 				@"audio":@{},
 				@"video":@{
-					AVVideoCodecKey: AVVideoCodecAppleProRes422,
+					AVVideoCodecKey: AVVideoCodecTypeAppleProRes422,
 				}
 			},
 			@"ProRes 4444": @{
 				@"audio":@{},
 				@"video":@{
-					AVVideoCodecKey: AVVideoCodecAppleProRes4444,
+					AVVideoCodecKey: AVVideoCodecTypeAppleProRes4444,
 				}
 			}
 		};
@@ -126,21 +136,19 @@
 	}
 	
 	//	run through and populate the pop-up button with the saved settings
-	if (savedSettings!=nil && [savedSettings count]>0)	{
-		NSArray				*sortedSettingKeys = nil;
-		sortedSettingKeys = [[savedSettings allKeys] sortedArrayUsingComparator:^(id obj1, id obj2)	{
-			return [obj1 compare:obj2];
-		}];
-		NSMenu				*settingsMenu = [loadSavedExportSettingsPUB menu];
-		for (NSString *tmpKey in sortedSettingKeys)	{
-			NSDictionary		*settingsDict = [savedSettings objectForKey:tmpKey];
-			if (settingsDict!=nil)	{
-				//	each saved setting menu item contains the dict
-				NSMenuItem		*newItem = [[NSMenuItem alloc] initWithTitle:tmpKey action:nil keyEquivalent:@""];
-				[newItem setRepresentedObject:settingsDict];
-				[settingsMenu addItem:newItem];
-				[newItem release];
-			}
+	NSArray				*sortedSettingKeys = nil;
+	sortedSettingKeys = [[savedSettings allKeys] sortedArrayUsingComparator:^(id obj1, id obj2)	{
+		return [obj1 compare:obj2];
+	}];
+	NSMenu				*settingsMenu = [loadSavedExportSettingsPUB menu];
+	for (NSString *tmpKey in sortedSettingKeys)	{
+		NSDictionary		*settingsDict = [savedSettings objectForKey:tmpKey];
+		if (settingsDict!=nil)	{
+			//	each saved setting menu item contains the dict
+			NSMenuItem		*newItem = [[NSMenuItem alloc] initWithTitle:tmpKey action:nil keyEquivalent:@""];
+			[newItem setRepresentedObject:settingsDict];
+			[settingsMenu addItem:newItem];
+			newItem = nil;
 		}
 	}
 	
@@ -160,33 +168,39 @@
 
 - (IBAction) settingsButtonClicked:(id)sender	{
 	//NSLog(@"%s",__func__);
-	[mainWindow beginCriticalSheet:settingsWindow completionHandler:^(NSModalResponse returnCode)	{
-		[self pushSettingsToExportController];
-	}];
-}
-- (IBAction) closeSettingsButtonClicked:(id)sender	{
-	//NSLog(@"%s",__func__);
-	[mainWindow endSheet:settingsWindow returnCode:NSModalResponseContinue];
-	[loadSavedExportSettingsPUB selectItem:nil];
-}
-- (void) pushSettingsToExportController	{
-	//NSLog(@"%s",__func__);
+	NSUserDefaults		*tmpDef = [NSUserDefaults standardUserDefaults];
 	
-	NSUserDefaults			*def = [NSUserDefaults standardUserDefaults];
-	NSMutableDictionary		*tmpDict = nil;
+	AVFExportAVSettingsWindow		*win = [AVFExportAVSettingsWindow
+		createWithAudioSettings:[tmpDef objectForKey:@"lastAudioSettings"]
+		videoSettings:[tmpDef objectForKey:@"lastVideoSettings"]];
 	
-	tmpDict = [transcoderSettings createAudioOutputSettingsDict];
-	[exportController setAudioSettingsDict:tmpDict];
-	[def setObject:tmpDict forKey:@"lastAudioSettings"];
+	if (win != nil)	{
+		//	open the win!
+		[mainWindow
+			beginSheet:win.window
+			completionHandler:^(NSModalResponse returnCode)	{
+				NSDictionary		*audioDict = [win.audioVC createAVFSettingsDict];
+				NSDictionary		*videoDict = [win.videoVC createAVFSettingsDict];
+				
+				[self->loadSavedExportSettingsPUB selectItem:nil];
+				if (returnCode != NSModalResponseOK)	{
+					return;
+				}
+				
+				NSUserDefaults		*def = [NSUserDefaults standardUserDefaults];
+				[def setObject:audioDict forKey:@"lastAudioSettings"];
+				[def setObject:videoDict forKey:@"lastVideoSettings"];
+				
+				NSString			*videoDesc = win.videoVC.lengthyDescription;
+				NSString			*audioDesc = win.audioVC.lengthyDescription;
+				self->videoDescriptionField.stringValue = (videoDesc==nil) ? @"" : videoDesc;
+				self->audioDescriptionField.stringValue = (audioDesc==nil) ? @"" : audioDesc;
+				
+				self->exportController.audioSettingsDict = audioDict;
+				self->exportController.videoSettingsDict = videoDict;
+			}];
+	}
 	
-	tmpDict = [transcoderSettings createVideoOutputSettingsDict];
-	[exportController setVideoSettingsDict:tmpDict];
-	[def setObject:tmpDict forKey:@"lastVideoSettings"];
-	
-	[def synchronize];
-	
-	[videoDescriptionField setStringValue:[transcoderSettings lengthyVideoDescription]];
-	[audioDescriptionField setStringValue:[transcoderSettings lengthyAudioDescription]];
 }
 - (IBAction) loadSavedExportSettingsPUBUsed:(id)sender	{
 	//NSLog(@"%s",__func__);
@@ -197,12 +211,31 @@
 	if (settingsDict==nil)
 		return;
 	NSDictionary		*audio = [settingsDict objectForKey:@"audio"];
-	[transcoderSettings populateUIWithAudioSettingsDict:audio];
+	//[transcoderSettings populateUIWithAudioSettingsDict:audio];
 	NSDictionary		*video = [settingsDict objectForKey:@"video"];
-	[transcoderSettings populateUIWithVideoSettingsDict:video];
+	//[transcoderSettings populateUIWithVideoSettingsDict:video];
 	//NSLog(@"\t\taudio is %@",audio);
 	//NSLog(@"\t\tvideo is %@",video);
-	[self pushSettingsToExportController];
+	
+	NSUserDefaults	*def = [NSUserDefaults standardUserDefaults];
+	if (audio != nil)
+		[def setObject:audio forKey:@"lastAudioSettings"];
+	if (video != nil)
+		[def setObject:video forKey:@"lastVideoSettings"];
+	
+	exportController.audioSettingsDict = audio;
+	exportController.videoSettingsDict = video;
+	
+	AVFExportAVSettingsWindow		*tmpWin = [AVFExportAVSettingsWindow createWithAudioSettings:audio videoSettings:video];
+	NSString		*tmpAudioString = tmpWin.audioVC.lengthyDescription;
+	if (tmpAudioString == nil)
+		tmpAudioString = @"";
+	NSString		*tmpVideoString = tmpWin.videoVC.lengthyDescription;
+	if (tmpVideoString == nil)
+		tmpVideoString = @"";
+	[audioDescriptionField setStringValue:tmpAudioString];
+	[videoDescriptionField setStringValue:tmpVideoString];
+	tmpWin = nil;
 }
 - (IBAction) saveCurrentSettingsClicked:(id)sender	{
 	//NSLog(@"%s",__func__);
@@ -227,7 +260,6 @@
 				//	reload the saved export settings
 				[self loadSavedSettingsFromDefaults];
 				
-				[mutSavedSettings release];
 				mutSavedSettings = nil;
 			}
 		}
@@ -241,18 +273,18 @@
 	if (presetName!=nil && [presetName length]>0 && [loadSavedExportSettingsPUB itemWithTitle:presetName]==nil)	{
 		//	assemble the dict that contains other dicts which describe the audio & video settings
 		NSMutableDictionary		*newSettingsDict = [NSMutableDictionary dictionaryWithCapacity:0];
-		NSMutableDictionary		*tmpDict = nil;
-		tmpDict = [transcoderSettings createVideoOutputSettingsDict];
+		NSDictionary		*tmpDict = nil;
+		tmpDict = exportController.videoSettingsDict;
 		if (tmpDict!=nil)
 			[newSettingsDict setObject:tmpDict forKey:@"video"];
-		tmpDict = [transcoderSettings createAudioOutputSettingsDict];
+		tmpDict = exportController.audioSettingsDict;
 		if (tmpDict!=nil)
 			[newSettingsDict setObject:tmpDict forKey:@"audio"];
 		
 		//	save stuff in the default
 		NSUserDefaults		*def = [NSUserDefaults standardUserDefaults];
 		NSDictionary		*settings = [def objectForKey:@"savedExportSettings"];
-		NSMutableDictionary	*tmpMutDict = (settings==nil) ? [NSMutableDictionary dictionaryWithCapacity:0] : [[settings mutableCopy] autorelease];
+		NSMutableDictionary	*tmpMutDict = (settings==nil) ? [NSMutableDictionary dictionaryWithCapacity:0] : [settings mutableCopy];
 		[tmpMutDict setObject:newSettingsDict forKey:presetName];
 		[def setObject:tmpMutDict forKey:@"savedExportSettings"];
 		[def synchronize];

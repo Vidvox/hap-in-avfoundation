@@ -70,17 +70,12 @@ IOPMAssertionID		noSleepAssertionID = 0;
 }
 - (IBAction) aboutWindowUsed:(id)sender	{
 	NSLog(@"%s",__func__);
-	[NSApp
+	[window
 		beginSheet:aboutWindow
-		modalForWindow:window
-		modalDelegate:nil
-		didEndSelector:nil
-		contextInfo:nil];
-	[aboutWindow makeKeyAndOrderFront:nil];
+		completionHandler:nil];
 }
 - (IBAction) aboutWindowDismiss:(id)sender	{
-	[aboutWindow orderOut:nil];
-	[NSApp endSheet:aboutWindow returnCode:0];
+	[window endSheet:aboutWindow returnCode:NSModalResponseOK];
 	
 	//CGDisplayRestoreColorSyncSettings();
 }

@@ -15,8 +15,12 @@ extern NSString *const			AVVideoCodecHapAlpha;
 extern NSString *const			AVVideoCodecHapQ;
 extern NSString *const			AVVideoCodecHapQAlpha;
 extern NSString *const			AVVideoCodecHapAlphaOnly;
+//	same as "AVVideoCodecHap", except these define a video using the Hap7 codec
+extern NSString *const			AVVideoCodecHap7Alpha;
+extern NSString *const			AVVideoCodecHapHDR;
 //	the hapQ codec offers the ability to create "chunked" files- this string is the key in the compression properties dict (AVVideoCompressionPropertiesKey) at which the # of chunks is stored.  if the value at this key is nil or < 1, it is assumed to be 1.
 extern NSString *const			AVHapVideoChunkCountKey;
+extern NSString *const			AVHapVideoHDRSignedFloatKey;
 //	the value associated with this key is expected to be a double: this key-value pair is expected to be stored in the top level of the properties dict.  this value is only used if you create a single-frame movie.  if you're creating single-frame movies then the framework won't be able to accurately calculate the duration of the frame, and will fall back to inserting a single frame with the appropriate duration.  if you export a single-frame movie and do not provide this value, the duration of the frame will be 1/timescale.
 extern NSString *const			AVFallbackFPSKey;
 
@@ -38,6 +42,7 @@ This class is the main interface for using AVFoundation to encode and output vid
 	NSSize			exportImgSize;	//	the size of the exported image in pixels.  doesn't take any rounding/block sizes into account- just the image size.
 	NSSize			exportDXTImgSize;	//	'exportImgSize' rounded up to a multiple of 4
 	unsigned int	exportChunkCounts[2];
+	double			exportQuality;	//	ranged 0-1, 1 being "highest quality"
 	BOOL			exportHighQualityFlag;	//	NO by default, YES if the quality slider is > .8 in hap or hap alpha codecs
 	size_t			exportSliceCount;	//	1 by default/if slicing is disabled.  if slicing is enabled, this is the # of slices.
 	size_t			exportSliceHeight;	//	calculated using image height + slice count.  the number of rows of pixels in a slice.
@@ -53,6 +58,8 @@ This class is the main interface for using AVFoundation to encode and output vid
 	HapLock			encoderLock;	//	used to lock glDXTEncoder
 	void			*glDXTEncoder;	//	actually a 'HapCodecDXTEncoderRef'.  only non-NULL when using the GL encoder (creating/destroying GL-based encoders is so much slower that there's a perf benefit to creating a single and caching it)
 	
+	void			*atebc7Encoder;	//	actual a 'HapCodecDXTEncoderRef'.  only non-NULL when using the ATE BC7 encoder.
+	
 	HapLock	encoderProgressLock;	//	locks 'encoderProgressFrames' and 'encoderWaitingToRunOut'
 	__block NSMutableArray		*encoderProgressFrames;	//	array of HapEncoderFrame instances.  the frames are made when you append a pixel buffer, and are flagged as encoded and appended (as an encoded sample buffer) in the GCD-driven block that did the encoding
 	BOOL				encoderWaitingToRunOut;	//	set to YES when the user marks this input as finished (the frames that are "in flight" via GCD need to finish up)
@@ -63,7 +70,7 @@ This class is the main interface for using AVFoundation to encode and output vid
 
 /**
 Functionally similar to the same method in its superclass- initializes the returned AVAssetWriterInput based on the settings in the passed dictionary.
-@param vidOutSettings An NSDictionary such as you would pass to any other instance of AVAssetWriterInput- the only difference is that this dict must specify a hap video codec using AVVideoCodecHap, AVVideoCodecHapAlpha, or AVVideoCodecHapQ (defined in this header file).  Like the JPEG codec, the hap codec recognizes the AVVideoQualityKey- if the corresponding value > 0.80, a slower, high-quality encoder is used.  if the value is <= 0.80 or isn't specified at all, a fast low-quality encoder is used (the default).
+@param vidOutSettings An NSDictionary such as you would pass to any other instance of AVAssetWriterInput- the only difference is that this dict must specify a hap video codec using AVVideoCodecHap, AVVideoCodecHapAlpha, AVVideoCodecHapQ, AVVideoCodecHap7Alpha, or AVVideoCodecHapHDR (defined in this header file).  Like the JPEG codec, the hap codec recognizes the AVVideoQualityKey- if the corresponding value > 0.80, a slower, high-quality encoder is used.  if the value is <= 0.80 or isn't specified at all, a fast low-quality encoder is used (the default).
 @return Returns nil if the passed dict doesn't describe a hap video track, otherwise it returns the initialized writer input.
 */
 - (id) initWithOutputSettings:(NSDictionary *)vidOutSettings;

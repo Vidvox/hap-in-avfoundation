@@ -33,5 +33,7 @@
 #define kHapYCoCgCodecSubType 'HapY'
 #define kHapYCoCgACodecSubType 'HapM'
 #define kHapAOnlyCodecSubType 'HapA'
+#define kHap7AlphaCodecSubType 'Hap7'
+#define kHapHDRRGBCodecSubType 'HapH'
 
 #endif

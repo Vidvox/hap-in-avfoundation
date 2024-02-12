@@ -66,7 +66,7 @@ Returns an "empty" decoder frame- all the fields except "dxtDatas" and "dxtDataS
 @property (readonly) size_t* dxtMinDataSizes;
 /// If you're using a HapDecoderFrameAllocBlock, in addition to providing memory for the dxtData block, you must also tell the frame how much memory you've allocated.
 @property (readonly) size_t* dxtDataSizes;
-/// The pixel format of the DXT frame, and is either 'kHapCVPixelFormat_RGB_DXT1' (if the video frame used the hap codec), 'kHapCVPixelFormat_RGBA_DXT5' (if it used the "hap alpha" codec), or 'kHapCVPixelFormat_YCoCg_DXT5' (if it used the "hap Q" codec).  These values are defined in PixelFormats.h
+/// The pixel format of the DXT frame, and is either 'kHapCVPixelFormat_RGB_DXT1' (if the video frame used the hap codec), 'kHapCVPixelFormat_RGBA_DXT5' (if it used the "hap alpha" codec), 'kHapCVPixelFormat_YCoCg_DXT5' (if it used the "hap Q" codec), or 'kHapCVPixelFormat_RGBA_BC7' ("hap 7 alpha").  These values are defined in PixelFormats.h
 @property (readonly) OSType* dxtPixelFormats;
 /// The size of the DXT frame, in pixels.  This may be larger tha the "imgSize".
 @property (readonly) NSSize dxtImgSize;

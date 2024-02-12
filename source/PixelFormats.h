@@ -62,10 +62,32 @@
  */
 #define kHapCVPixelFormat_A_RGTC1 'RGA1'
 
+/*
+ S3TC RGBA BC7
+ */
+#define kHapCVPixelFormat_RGBA_BC7 'BC7A'
+
+/*
+ S3TC RGB BC6U and BC6S
+ */
+#define kHapCVPixelFormat_RGB_BC6U 'BC6U'
+#define kHapCVPixelFormat_RGB_BC6S 'BC6S'
+
 /*		CoreVideo requires us to "register" the DXT pixel format- if this isn't done, the various CV-related resources won't recognize it as a valid pixel format and stuff won't work.  this function only needs to be called once, before you do anything with hap.  the framework does this automatically in the +initialize methods of AVPlayerItemHapDXTOutput and AVAssetWriterHapInput.		*/
 void HapCodecRegisterDXTPixelFormat(OSType fmt, short bits_per_pixel, SInt32 open_gl_internal_format, Boolean has_alpha);
 void HapCodecRegisterYCoCgPixelFormat(void);
 void HapCodecRegisterPixelFormats(void);
+
+
+//	we need to distinguish between the different DXT encoders for performance reasons (some DXT encoders benefit from being kept around/cached)
+//	this enum distinguishes between the different DXT encoder types- if you make a new DXT encoder type, you should probably add it here
+typedef enum HapDXTEncoderType	{
+	HapDXTEncoderType_Unknown = 0,
+	HapDXTEncoderType_GL,
+	HapDXTEncoderType_Squish,
+	HapDXTEncoderType_YCoCg,
+	HapDXTEncoderType_ATEBC7,
+} HapDXTEncoderType;
 
 
 #endif

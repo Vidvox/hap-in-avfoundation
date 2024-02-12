@@ -92,7 +92,7 @@
 	poolMe.textureB = _textureB;
 	poolMe.frame = nil;
 	//	pass the new instance of me to the app delegate, which will add it to an array that functions like a crude buffer pool
-	HapInAVFTestAppDelegate		*appDelegate = [NSApplication sharedApplication].delegate;
+	HapInAVFTestAppDelegate		*appDelegate = (HapInAVFTestAppDelegate*)[NSApplication sharedApplication].delegate;
 	[appDelegate poolFreedPixelBufferTexture:poolMe];
 	poolMe = nil;
 }

@@ -10,16 +10,16 @@
 
 - (id) init	{
 	self = [super init];
-	fileArray = [[NSMutableArray arrayWithCapacity:0] retain];
+	fileArray = [NSMutableArray arrayWithCapacity:0];
 	statusColTxtFieldCell = [[NSTextFieldCell alloc] initTextCell:@"asdf"];
-	[statusColTxtFieldCell setControlSize:NSMiniControlSize];
+	[statusColTxtFieldCell setControlSize:NSControlSizeMini];
 	
 	statusColButtonCell = [[NSButtonCell alloc] init];
-	[statusColButtonCell setControlSize:NSSmallControlSize];
+	[statusColButtonCell setControlSize:NSControlSizeSmall];
 	[statusColButtonCell setFont:[NSFont fontWithName:@"Lucida Grande" size:10]];
-	[statusColButtonCell setButtonType:NSMomentaryPushInButton];
+	[statusColButtonCell setButtonType:NSButtonTypeMomentaryPushIn];
 	[statusColButtonCell setTitle:@"Show in Finder"];
-	[statusColButtonCell setBezelStyle:NSRoundRectBezelStyle];
+	[statusColButtonCell setBezelStyle:NSBezelStyleAccessoryBarAction];
 	
 	srcFileQueue = [[VVKQueue alloc] init];
 	[srcFileQueue setDelegate:self];
@@ -31,7 +31,7 @@
 /*------------------------------------*/
 - (void) awakeFromNib	{
 	//	register to receive drops from the finder
-	[srcTableView registerForDraggedTypes:[NSArray arrayWithObjects:@"FileHolderIndexSet",NSFilenamesPboardType,nil]];
+	[srcTableView registerForDraggedTypes:[NSArray arrayWithObjects:@"FileHolderIndexSet",NSPasteboardTypeFileURL,nil]];
 }
 /* --------------------------------------------------------------------------------- */
 #pragma mark ---------------------
@@ -284,7 +284,7 @@
 //	data source/drag and drop methods
 - (BOOL) tableView:(NSTableView *)tv writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard *)pb	{
 	if (tv == srcTableView)	{
-		NSData		*rowsAsData = [NSKeyedArchiver archivedDataWithRootObject:rows];
+		NSData		*rowsAsData = [NSKeyedArchiver archivedDataWithRootObject:rows requiringSecureCoding:YES error:nil];
 		[pb declareTypes:[NSArray arrayWithObject:@"FileHolderIndexSet"] owner:nil];
 		[pb setData:rowsAsData forType:@"FileHolderIndexSet"];
 		return YES;
@@ -304,13 +304,18 @@
 }
 /*------------------------------------*/
 - (BOOL) tableView:(NSTableView *)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)op	{
-	//NSLog(@"%s",__func__);
+	NSLog(@"%s",__func__);
 	if (tv == srcTableView)	{
 		//	if i'm receiving files from the finder
-		if ([[info draggingPasteboard] availableTypeFromArray:[NSArray arrayWithObject:NSFilenamesPboardType]])	{
+		if ([[info draggingPasteboard] availableTypeFromArray:[NSArray arrayWithObject:NSPasteboardTypeFileURL]])	{
 			//NSLog(@"\t\treceiving drag from finder");
 			int					realInsertionIndex;
-			NSArray				*draggedFileArray = [[info draggingPasteboard] propertyListForType:NSFilenamesPboardType];
+			NSArray				*draggedURLArray = [info.draggingPasteboard readObjectsForClasses:@[NSURL.class] options:nil];
+			NSMutableArray	*tmpArray = [NSMutableArray arrayWithCapacity:0];
+			for (NSURL * draggedURL in draggedURLArray)	{
+				[tmpArray addObject:draggedURL.path];
+			}
+			NSArray				*draggedFileArray = [NSArray arrayWithArray:tmpArray];
 			NSMutableArray		*flattenedFileArray = [self flattenFiles:draggedFileArray toDepth:1];
 			NSEnumerator		*it;
 			NSString			*path;
@@ -349,7 +354,7 @@
 		else if ([[info draggingPasteboard] availableTypeFromArray:[NSArray arrayWithObject:@"FileHolderIndexSet"]])	{
 			//NSLog(@"\t\treceiving internal drag from self");
 			NSData			*rowsAsData = [[info draggingPasteboard] dataForType:@"FileHolderIndexSet"];
-			NSIndexSet		*selectedRowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowsAsData];
+			NSIndexSet		*selectedRowIndexes = [NSKeyedUnarchiver unarchivedObjectOfClass:NSIndexSet.class fromData:rowsAsData error:nil];
 			NSArray			*selectedRows = [fileArray objectsAtIndexes:selectedRowIndexes];
 			NSInteger		realInsertionIndex;
 			FileHolder		*nextItem = nil;

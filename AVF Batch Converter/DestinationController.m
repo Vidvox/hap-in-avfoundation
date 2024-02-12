@@ -21,7 +21,7 @@
 	//	check the user defaults, populate the fields
 	numPtr = [def objectForKey:@"sameAsOriginalVal"];
 	if (numPtr==nil)
-		numPtr = [NSNumber numberWithInteger:NSOnState];
+		numPtr = [NSNumber numberWithInteger:NSControlStateValueOn];
 	if (numPtr != nil)
 		[sameAsOriginalToggle setIntValue:[numPtr intValue]];
 	stringPtr = [def objectForKey:@"destPath"];
@@ -55,7 +55,7 @@
 	//	stop watching everything
 	[destFolderQueue stopWatchingAllPaths];
 	//	if i'm turning "same as original" on, i'm going to be returning
-	if ([sameAsOriginalToggle intValue] == NSOnState)	{
+	if ([sameAsOriginalToggle intValue] == NSControlStateValueOn)	{
 		[destinationPathField setHidden:YES];	//	hide the destination field
 		[chooseButton setEnabled:NO];			//	disable the 'choose' button
 		[self destinationSettingsChanged];		//	update anything that needs to know about changes
@@ -89,7 +89,7 @@
 	[openPanel setCanChooseFiles:NO];
 	[openPanel setAllowsMultipleSelection:NO];
 	[openPanel setTitle:@"Choose the destination for exported movies."];
-	[openPanel setAllowedFileTypes:nil];
+	[openPanel setAllowedContentTypes:@[]];
 	
 	//	if the panel ended with something being found, set & un-hide the destination field
 	if ([openPanel runModal] == NSModalResponseOK)	{
@@ -103,7 +103,7 @@
 	}
 	//	else if i cancelled out of the panel, re-enable the 'same as original' toggle
 	else	{
-		[sameAsOriginalToggle setIntValue:NSOnState];
+		[sameAsOriginalToggle setIntValue:NSControlStateValueOn];
 		[destinationPathField setHidden:YES];	//	hide the destination field
 		[chooseButton setEnabled:NO];			//	disable the 'choose' button
 		[self destinationSettingsChanged];		//	update anything that needs to know about changes
@@ -140,7 +140,7 @@
 }
 /*------------------------------------*/
 - (BOOL) sameAsOriginal	{
-	if ([sameAsOriginalToggle intValue] == NSOnState)
+	if ([sameAsOriginalToggle intValue] == NSControlStateValueOn)
 		return YES;
 	else
 		return NO;

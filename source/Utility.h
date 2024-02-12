@@ -54,11 +54,17 @@ unsigned long dxtBytesForDimensions(int width, int height, OSType codecSubType);
 #define isDXTPixelFormat(fmt) (((fmt) == kHapCVPixelFormat_RGB_DXT1 \
                                 || (fmt) == kHapCVPixelFormat_RGBA_DXT5 \
                                 || (fmt) == kHapCVPixelFormat_YCoCg_DXT5 \
-                                || (fmt) == kHapCVPixelFormat_YCoCg_DXT5_A_RGTC1) ? true : false)
+                                || (fmt) == kHapCVPixelFormat_YCoCg_DXT5_A_RGTC1 \
+                                || (fmt) == kHapCVPixelFormat_RGBA_BC7 \
+                                || (fmt) == kHapCVPixelFormat_RGB_BC6U \
+                                || (fmt) == kHapCVPixelFormat_RGB_BC6S) ? true : false)
 
 SInt16 resourceIDForComponentType(OSType componentType, OSType resourceType);
 
 int hapCodecMaxTasks(void);
+
+enum HapTextureFormat HapTextureFormatForCVPixelFormat(OSType inCVPixelFormat);
+OSType CVPixelFormatForHapTextureFormat(enum HapTextureFormat inHapTextureFormat);
 
 #ifdef DEBUG
 #if defined(_WIN32)

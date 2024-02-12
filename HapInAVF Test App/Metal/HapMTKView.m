@@ -282,8 +282,8 @@ static inline VVPOINT VVRectGetAnchorPoint(VVRECT inRect, VVRectAnchor inAnchor)
 		case kHapYCoCgCodecSubType:		imageDesc.imageType = HapMTKViewImageType_YCoCg;			break;
 		case kHapYCoCgACodecSubType:	imageDesc.imageType = HapMTKViewImageType_YCoCgA;			break;
 		case kHapAOnlyCodecSubType:		imageDesc.imageType = HapMTKViewImageType_Sampleable;		break;
-		//case kHapRCodecSubType:		imageDesc.imageType = HapMTKViewImageType_Sampleable;		break;
-		//case kHapHDRCodecSubType:		imageDesc.imageType = HapMTKViewImageType_Sampleable;		break;
+		case kHap7AlphaCodecSubType:	imageDesc.imageType = HapMTKViewImageType_Sampleable;		break;
+		case kHapHDRRGBCodecSubType:	imageDesc.imageType = HapMTKViewImageType_Sampleable;		break;
 		}
 		
 		textureA = hapTexToDisplay.textureA;
@@ -296,36 +296,40 @@ static inline VVPOINT VVRectGetAnchorPoint(VVRECT inRect, VVRectAnchor inAnchor)
 		textureA = CVMetalTextureGetTexture(cvTexToDisplay);
 		textureB = textureA;
 	}
-	[renderEncoder setFragmentBytes:&imageDesc length:sizeof(imageDesc) atIndex:HapMTKViewFSIndex_ImageDescription];
 	
-	//	attach the buffer(s) and texture(s) we'll be drawing to the render encoder
-	[renderEncoder setVertexBuffer:mvpBuffer offset:0 atIndex:HapMTKViewVSIndex_MVPMatrix];
-	[renderEncoder setFragmentTexture:textureA atIndex:HapMTKViewFSIndex_TextureA];
-	[renderEncoder setFragmentTexture:textureB atIndex:HapMTKViewFSIndex_TextureB];
-	
-	//	ensure the encoder has been explicitly made aware when and where it needs to use the various buffer data
-	[renderEncoder useResource:mvpBuffer usage:MTLResourceUsageRead stages:MTLRenderStageVertex];
-	[renderEncoder useResource:textureA usage:MTLResourceUsageRead stages:MTLRenderStageFragment];
-	[renderEncoder useResource:textureB usage:MTLResourceUsageRead stages:MTLRenderStageFragment];
-	
-	//	ensure that the various resources we'll use aren't released during render
-	[cmdBuffer addCompletedHandler:^(id<MTLCommandBuffer> completedCB)	{
-		//	make sure the texture's we're working with are properly displayed...
-		HapMTLPixelBufferTexture		*tmpTex = hapTexToDisplay;
-		tmpTex = nil;
-		if (cvTexToDisplay != NULL)	{
-			CVBufferRelease(cvTexToDisplay);
-		}
-		//	make sure the mvp buffer's retained...
-		id<MTLBuffer>		tmpMVPBuffer = mvpBuffer;
-		tmpMVPBuffer = nil;
-	}];
-	
-	//	draw the vertices!
-	[renderEncoder
-		drawPrimitives:MTLPrimitiveTypeTriangleStrip
-		vertexStart:0
-		vertexCount:4];
+	//	only proceed if we have a texture to display
+	if (textureA != nil || textureB != nil)	{
+		[renderEncoder setFragmentBytes:&imageDesc length:sizeof(imageDesc) atIndex:HapMTKViewFSIndex_ImageDescription];
+		
+		//	attach the buffer(s) and texture(s) we'll be drawing to the render encoder
+		[renderEncoder setVertexBuffer:mvpBuffer offset:0 atIndex:HapMTKViewVSIndex_MVPMatrix];
+		[renderEncoder setFragmentTexture:textureA atIndex:HapMTKViewFSIndex_TextureA];
+		[renderEncoder setFragmentTexture:textureB atIndex:HapMTKViewFSIndex_TextureB];
+		
+		//	ensure the encoder has been explicitly made aware when and where it needs to use the various buffer data
+		[renderEncoder useResource:mvpBuffer usage:MTLResourceUsageRead stages:MTLRenderStageVertex];
+		[renderEncoder useResource:textureA usage:MTLResourceUsageRead stages:MTLRenderStageFragment];
+		[renderEncoder useResource:textureB usage:MTLResourceUsageRead stages:MTLRenderStageFragment];
+		
+		//	ensure that the various resources we'll use aren't released during render
+		[cmdBuffer addCompletedHandler:^(id<MTLCommandBuffer> completedCB)	{
+			//	make sure the texture's we're working with are properly displayed...
+			HapMTLPixelBufferTexture		*tmpTex = hapTexToDisplay;
+			tmpTex = nil;
+			if (cvTexToDisplay != NULL)	{
+				CVBufferRelease(cvTexToDisplay);
+			}
+			//	make sure the mvp buffer's retained...
+			id<MTLBuffer>		tmpMVPBuffer = mvpBuffer;
+			tmpMVPBuffer = nil;
+		}];
+		
+		//	draw the vertices!
+		[renderEncoder
+			drawPrimitives:MTLPrimitiveTypeTriangleStrip
+			vertexStart:0
+			vertexCount:4];
+	}
 	
 	//	we're done- end encoding, present the drawable, and then commit the command buffer
 	[renderEncoder endEncoding];

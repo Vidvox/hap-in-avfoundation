@@ -1,15 +1,13 @@
 #import <Foundation/Foundation.h>
-#import "VVAVFExportBasicSettingsCtrlr.h"
+#import "AVFExportAVSettingsWindow.h"
 
-
+@class ExportController;
 
 
 @interface FileSettingsController : NSObject	{
-	IBOutlet id						exportController;
+	IBOutlet ExportController		*exportController;
 	
 	IBOutlet NSWindow				*mainWindow;
-	IBOutlet NSWindow				*settingsWindow;
-	IBOutlet NSView					*settingsViewHolder;
 	
 	IBOutlet NSTextField			*videoDescriptionField;
 	IBOutlet NSTextField			*audioDescriptionField;
@@ -18,15 +16,11 @@
 	
 	IBOutlet NSWindow				*saveSettingsWindow;
 	IBOutlet NSTextField			*saveSettingsField;
-	
-	VVAVFExportBasicSettingsCtrlr	*transcoderSettings;
 }
 
 - (void) loadSavedSettingsFromDefaults;
 
 - (IBAction) settingsButtonClicked:(id)sender;
-- (IBAction) closeSettingsButtonClicked:(id)sender;
-- (void) pushSettingsToExportController;
 - (IBAction) loadSavedExportSettingsPUBUsed:(id)sender;
 
 - (IBAction) saveCurrentSettingsClicked:(id)sender;

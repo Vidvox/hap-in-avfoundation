@@ -83,7 +83,7 @@
 		[dstFileName insertString:[prefixField stringValue] atIndex:0];
 	
 	returnMe = [NSString stringWithString:dstFileName];
-	[dstFileName release];
+	dstFileName = nil;
 	return returnMe;
 	//return [dstFileName autorelease];
 }

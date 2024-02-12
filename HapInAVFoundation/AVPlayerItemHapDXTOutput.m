@@ -8,6 +8,7 @@
 #include "YCoCgDXT.h"
 #include "SquishRGTC1Decoder.h"
 #import "CMBlockBufferPool.h"
+#import "HapMetalDXTDecoder.h"
 
 
 
@@ -609,8 +610,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 					0,
 					(HapDecodeCallback)HapMTDecode,
 					NULL,
-					dxtDatas[0],
-					dxtDataSizes[0],
+					dxtDatas[0], dxtDataSizes[0],
 					NULL,
 					&(dxtTextureFormats[0]));
 				if (hapErr != HapResult_No_Error)	{
@@ -622,8 +622,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 						1,
 						(HapDecodeCallback)HapMTDecode,
 						NULL,
-						dxtDatas[1],
-						dxtDataSizes[1],
+						dxtDatas[1], dxtDataSizes[1],
 						NULL,
 						&(dxtTextureFormats[1]));
 					if (hapErr != HapResult_No_Error)	{
@@ -683,10 +682,86 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 						}
 					
 					}
-					else if (dxtTextureFormats[0] == HapTextureFormat_A_RGTC1)	  {
-						unsigned int		bytesPerRow = (unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height);
-						HapCodecSquishRGTC1DecodeAsAlphaOnly(dxtDatas[0], rgbData, bytesPerRow, dxtImgSize.width, dxtImgSize.height);
-					}
+                    else if (dxtTextureFormats[0] == HapTextureFormat_A_RGTC1)    {
+                        unsigned int        bytesPerRow = (unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height);
+                        HapCodecSquishRGTC1DecodeAsAlphaOnly(dxtDatas[0], rgbData, bytesPerRow, dxtImgSize.width, dxtImgSize.height);
+                    }
+                    else if (dxtTextureFormats[0] == HapTextureFormat_RGBA_BPTC_UNORM)	{
+                    	//unsigned int		bytesPerRow = (unsigned int)(rgbDataSize/(NSUInteger)dxtImgSize.height);
+                    	@synchronized (self)	{
+							if (mtlDecoder == nil)	{
+								if (self.cmdQueue == nil)	{
+									id<MTLDevice>		device = MTLCreateSystemDefaultDevice();
+									self.cmdQueue = [device newCommandQueue];
+								}
+								mtlDecoder = [[HapMetalDXTDecoder alloc] initWithDevice:self.cmdQueue.device];
+							}
+                    		id<MTLDevice>	device = self.cmdQueue.device;
+							
+							id<MTLCommandBuffer>	cmdBuffer = [self.cmdQueue commandBuffer];
+							
+							//	move the dxt data into a dxt texture
+							MTLTextureDescriptor	*dxt_tex_desc = [[MTLTextureDescriptor alloc] init];
+							dxt_tex_desc.textureType = MTLTextureType2D;
+							dxt_tex_desc.pixelFormat = MTLPixelFormatBC7_RGBAUnorm;
+							dxt_tex_desc.width = dxtImgSize.width;
+							dxt_tex_desc.height = dxtImgSize.height;
+							dxt_tex_desc.depth = 1;
+							dxt_tex_desc.resourceOptions = MTLResourceStorageModeShared;
+							dxt_tex_desc.storageMode = MTLStorageModeShared;
+							dxt_tex_desc.usage = MTLTextureUsageShaderRead;
+							id<MTLTexture>		dxt_tex = [device newTextureWithDescriptor:dxt_tex_desc];
+							
+							int		blocks_wide = dxtImgSize.width / 4;
+							size_t		dxt_bytes_per_row = blocks_wide * 128 / 8;
+							
+							[dxt_tex
+								replaceRegion:MTLRegionMake2D(0,0,dxtImgSize.width,dxtImgSize.height)
+								mipmapLevel:0
+								withBytes:dxtDatas[0]
+								bytesPerRow:dxt_bytes_per_row];
+							
+							//	make a buffer to contain the rgb data- try to use the destination memory as backing to speed things up if we can
+							id<MTLBuffer>		rgba_buffer = nil;
+							BOOL				copiedDirectlyToRGBData = NO;
+							if ((uint32_t)round(imgSize.width) % 16 == 0)	{
+								@try	{
+									rgba_buffer = [device
+										newBufferWithBytesNoCopy:rgbData
+										length:rgbDataSize
+										options:MTLResourceStorageModeShared
+										deallocator:nil];
+									copiedDirectlyToRGBData = YES;
+								}
+								@catch (NSException *err)	{
+									NSLog(@"ERR: (%@) making no-copy buffer in %s",err,__func__);
+								}
+							}
+							if (rgba_buffer == nil)	{
+								rgba_buffer = [device newBufferWithLength:rgbDataSize options:MTLResourceStorageModeShared];
+								copiedDirectlyToRGBData = NO;
+							}
+							uint32_t		rgba_bytes_per_row = rgbDataSize / imgSize.height;
+							//	decode the dxt texture into the buffer we created
+							[mtlDecoder
+								decodeTexture:dxt_tex
+								toBuffer:rgba_buffer
+								bufferImageSize:imgSize
+								bufferBytesPerRow:rgba_bytes_per_row
+								bufferPixelFormat:(rgbPixelFormat==kCVPixelFormatType_32BGRA) ? MTLPixelFormatBGRA8Unorm : MTLPixelFormatRGBA8Unorm
+								inCommandBuffer:cmdBuffer];
+							
+							[cmdBuffer commit];
+							[cmdBuffer waitUntilCompleted];
+							
+							if (!copiedDirectlyToRGBData)	{
+								memcpy( rgbData, rgba_buffer.contents, fmin(rgbDataSize,rgba_buffer.length) );
+							}
+							
+							rgba_buffer = nil;
+							dxt_tex = nil;
+                    	}
+                    }
 					else	{
 						NSLog(@"\t\terr: unrecognized text formats %X/%x in %s",dxtTextureFormats[0],dxtTextureFormats[1],__func__);
 					}

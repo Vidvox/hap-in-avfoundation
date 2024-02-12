@@ -7,15 +7,11 @@
 
 
 + (id) createWithPath:(NSString *)p	{
-	FileHolder		*returnMe = nil;
-	returnMe = [[FileHolder alloc] initWithPath:p];
-	if (returnMe == nil)
-		return nil;
-	return [returnMe autorelease];
+	return [[FileHolder alloc] initWithPath:p];
 }
 - (id) initWithPath:(NSString *)p	{
 	self = [super init];
-	{
+	if (self != nil)	{
 		parentDirectoryPath = nil;
 		srcFileName = nil;
 		dstFileName = nil;
@@ -28,12 +24,11 @@
 		NSURL		*tmpURL = [NSURL fileURLWithPath:p];
 		AVAsset		*tmpAsset = [AVAsset assetWithURL:tmpURL];
 		if (![tmpAsset isPlayable] && ![tmpAsset containsHapVideoTrack])	{
-			[self release];
-			return nil;
+			self = nil;
+			return self;
 		}
-		
 		NSMutableString		*localParentDirPath = nil;
-		srcFileName = [[p lastPathComponent] retain];
+		srcFileName = [p lastPathComponent];
 		
 		localParentDirPath = [p mutableCopy];
 		[localParentDirPath
@@ -42,7 +37,7 @@
 			options:NSBackwardsSearch
 			range:NSMakeRange(0,[localParentDirPath length])];
 		parentDirectoryPath = [localParentDirPath copy];
-		[localParentDirPath release];
+		localParentDirPath = nil;
 		
 		dstFileName = nil;
 		errorString = nil;
@@ -54,30 +49,23 @@
 }
 - (void) dealloc	{
 	if (parentDirectoryPath != nil)	{
-		[parentDirectoryPath release];
 		parentDirectoryPath = nil;
 	}
 	if (srcFileName != nil)	{
-		[srcFileName release];
 		srcFileName = nil;
 	}
 	if (dstFileName != nil)	{
-		[dstFileName release];
 		dstFileName = nil;
 	}
 	if (statusString != nil)	{
-		[statusString release];
 		statusString = nil;
 	}
 	if (errorString != nil)	{
-		[errorString release];
 		errorString = nil;
 	}
 	if (convertedFilePath != nil)	{
-		[convertedFilePath release];
 		convertedFilePath = nil;
 	}
-	[super dealloc];
 }
 
 - (NSString *) fullSrcPath	{

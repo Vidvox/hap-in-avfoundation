@@ -107,14 +107,15 @@
 	void			**dxtBaseAddresses = [decodedFrame dxtDatas];
 	for (int texIndex=0; texIndex<textureCount; ++texIndex)	{
 		unsigned int	bitsPerPixel = 0;
+		newInternalFormat = HapTextureFormatForCVPixelFormat(dxtPixelFormats[texIndex]);
 		switch (dxtPixelFormats[texIndex]) {
 			case kHapCVPixelFormat_RGB_DXT1:
-				newInternalFormat = HapTextureFormat_RGB_DXT1;
+				//newInternalFormat = HapTextureFormat_RGB_DXT1;
 				bitsPerPixel = 4;
 				break;
 			case kHapCVPixelFormat_RGBA_DXT5:
 			case kHapCVPixelFormat_YCoCg_DXT5:
-				newInternalFormat = HapTextureFormat_RGBA_DXT5;
+				//newInternalFormat = HapTextureFormat_RGBA_DXT5;
 				bitsPerPixel = 8;
 				break;
 			case kHapCVPixelFormat_CoCgXY:
@@ -143,6 +144,18 @@
 			case kHapCVPixelFormat_A_RGTC1:
 				newInternalFormat = HapTextureFormat_A_RGTC1;
 				bitsPerPixel = 4;
+				break;
+			case kHapCVPixelFormat_RGBA_BC7:
+				newInternalFormat = HapTextureFormat_RGBA_BPTC_UNORM;
+				bitsPerPixel = 8;
+				break;
+			case kHapCVPixelFormat_RGB_BC6U:
+				newInternalFormat = HapTextureFormat_RGB_BPTC_UNSIGNED_FLOAT;
+				bitsPerPixel = 8;
+				break;
+			case kHapCVPixelFormat_RGB_BC6S:
+				newInternalFormat = HapTextureFormat_RGB_BPTC_SIGNED_FLOAT;
+				bitsPerPixel = 8;
 				break;
 			default:
 				// we don't support non-DXT pixel buffers
@@ -246,7 +259,10 @@
 }
 - (GLuint *)textureNames
 {
-	if (!valid) return 0;
+	if (!valid)	{
+		static GLuint	badVals[] = {0,0,0,0};
+		return badVals;
+	}
 	return textures;
 }
 
