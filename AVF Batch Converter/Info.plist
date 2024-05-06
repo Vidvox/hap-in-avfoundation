@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleGetInfoString</key>
-	<string>1.6.9.2</string>
+	<string>1.6.9.4</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -21,20 +21,22 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.6.9.2</string>
+	<string>1.6.9.4</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.6.9.2</string>
+	<string>1.6.9.4</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2018 Vidvox. All rights reserved.</string>
+	<string>Copyright © 2024 Vidvox. All rights reserved.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>SUFeedURL</key>
 	<string>https://www.vidvox.net/version/AVFBatchConverter.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>ShJQgmdoXnD+tmqtlXw24M9QtyhHd4RjhN85VUB9+w4=</string>
 </dict>
 </plist>
