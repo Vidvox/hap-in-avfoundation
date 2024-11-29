@@ -28,6 +28,8 @@
 #ifndef HapCodec_PixelFormats_h
 #define HapCodec_PixelFormats_h
 
+#include <MacTypes.h>
+
 /*
  S3TC RGB DXT1
  */
